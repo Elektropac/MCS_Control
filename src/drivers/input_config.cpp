@@ -1,4 +1,5 @@
 #include "input_config.h"
+#include "hw_status.h"
 #include <Wire.h>
 
 // ------------------------------------------
@@ -123,6 +124,9 @@ void input_config_init() {
 }
 
 void input_config_set(Input input, InputSwitch sw, bool on) {
+    if (input <= INPUT_A4 && !hw_available(HW_INPUT_CONFIG_A)) return;
+    if (input >= INPUT_B1 && !hw_available(HW_INPUT_CONFIG_B)) return;
+
     if (input <= INPUT_A4) {
         apply_switch(ADDR_CHANNEL_A, s_a_port, MAP_A[input], sw, on);
     } else {

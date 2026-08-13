@@ -1,4 +1,5 @@
 #include "voltage_select.h"
+#include "hw_status.h"
 #include <Wire.h>
 
 // ------------------------------------------
@@ -58,6 +59,8 @@ void voltage_select_init() {
 }
 
 void voltage_select_set_a(Voltage v) {
+    if (!hw_available(HW_VOLTAGE_SELECT)) return;
+
     // Clear A bits (P00=enable, P01=bit0, P02=bit1)
     s_port0 |= 0x07;  // disable: set P00 high (1G# inactive)
 
@@ -81,6 +84,8 @@ void voltage_select_set_a(Voltage v) {
 }
 
 void voltage_select_set_b(Voltage v) {
+    if (!hw_available(HW_VOLTAGE_SELECT)) return;
+
     // Clear B bits (P05=enable, P06=bit0, P07=bit1)
     s_port0 |= 0xE0;  // disable: set P05 high (2G# inactive)
 

@@ -1,4 +1,5 @@
 #include "serial_control.h"
+#include "hw_status.h"
 #include <Wire.h>
 
 // ------------------------------------------
@@ -102,6 +103,8 @@ void serial_control_init() {
 }
 
 void serial_set_mode(SerialChannel ch, ComMode mode) {
+    if (!hw_available(HW_SERIAL_CONTROL)) return;
+
     if (ch == CHANNEL_A) {
         switch (mode) {
             case COM_OFF:
@@ -156,6 +159,8 @@ void serial_set_mode(SerialChannel ch, ComMode mode) {
 }
 
 void serial_rs485_transmit(SerialChannel ch, bool enable) {
+    if (!hw_available(HW_SERIAL_CONTROL)) return;
+
     if (ch == CHANNEL_A) {
         set_bit(s_port0, CHA_DE, enable);    // DE high = transmit
         set_bit(s_port0, CHA_RE, enable);    // RE# high = disable receive while transmitting
@@ -168,6 +173,8 @@ void serial_rs485_transmit(SerialChannel ch, bool enable) {
 }
 
 void serial_rs485_termination(SerialChannel ch, bool enable) {
+    if (!hw_available(HW_SERIAL_CONTROL)) return;
+
     if (ch == CHANNEL_A) {
         set_bit(s_port0, CHA_TERM, !enable);  // active low
         write_port0();

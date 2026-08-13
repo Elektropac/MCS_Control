@@ -1,4 +1,5 @@
 #include "adc.h"
+#include "hw_status.h"
 #include <Wire.h>
 
 // ------------------------------------------
@@ -88,6 +89,10 @@ void adc_init() {
 }
 
 int16_t adc_read_raw_mv(AdcInput input) {
+    // Guard: check if the relevant ADC chip is available
+    if (input <= ADC_A4 && !hw_available(HW_ADC_A)) return 0;
+    if (input >= ADC_B1 && !hw_available(HW_ADC_B)) return 0;
+
     const AdcMap &map = ADC_MAP[input];
 
     // Build config: single-shot, single-ended, ±4.096V, 128SPS
@@ -142,6 +147,10 @@ static const DiffMap DIFF_MAP[4] = {
 };
 
 int32_t adc_read_diff_mv(AdcDiffPair pair) {
+    // Guard
+    if (pair <= ADC_DIFF_A34 && !hw_available(HW_ADC_A)) return 0;
+    if (pair >= ADC_DIFF_B12 && !hw_available(HW_ADC_B)) return 0;
+
     const DiffMap &map = DIFF_MAP[pair];
 
     uint16_t config = CFG_OS_START | map.mux | CFG_PGA_4096 |

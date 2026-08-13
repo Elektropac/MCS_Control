@@ -1,4 +1,5 @@
 #include "relays.h"
+#include "hw_status.h"
 #include <Wire.h>
 
 // ------------------------------------------
@@ -56,6 +57,8 @@ void relays_init() {
 }
 
 void relay_set(Relay relay, bool on) {
+    if (!hw_available(HW_SERIAL_CONTROL)) return;
+
     if (relay == RELAY_A) s_relay_a = on;
     else                  s_relay_b = on;
     write_relays();
