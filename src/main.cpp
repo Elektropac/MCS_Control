@@ -5,16 +5,7 @@
 #include "logging/logging.h"
 #include "drivers/i2c.h"
 #include "drivers/all_drivers_init.h"
-#include "drivers/buttons.h"
-
-// --- Button handler task ---
-
-void buttons_check() {
-    Button btn = buttons_get_event();
-    if (btn != BTN_NONE) {
-        // TODO: send to menu or interface
-    }
-}
+#include "drivers/buttons_task.h"
 
 // --- Setup ---
 
