@@ -2,17 +2,32 @@
 #include "scheduler/scheduler.h"
 #include "sampler/sampler.h"
 #include "sampler/flow_guard.h"
+#include "drivers/i2c.h"
+#include "drivers/all_drivers_init.h"
+#include "drivers/buttons.h"
+
+// --- Button handler task ---
+
+void buttons_check() {
+    Button btn = buttons_get_event();
+    if (btn != BTN_NONE) {
+        // TODO: send to menu or interface
+    }
+}
 
 // --- Setup ---
 
 void setup() {
     Serial.begin(115200);
 
-    sampler_init();       // start pulse sampling (always on, interrupt-driven)
-    flow_guard_init();    // initialize flow guard state
+    sampler_init();           // start pulse sampling (always on, interrupt-driven)
+    flow_guard_init();        // initialize flow guard state
+    i2c_init();               // start I2C bus (400 kHz)
+    all_drivers_init();       // all hardware drivers (with probe + error logging)
 
     // --- Register tasks ---
-    task_add("flow_guard",  flow_guard_check,   500);
+    task_add("flow_guard",  flow_guard_check,   500);   // TODO: connect alarm to interface event
+    task_add("buttons",     buttons_check,      50);    // TODO: connect to menu/display navigation
 }
 
 // --- Main loop ---
