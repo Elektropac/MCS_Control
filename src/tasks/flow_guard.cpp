@@ -1,5 +1,6 @@
 #include "flow_guard.h"
 #include "sampler.h"
+#include "debug/task_registry.h"
 
 static const uint8_t  NOISE_THRESHOLD   = 3;
 static const uint32_t CHECK_INTERVAL_MS = 500;
@@ -45,6 +46,7 @@ void flow_guard_init() {
 
 void flow_guard_start_task() {
     xTaskCreate(flow_guard_task, "flow_guard", 2048, nullptr, 1, &s_task_handle);
+    task_register(s_task_handle, "flow_guard", 1, 2048);
 }
 
 void flow_guard_pause() {

@@ -1,5 +1,6 @@
 #include "buttons_task.h"
 #include "buttons.h"
+#include "debug/task_registry.h"
 
 static void buttons_task(void* param) {
     (void)param;
@@ -13,5 +14,7 @@ static void buttons_task(void* param) {
 }
 
 void buttons_start_task() {
-    xTaskCreate(buttons_task, "buttons", 2048, nullptr, 2, nullptr);
+    TaskHandle_t handle = nullptr;
+    xTaskCreate(buttons_task, "buttons", 2048, nullptr, 2, &handle);
+    task_register(handle, "buttons", 2, 2048);
 }

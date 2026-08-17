@@ -6,6 +6,7 @@
 #include "tasks/sampler.h"
 #include "tasks/flow_guard.h"
 #include "tasks/buttons_task.h"
+#include "tasks/network_task.h"
 #include "debug/serial_cmd.h"
 
 void setup() {
@@ -21,6 +22,7 @@ void setup() {
     // FreeRTOS tasks
     flow_guard_start_task();        // monitors pulses without active transaction
     buttons_start_task();           // polls button ADC every 50ms
+    network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)
     serial_cmd_start_task();        // serial debug commands (send ? for help)
 }
 

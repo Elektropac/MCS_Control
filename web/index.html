@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>esp32 web app</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+
+    .main {
+      display: flex;
+      justify-content: start;
+      align-items: start;
+      padding: 10px;
+      height: 100vh;
+      gap: 20px;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+
+      border: #007bff 1px solid;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    #config {
+      padding: 10px;
+      field-sizing: content;
+      width: max-content;
+      min-width: 150px;
+      /* Prevents it from collapsing entirely when empty */
+      max-width: 100%;
+      /* Keeps it from breaking the page layout */
+    }
+  </style>
+  <script>
+    const api_url = "/api/function_silo";
+    const api_client = (data) => fetch(api_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+        return data;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        return false;
+      });
+
+    const ledOn = () => api_client({ subject: "led_on" });
+    const ledOff = () => api_client({ subject: "led_off" });
+    const ledToggle = () => api_client({ subject: "led_toggle" });
+
+    const getConfig = async () => {
+      const r = await api_client({ subject: "get_config" });
+      if (!r) return;
+      const ele = document.getElementById("config");
+      ele.value = JSON.stringify(r, null, 2);
+    }
+    const setConfig = async () => {
+      const config = document.getElementById("config").value;
+      const r = await api_client({ subject: "set_config", data: { value: JSON.parse(config) } });
+      if (!r) return;
+      console.log("Config set:", r);
+    }
+  </script>
+</head>
+
+<body>
+  <div class="main">
+    <div class="wrapper">
+      <p>led</p>
+      <button class="btn" onclick="ledOn()">LED ON</button>
+      <button class="btn" onclick="ledOff()">LED OFF</button>
+      <button class="btn" onclick="ledToggle()">LED TOGGLE</button>
+    </div>
+
+    <div class="wrapper">
+      <p>config</p>
+      <button class="btn" onclick="getConfig()">get config</button>
+      <button class="btn" onclick="setConfig()">set config</button>
+      <textarea id="config"></textarea>
+    </div>
+  </div>
+</body>
+
+</html>
