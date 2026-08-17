@@ -8,9 +8,9 @@
 
 namespace file_system
 {
-    bool is_mounted = false;
+    inline bool is_mounted = false;
 
-    void init()
+    inline void init()
     {
         Serial.println("[file_system] Initializing LittleFS...");
         is_mounted = LittleFS.begin(true, MOUNT_POINT, MAX_OPEN_FILES, PARTITION_LABEL);

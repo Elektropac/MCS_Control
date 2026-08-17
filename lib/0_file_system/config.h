@@ -8,12 +8,12 @@
 
 namespace config
 {
-    String file_path = "/config.json";
-    bool is_loaded = false;
-    JsonDocument config;
+    inline String file_path = "/config.json";
+    inline bool is_loaded = false;
+    inline JsonDocument config;
 
     // Create a minimal default config if none exists
-    void create_default() {
+    inline void create_default() {
         File f = LittleFS.open(file_path, "w");
         if (!f) {
             log_error("[config] Cannot create default config file.");
@@ -35,7 +35,7 @@ namespace config
         log_info("[config] Default config created.");
     }
 
-    void init()
+    inline void init()
     {
         if (file_system::is_mounted == false)
         {

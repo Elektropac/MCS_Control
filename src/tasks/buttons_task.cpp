@@ -1,28 +1,18 @@
 #include "buttons_task.h"
 #include "buttons.h"
 #include "hardfunc/menu.h"
-#include "hardfunc/menu_icons.h"
+#include "hardfunc/menu_registry.h"
 #include "debug/task_registry.h"
 
-// --- Menu items ---
-static void action_placeholder() {
-    // TODO: connect to real functions
-}
-
-static const MenuItem main_menu[] = {
-    { "Tanks",       icon_tanks_frames,   action_placeholder, nullptr, 0 },
-    { "Pumps",       icon_pumps_frames,   action_placeholder, nullptr, 0 },
-    { "Config",      icon_config_frames,  action_placeholder, nullptr, 0 },
-    { "Network",     icon_network_frames, action_placeholder, nullptr, 0 },
-    { "Reboot",      icon_reboot_frames,  action_placeholder, nullptr, 0 },
-    { "Diagnostics", icon_diag_frames,    action_placeholder, nullptr, 0 },
-};
+#define MAX_MENU_ITEMS 10
+static MenuItem s_menu_items[MAX_MENU_ITEMS];
 
 static void buttons_task(void* param) {
     (void)param;
 
-    // Initialize menu
-    menu_init(main_menu, 6);
+    // Build menu from config (or fallback to full registry)
+    uint8_t count = menu_build_from_config(s_menu_items, MAX_MENU_ITEMS);
+    menu_init(s_menu_items, count);
 
     for (;;) {
         Button btn = buttons_get_event();

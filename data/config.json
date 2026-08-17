@@ -154,5 +154,15 @@
         "unit": "L"
       }
     }
-  ]
+  ],
+  "menu": {
+    "items": [
+      { "id": "tanks" },
+      { "id": "pumps" },
+      { "id": "config" },
+      { "id": "network" },
+      { "id": "diagnostics" },
+      { "id": "reboot" }
+    ]
+  }
 }
