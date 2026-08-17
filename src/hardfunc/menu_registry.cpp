@@ -1,10 +1,10 @@
 #include "menu_registry.h"
 #include "menu_icons.h"
+#include "menu_tanks.h"
 #include "config.h"
 #include <ArduinoJson.h>
 
 // --- Actions (placeholders) ---
-static void action_tanks() {}
 static void action_pumps() {}
 static void action_config() {}
 static void action_network() {}
@@ -12,8 +12,9 @@ static void action_reboot() { ESP.restart(); }
 static void action_diagnostics() {}
 
 // --- Full registry of all possible menu items ---
-static const MenuRegistryEntry s_registry[] = {
-    { "tanks",       "Tanks",       icon_tanks_frames,   action_tanks,       nullptr, 0 },
+// --- Full registry of all possible menu items ---
+static MenuRegistryEntry s_registry[] = {
+    { "tanks",       "Tanks",       icon_tanks_frames,   nullptr,            nullptr, 0 },
     { "pumps",       "Pumps",       icon_pumps_frames,   action_pumps,       nullptr, 0 },
     { "config",      "Config",      icon_config_frames,  action_config,      nullptr, 0 },
     { "network",     "Network",     icon_network_frames, action_network,     nullptr, 0 },
@@ -29,6 +30,20 @@ const MenuRegistryEntry* menu_registry_entries() {
 
 uint8_t menu_registry_count() {
     return REGISTRY_COUNT;
+}
+
+void menu_registry_init() {
+    // Build dynamic submenus
+    tank_submenu_build();
+
+    // Link tanks submenu to registry
+    for (uint8_t i = 0; i < REGISTRY_COUNT; i++) {
+        if (strcmp(s_registry[i].id, "tanks") == 0) {
+            s_registry[i].submenu = tank_submenu_get_items();
+            s_registry[i].submenu_count = tank_submenu_get_count();
+            break;
+        }
+    }
 }
 
 // --- Build menu from config ---

@@ -21,3 +21,6 @@ uint8_t menu_build_from_config(MenuItem* out, uint8_t max_items);
 // Get full registry (for fallback if no config)
 const MenuRegistryEntry* menu_registry_entries();
 uint8_t menu_registry_count();
+
+// Initialize dynamic submenus (call after config::init)
+void menu_registry_init();

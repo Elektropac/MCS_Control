@@ -11,6 +11,7 @@ static void buttons_task(void* param) {
     (void)param;
 
     // Build menu from config (or fallback to full registry)
+    menu_registry_init();
     uint8_t count = menu_build_from_config(s_menu_items, MAX_MENU_ITEMS);
     menu_init(s_menu_items, count);
 

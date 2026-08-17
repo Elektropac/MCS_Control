@@ -2,6 +2,8 @@
 #include "pins.h"
 #include "hal.h"
 #include "logging.h"
+#include "file_system.h"
+#include "config.h"
 #include "hardfunc/all_drivers_init.h"
 #include "tasks/sampler.h"
 #include "tasks/flow_guard.h"
@@ -13,6 +15,10 @@
 void setup() {
     Serial.begin(115200);
     log_init();                     // log system (serial + ring buffer)
+
+    // Filesystem + config (before tasks, so menu can read it)
+    file_system::init();
+    config::init();
 
     // Hardware
     i2c_init(I2C_SDA, I2C_SCL);    // I2C bus + mutex

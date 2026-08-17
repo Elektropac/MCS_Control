@@ -31,6 +31,9 @@ static uint8_t s_icon_frame = 0;    // current animation frame for icons
 static unsigned long s_last_icon_switch = 0;
 #define ICON_ANIM_INTERVAL 400      // ms between icon frames
 
+// --- Custom screen mode ---
+static ScreenRenderFunc s_custom_screen = nullptr;
+
 // Menu stack for submenus
 #define MAX_DEPTH 4
 static struct {
@@ -118,8 +121,10 @@ void menu_handle_button(uint8_t button) {
             }
             break;
         case BTN_LEFT:
-            // Go back
-            if (s_depth > 0) {
+            // Close custom screen first, then go back in menu
+            if (s_custom_screen) {
+                s_custom_screen = nullptr;
+            } else if (s_depth > 0) {
                 s_depth--;
                 s_items = s_stack[s_depth].items;
                 s_count = s_stack[s_depth].count;
@@ -202,4 +207,14 @@ bool menu_is_active() {
 
 bool menu_is_animating() {
     return s_scroll_offset != 0;
+}
+
+// --- Custom screen mode ---
+
+void menu_set_screen(ScreenRenderFunc func) {
+    s_custom_screen = func;
+}
+
+ScreenRenderFunc menu_get_screen() {
+    return s_custom_screen;
 }

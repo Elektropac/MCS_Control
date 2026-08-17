@@ -1,20 +1,29 @@
 #include "display_task.h"
 #include "hardfunc/menu.h"
+#include "ssd1306.h"
 #include "debug/task_registry.h"
 
 static void display_task(void* param) {
     (void)param;
 
     for (;;) {
-        if (menu_is_active()) {
+        ScreenRenderFunc screen = menu_get_screen();
+        if (screen) {
+            // Custom full-screen view (e.g. tank graphic)
+            oled_begin();
+            screen();
+            oled_end();
+            vTaskDelay(pdMS_TO_TICKS(50));  // 20fps for animated views
+        } else if (menu_is_active()) {
             menu_render();
-        }
 
-        // Hurtig under animation, langsom når stationær
-        if (menu_is_animating()) {
-            vTaskDelay(pdMS_TO_TICKS(16));   // ~60fps under scroll
+            if (menu_is_animating()) {
+                vTaskDelay(pdMS_TO_TICKS(16));
+            } else {
+                vTaskDelay(pdMS_TO_TICKS(200));
+            }
         } else {
-            vTaskDelay(pdMS_TO_TICKS(200));  // 5fps når stationær
+            vTaskDelay(pdMS_TO_TICKS(200));
         }
     }
 }

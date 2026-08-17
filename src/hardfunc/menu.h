@@ -26,3 +26,8 @@ bool menu_is_active();
 
 // Is menu currently animating (scrolling)?
 bool menu_is_animating();
+
+// Custom screen rendering (replaces menu when set)
+typedef void (*ScreenRenderFunc)();
+void menu_set_screen(ScreenRenderFunc func);  // set to nullptr to return to menu
+ScreenRenderFunc menu_get_screen();
