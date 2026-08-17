@@ -51,4 +51,10 @@ void all_drivers_init() {
     oled_init(OLED_CLK, OLED_DIN, OLED_CS, OLED_DC, OLED_RST);
     buzzer_init(PIN_BUZZER);
     buttons_init(PIN_BUTTON);
+
+    // Boot screen
+    oled_begin();
+    oled_print_center(1, "MCS Control");
+    oled_print_center(3, "Starting...");
+    oled_end();
 }

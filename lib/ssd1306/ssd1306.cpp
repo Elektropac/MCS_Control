@@ -103,8 +103,32 @@ void oled_draw_frame(int x, int y, int w, int h) {
     if (s_oled) s_oled->drawFrame(x, y, w, h);
 }
 
+void oled_draw_rframe(int x, int y, int w, int h, int r) {
+    if (s_oled) s_oled->drawRFrame(x, y, w, h, r);
+}
+
 void oled_draw_box(int x, int y, int w, int h) {
     if (s_oled) s_oled->drawBox(x, y, w, h);
+}
+
+void oled_draw_xbm(int x, int y, int w, int h, const uint8_t* bitmap) {
+    if (s_oled) s_oled->drawXBM(x, y, w, h, bitmap);
+}
+
+void oled_draw_text(int x, int y, const char* text) {
+    if (s_oled) s_oled->drawStr(x, y, text);
+}
+
+void oled_set_font_normal() {
+    if (s_oled) s_oled->setFont(u8g2_font_6x10_tr);
+}
+
+void oled_set_font_bold() {
+    if (s_oled) s_oled->setFont(u8g2_font_7x14B_tr);
+}
+
+void oled_set_color(uint8_t color) {
+    if (s_oled) s_oled->setDrawColor(color);
 }
 
 void oled_set_enabled(bool enabled) {

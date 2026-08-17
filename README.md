@@ -113,6 +113,7 @@ prefs.end();
 
 ### TBD
 - [ ] PSRAM-allocator til ArduinoJson — så `JsonDocument` automatisk bruger PSRAM uden rå pointers
+- [ ] Function_silo: Byg kommando-register ud (relay_set, voltage_set, input_mode, adc_read, serial_mode, status, config_get/set)
 
 ## Toolchain
 

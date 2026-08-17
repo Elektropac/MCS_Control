@@ -1,6 +1,8 @@
 #include "serial_cmd.h"
 #include "debug.h"
 #include "task_registry.h"
+#include "hardfunc/menu.h"
+#include "buttons.h"
 
 static char s_cmd_buf[64];
 static uint8_t s_cmd_pos = 0;
@@ -20,6 +22,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  m         - memory info");
                 Serial.println("  s <name>  - suspend task");
                 Serial.println("  g <name>  - resume (go) task");
+                Serial.println("  8/2/4/6/5 - menu up/down/left/right/ok");
                 Serial.println("  ?         - this help");
                 return;
         }
@@ -53,6 +56,17 @@ static void serial_cmd_task(void* param) {
     for (;;) {
         while (Serial.available()) {
             char c = Serial.read();
+
+            // Menu keys respond immediately (no enter needed)
+            switch (c) {
+                case '8': menu_handle_button(BTN_UP);    continue;
+                case '2': menu_handle_button(BTN_DOWN);  continue;
+                case '4': menu_handle_button(BTN_LEFT);  continue;
+                case '6': menu_handle_button(BTN_RIGHT); continue;
+                case '5': menu_handle_button(BTN_OK);    continue;
+            }
+
+            // Regular commands need enter
             if (c == '\n' || c == '\r') {
                 if (s_cmd_pos > 0) {
                     s_cmd_buf[s_cmd_pos] = '\0';

@@ -26,7 +26,7 @@ static void network_task(void* param) {
     for (;;) {
         web_server::poll();
         web_socket::poll();
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 

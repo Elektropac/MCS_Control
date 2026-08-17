@@ -1,31 +1,158 @@
 {
-    "connection": {
-        "server": {
-            "loacl": {
-                "host": "192.168.10.129",
-                "port": 3000,
-                "path": "/ws"
-            },
-            "global": {
-                "host": "echo.websocket.org",
-                "port": 443,
-                "path": "/ws"
-            }
+  "type": "control_config",
+  "version": 1,
+  "MAC_ID": "custom",
+  "server_connection": {
+    "server_order": ["local", "global"],
+    "settings_order": ["wifi", "ethernet", "usb-serial"],
+
+    "local_server_url": "http://192.168.1.1:3020",
+    "global_server_url": "https://nexus.global.mcs.voidnet.dk",
+
+    "settings": {
+        "wifi": {
+            "ssid": "YourSSID",
+            "password": "YourPassword"
         },
-
-        "internet_client": "wifi",
-
-        "settings": {
-            // "wifi": {
-            //     "ssid": "MCS_Dev",
-            //     "password": "012345678"
-            // },
-            "ethernet": {
-                "dhcp": true
-                // "ip": "192.168.1.167",
-                // "gateway": "192.168.1.1",
-                // "subnet": "255.255.255.0"
-            }
+        "ethernet": {
+            "dhcp": true,
+            "ip": "192.168.10.100",
+            "subnet": "255.255.255.0",
+            "gateway": "192.168.10.100"
+        },
+        "usb-serial": {
+            "baudrate": 115200
         }
     }
+  },
+  "channels": {
+    "A": {
+      "channel_voltage": 24,
+      "relay_output": "AR",
+      "inputs": {
+        "A0": {
+          "mode": "pulse",
+          "pullup": true,
+          "role": "pump_1_pulse"
+        },
+        "A1": {
+          "mode": "digital",
+          "pullup": true,
+          "role": "pump_1_nozzle"
+        },
+        "A2": {
+          "mode": "analog_current",
+          "pullup": false,
+          "role": "probe_1_level",
+          "conversion": {
+            "type": "linear",
+            "input_min": 4.0,
+            "input_max": 20.0,
+            "output_min": 0.0,
+            "output_max": 5000.0,
+            "unit": "L"
+          }
+        },
+        "A3": {
+          "mode": "disabled",
+          "pullup": false,
+          "role": ""
+        }
+      }
+    },
+    "B": {
+      "channel_voltage": 24,
+      "relay_output": "BR",
+      "inputs": {
+        "B0": {
+          "mode": "pulse",
+          "pullup": true,
+          "role": "pump_2_pulse"
+        },
+        "B1": {
+          "mode": "digital",
+          "pullup": true,
+          "role": "pump_2_nozzle"
+        },
+        "B2": {
+          "mode": "analog_current",
+          "pullup": false,
+          "role": "probe_2_level",
+          "conversion": {
+            "type": "linear",
+            "input_min": 4.0,
+            "input_max": 20.0,
+            "output_min": 0.0,
+            "output_max": 5000.0,
+            "unit": "L"
+          }
+        },
+        "B3": {
+          "mode": "disabled",
+          "pullup": false,
+          "role": ""
+        }
+      }
+    }
+  },
+  "outputs": {
+    "AR": {
+      "used_by": "pump_1"
+    },
+    "BR": {
+      "used_by": "pump_2"
+    }
+  },
+  "functions": [
+    {
+      "id": "pump_1",
+      "type": "pump_controller",
+      "pulse_input": "A0",
+      "nozzle_input": "A1",
+      "relay_output": "AR",
+      "meter": {
+        "type": "pulse",
+        "pulses_per_liter": 100.0,
+        "unit": "L"
+      }
+    },
+    {
+      "id": "pump_2",
+      "type": "pump_controller",
+      "pulse_input": "B0",
+      "nozzle_input": "B1",
+      "relay_output": "BR",
+      "meter": {
+        "type": "pulse",
+        "pulses_per_liter": 100.0,
+        "unit": "L"
+      }
+    },
+    {
+      "id": "probe_1",
+      "type": "probe",
+      "level_input": "A2",
+      "conversion": {
+        "type": "linear",
+        "input_min": 4.0,
+        "input_max": 20.0,
+        "output_min": 0.0,
+        "output_max": 5000.0,
+        "unit": "L"
+      }
+    },
+    {
+      "id": "probe_2",
+      "type": "probe",
+      "level_input": "B2",
+      "conversion": {
+        "type": "linear",
+        "input_min": 4.0,
+        "input_max": 20.0,
+        "output_min": 0.0,
+        "output_max": 5000.0,
+        "unit": "L"
+      }
+    }
+  ]
 }

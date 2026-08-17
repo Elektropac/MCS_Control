@@ -36,7 +36,21 @@ void oled_printf_right(uint8_t line, const char* fmt, ...);
 // Primitives
 void oled_draw_line(int x0, int y0, int x1, int y1);
 void oled_draw_frame(int x, int y, int w, int h);
+void oled_draw_rframe(int x, int y, int w, int h, int r);
 void oled_draw_box(int x, int y, int w, int h);
+
+// Draw XBM bitmap (16x16 icons etc)
+void oled_draw_xbm(int x, int y, int w, int h, const uint8_t* bitmap);
+
+// Pixel-level text (x, y = baseline position)
+void oled_draw_text(int x, int y, const char* text);
+
+// Font selection
+void oled_set_font_normal();
+void oled_set_font_bold();
+
+// Draw color: 1 = white (default), 0 = black (for inverted drawing)
+void oled_set_color(uint8_t color);
 
 // Enable/disable display
 void oled_set_enabled(bool enabled);
