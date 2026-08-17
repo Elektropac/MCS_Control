@@ -27,11 +27,11 @@ Firmware til MCS Control-modulet.
 
 ```
 src/
-├── main.cpp              ← setup + loop (clean, kun init + task_add)
+├── main.cpp              ← setup + FreeRTOS task start
 ├── board/                ← pin-definitions, board-specifikt
-├── scheduler/            ← cooperative task scheduler
 ├── sampler/              ← 4 kHz ISR pulse sampling + flow guard
 ├── logging/              ← leveled log system (serial + ringbuffer)
+├── debug/                ← diagnostik, serial commands, task registry
 └── drivers/              ← hardware drivers
     ├── all_drivers_init  ← init af alt med probe + fejlhåndtering
     ├── hw_status         ← centralt register over hvad der er online
@@ -46,6 +46,73 @@ src/
     ├── buzzer            ← PWM toner + melodier
     └── oled              ← SSD1306 128x64 display
 ```
+
+## Arkitektur
+
+### FreeRTOS (ikke custom scheduler)
+Alt kører som selvstændige FreeRTOS tasks. Arduino's `loop()` er suspenderet.
+FreeRTOS er standard på ESP32 og veldokumenteret — nemt for alle at læse op på.
+
+### Memory-strategi
+| Type | Bruges til |
+|------|-----------|
+| Intern SRAM (320 KB) | Tidskritisk: sampler, flow guard, drivers, task stacks |
+| PSRAM (8 MB) | Ikke-tidskritisk: JSON parsing, interface-buffere (Niklas), store data |
+| LittleFS (flash) | Persistent config (overlever genstart) |
+
+Beslutning: Interface-laget (JSON kommunikation mellem Jesper/Niklas) allokerer buffere i PSRAM via `ps_malloc()`.
+Tidskritisk kode bruger kun intern RAM.
+
+### Memory reference
+
+| Type | Størrelse | Hastighed | Volatile | Bruges til |
+|------|-----------|-----------|----------|-----------|
+| Internal SRAM | 320 KB | 1 clock cycle | Ja | Task stacks, variabler, buffere, FreeRTOS kernel |
+| PSRAM (OPI) | 8 MB | ~10x langsommere (SPI) | Ja | Store buffere, JSON, data der ikke er tidskritisk |
+| RTC SRAM | 16 KB | Hurtig | Overlever deep sleep | Variabler der skal overleve sleep (wake-up state) |
+| Flash (XIP) | 16 MB | Langsom (cachet) | Nej | Firmware, LittleFS, NVS, OTA partitions |
+| ↳ LittleFS | 5.8 MB | " | Nej | Filer (config JSON, logs, assets) |
+| ↳ NVS | ~20 KB | " | Nej | Key-value store (WiFi creds, små config-værdier) |
+| eFuse | 256 bytes | Engangslæs | Nej, permanent | MAC-adresse, security keys (read-only) |
+
+**Tommelfingerregler:**
+- Skal det være hurtigt → intern SRAM
+- Skal det være stort → PSRAM
+- Skal det overleve genstart → Flash (LittleFS eller NVS)
+- Skal det overleve deep sleep → RTC SRAM
+
+**Eksempler:**
+
+```cpp
+// --- Intern SRAM (default, alt normalt) ---
+uint8_t buffer[256];                    // stack — automatisk intern
+char* ptr = (char*)malloc(1024);        // heap — automatisk intern
+
+// --- PSRAM (store ting, ikke tidskritisk) ---
+char* json_buf = (char*)ps_malloc(8192);              // allokér 8 KB i PSRAM
+uint8_t* big = (uint8_t*)heap_caps_malloc(50000, MALLOC_CAP_SPIRAM);  // eksplicit PSRAM
+
+// --- RTC SRAM (overlever deep sleep) ---
+RTC_DATA_ATTR uint32_t boot_count = 0;  // bevares gennem deep sleep cycles
+
+// --- LittleFS (filer i flash, overlever genstart) ---
+#include <LittleFS.h>
+LittleFS.begin();
+File f = LittleFS.open("/config.json", "r");
+String content = f.readString();
+f.close();
+
+// --- NVS (key-value, overlever genstart) ---
+#include <Preferences.h>
+Preferences prefs;
+prefs.begin("config", false);           // namespace "config"
+prefs.putString("ssid", "MyWiFi");      // skriv
+String ssid = prefs.getString("ssid");  // læs
+prefs.end();
+```
+
+### TBD
+- [ ] PSRAM-allocator til ArduinoJson — så `JsonDocument` automatisk bruger PSRAM uden rå pointers
 
 ## Toolchain
 
