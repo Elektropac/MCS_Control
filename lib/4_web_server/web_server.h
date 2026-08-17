@@ -11,6 +11,12 @@ class CompatEthernetServer : public EthernetServer
 {
 public:
     using EthernetServer::EthernetServer;
+
+    void begin(uint16_t port = 0)
+    {
+        (void)port;
+        EthernetServer::begin();
+    }
 };
 
 namespace web_server
