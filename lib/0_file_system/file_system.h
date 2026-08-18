@@ -1,6 +1,8 @@
 #pragma once
 
-#include "LittleFS.h"
+#include <LittleFS.h>
+
+#include "logging.h"
 
 #define MOUNT_POINT "/littlefs"
 #define MAX_OPEN_FILES 10
@@ -12,16 +14,16 @@ namespace file_system
 
     void init()
     {
-        Serial.println("[file_system] Initializing LittleFS...");
+        log_info("[file_system] Initializing LittleFS...");
         is_mounted = LittleFS.begin(true, MOUNT_POINT, MAX_OPEN_FILES, PARTITION_LABEL);
 
         if (is_mounted)
         {
-            Serial.println("[file_system] LittleFS mounted successfully.");
+            log_info("[file_system] LittleFS mounted successfully.");
         }
         else
         {
-            Serial.println("[file_system] Failed to mount LittleFS.");
+            log_info("[file_system] Failed to mount LittleFS.");
         }
 
     }

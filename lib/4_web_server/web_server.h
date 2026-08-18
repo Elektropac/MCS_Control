@@ -4,8 +4,8 @@
 #include <WiFiServer.h>
 
 #include "my_wifi.h"
-
 #include "web_helpes.h"
+#include "logging.h"
 
 class CompatEthernetServer : public EthernetServer
 {
@@ -26,7 +26,7 @@ namespace web_server
 
     void init()
     {
-        Serial.println("[web_server] Initializing web server");
+        log_info("[web_server] Initializing web server");
         eth_server.begin();
 
         if (wifi::connected)
@@ -41,7 +41,7 @@ namespace web_server
         if (!req.path.startsWith("/")) return;
         // Handle the Ethernet client request here
         // log request details for debugging
-        Serial.printf("[web_server] Request: %s %s\n", req.method.c_str(), req.path.c_str());
+        log_info("[web_server] Request: %s %s", req.method, req.path);
         bool is_api_request = req.path.startsWith("/api/") || req.path == "/api";
 
         if (is_api_request)

@@ -5,6 +5,7 @@
 #include <Client.h>
 
 #include "web_files.h"
+#include "logging.h"
 
 struct Request
 {
@@ -79,8 +80,7 @@ Request parse_request(String raw)
 
         if (error)
         {
-            Serial.print("JSON parse error: ");
-            Serial.println(error.c_str());
+            log_error("[web_server] Failed to parse JSON body: %s", error.c_str());
         }
     }
 

@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+#include "logging.h"
+
 #include "rgb.h"
 
 
@@ -20,7 +22,7 @@ namespace function_silo
 
         if (is_subject)
         {
-            Serial.println("[function_silo] Received message does not contain 'subject' field.");
+            log_error("[function_silo] Received message does not contain 'subject' field.");
             return "";
         }
 

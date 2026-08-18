@@ -8,6 +8,8 @@
 #include <Dns.h>
 #include <sys/time.h>
 
+#include "logging.h"
+
 namespace ntp_ethernet {
     const char* server = "pool.ntp.org";
     const uint16_t port = 123;
@@ -26,7 +28,7 @@ namespace ntp_ethernet {
         DNSClient dns;
         dns.begin(Ethernet.dnsServerIP());
         if (dns.getHostByName(server, server_ip) != 1) {
-            Serial.println("[ntp][ethernet] DNS lookup failed");
+            log_error("[ntp][ethernet] DNS lookup failed");
             return 0;
         }
 
@@ -60,12 +62,12 @@ namespace ntp_ethernet {
     // Retries up to 'retries' times with a 2-second gap between attempts.
     void sync(uint8_t retries = 5) {
         if (has_run) {
-            Serial.println("[ntp][ethernet] Sync already executed once, skipping.");
+            log_info("[ntp][ethernet] Sync already executed once, skipping.");
             return;
         }
         has_run = true;
 
-        Serial.println("[ntp][ethernet] Syncing time...");
+        log_info("[ntp][ethernet] Syncing time...");
         udp.begin(local_port);
 
         for (uint8_t i = 0; i < retries; i++) {
@@ -73,16 +75,15 @@ namespace ntp_ethernet {
             if (t > 1000000000UL) { // sanity: after year 2001
                 timeval tv = { (time_t)t, 0 };
                 settimeofday(&tv, nullptr);
-                Serial.print("[ntp][ethernet] Time synced: ");
-                Serial.println(t);
+                log_info("[ntp][ethernet] Time synced: %lu", t);
                 udp.stop();
                 return;
             }
-            Serial.printf("[ntp][ethernet] Attempt %u failed, retrying...\n", i + 1);
+            log_info("[ntp][ethernet] Attempt %u failed, retrying...\n", i + 1);
             delay(2000);
         }
 
-        Serial.println("[ntp][ethernet] Failed to sync time after retries.");
+        log_info("[ntp][ethernet] Failed to sync time after retries.");
         udp.stop();
     }
 }
@@ -103,7 +104,7 @@ namespace ntp_wifi {
     static unsigned long request() {
         IPAddress server_ip;
         if (WiFi.hostByName(server, server_ip) != 1) {
-            Serial.println("[ntp][wifi] DNS lookup failed");
+            log_error("[ntp][wifi] DNS lookup failed");
             return 0;
         }
 
@@ -137,12 +138,12 @@ namespace ntp_wifi {
     // Retries up to 'retries' times with a 2-second gap between attempts.
     void sync(uint8_t retries = 5) {
         if (has_run) {
-            Serial.println("[ntp][wifi] Sync already executed once, skipping.");
+            log_info("[ntp][wifi] Sync already executed once, skipping.");
             return;
         }
         has_run = true;
 
-        Serial.println("[ntp][wifi] Syncing time...");
+        log_info("[ntp][wifi] Syncing time...");
         udp.begin(local_port);
 
         for (uint8_t i = 0; i < retries; i++) {
@@ -150,16 +151,16 @@ namespace ntp_wifi {
             if (t > 1000000000UL) { // sanity: after year 2001
                 timeval tv = { (time_t)t, 0 };
                 settimeofday(&tv, nullptr);
-                Serial.print("[ntp][wifi] Time synced: ");
-                Serial.println(t);
+                log_info("[ntp][wifi] Time synced: %lu", t);
                 udp.stop();
                 return;
             }
-            Serial.printf("[ntp][wifi] Attempt %u failed, retrying...\n", i + 1);
+
+            log_info("[ntp][wifi] Attempt %u failed, retrying...\n", i + 1);
             delay(2000);
         }
 
-        Serial.println("[ntp][wifi] Failed to sync time after retries.");
+        log_error("[ntp][wifi] Failed to sync time after retries.");
         udp.stop();
     }
 }

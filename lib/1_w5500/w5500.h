@@ -3,7 +3,9 @@
 #include <array>
 #include <SPI.h>
 #include <Ethernet.h>
+
 #include "config.h"
+#include "logging.h"
 
 // Define W5500 pin assignments
 #define W5500_CS 14  // Chip Select pin
@@ -82,14 +84,16 @@ namespace w5500
 
     int run_dhcp()
     {
-        Serial.println("[w5500] network mode: dhcp");
+        // Serial.println("[w5500] network mode: dhcp");
+        log_info("[w5500] network mode: dhcp");
 
         return Ethernet.begin(mac_byte);
     }
 
     int run_link_local()
     {
-        Serial.println("[w5500] network mode: link-local");
+        // Serial.println("[w5500] network mode: link-local");
+        log_info("[w5500] network mode: link-local");
 
         IPAddress link_local_ip(169, 254, 77, 1); // Example link-local IP address
         IPAddress link_local_gateway(0, 0, 0, 0); // No gateway for link-local
@@ -101,7 +105,8 @@ namespace w5500
 
     int run_static()
     {
-        Serial.println("[w5500] network mode: static");
+        // Serial.println("[w5500] network mode: static");
+        log_info("[w5500] network mode: static");
 
         auto eth_config = config::config["connection"]["settings"]["ethernet"].as<JsonObject>();
 
@@ -128,7 +133,8 @@ namespace w5500
 
     void init()
     {
-        Serial.println("[w5500] Initializing W5500...");
+        // Serial.println("[w5500] Initializing W5500...");
+        log_info("[w5500] Initializing W5500...");
         make_mac();
         mode = find_mode();
 
@@ -156,9 +162,7 @@ namespace w5500
             gateway_ip = Ethernet.gatewayIP();
             subnet_mask = Ethernet.subnetMask();
 
-            Serial.println("[w5500] IP: " + local_ip.toString());
-            Serial.println("[w5500] Gateway IP: " + gateway_ip.toString());
-            Serial.println("[w5500] Subnet Mask: " + subnet_mask.toString());
+            log_info("[w5500] IP: %s, Gateway: %s, Subnet Mask: %s", local_ip.toString(), gateway_ip.toString(), subnet_mask.toString());
             connected = true;
         }
         else

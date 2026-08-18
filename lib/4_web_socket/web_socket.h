@@ -5,6 +5,7 @@
 
 #include "ssl_manager.h"
 #include "config.h"
+#include "logging.h"
 
 #include "function_silo.h"
 
@@ -18,7 +19,6 @@ namespace web_socket
 
     bool run(String host, int port, String path)
     {
-        Serial.println("[web_socket] Setting up WebSocket client...");
         bool use_ssl = (port == 443); // Use SSL if the port is 443
 
         web_socket_client = new WebSocketClient(ssl_manager.client(), host.c_str(), port);
@@ -30,14 +30,13 @@ namespace web_socket
 
         if (init_result == 0)
         {
+            log_info("[web_socket] WebSocket connected.");
+            log_info("[web_socket] Secure connection: %s", is_secure ? "Yes" : "No");
             return true;
-            Serial.println("[web_socket] WebSocket connected.");
-            Serial.print("[web_socket] Secure connection: ");
-            Serial.println(is_secure ? "Yes" : "No");
         }
         else
         {
-            Serial.println("[web_socket] WebSocket connection failed.");
+            log_error("[web_socket] WebSocket connection failed.");
         }
 
         return false;
@@ -49,11 +48,11 @@ namespace web_socket
 
         if (is_server_config)
         {
-            Serial.println("[web_socket] WebSocket server configuration not found in config. WebSocket will not be initialized.");
+            log_error("[web_socket] WebSocket server configuration not found in config. WebSocket will not be initialized.");
             return;
         }
         
-        Serial.println("[web_socket] Setting up WebSocket client...");
+        log_info("[web_socket] Setting up WebSocket client.");
         auto server_config = config::config["connection"]["server"].as<JsonObject>();
 
         auto is_local_host = server_config["local"]["host"].isNull();
@@ -62,7 +61,7 @@ namespace web_socket
 
         if (is_local_host || is_local_port || is_local_path)
         {
-            Serial.println("[web_socket] WebSocket local server configuration is incomplete. WebSocket will try to use global server configuration.");
+            log_error("[web_socket] WebSocket local server configuration is incomplete. WebSocket will try to use global server configuration.");
         }
         else {
             
@@ -70,7 +69,7 @@ namespace web_socket
             auto local_port = server_config["local"]["port"].as<int>();
             auto local_path = server_config["local"]["path"].as<String>();
 
-            Serial.printf("[web_socket] Connecting to local WebSocket server: %s:%d%s\n", local_host.c_str(), local_port, local_path.c_str());
+            log_info("[web_socket] Connecting to local WebSocket server: %s:%d%s", local_host.c_str(), local_port, local_path.c_str());
 
             is_connected = run(local_host, local_port, local_path);
         }
@@ -86,7 +85,7 @@ namespace web_socket
 
         if (is_global_host || is_global_port || is_global_path)
         {
-            Serial.println("[web_socket] WebSocket global server configuration is incomplete. WebSocket will not be initialized.");
+            log_error("[web_socket] WebSocket global server configuration is incomplete. WebSocket will not be initialized.");
             return;
         }
         else {
@@ -95,7 +94,7 @@ namespace web_socket
             auto global_port = server_config["global"]["port"].as<int>();
             auto global_path = server_config["global"]["path"].as<String>();
 
-            Serial.printf("[web_socket] Connecting to global WebSocket server: %s:%d%s\n", global_host.c_str(), global_port, global_path.c_str());
+            log_info("[web_socket] Connecting to global WebSocket server: %s:%d%s", global_host.c_str(), global_port, global_path);
 
             is_connected = run(global_host, global_port, global_path);
         }
@@ -113,7 +112,7 @@ namespace web_socket
         }
         else
         {
-            Serial.println("[web_socket] WebSocket is not connected. Cannot send message.");
+            log_error("[web_socket] WebSocket is not connected. Cannot send message.");
         }
     }
 
@@ -129,7 +128,8 @@ namespace web_socket
                 DeserializationError error = deserializeJson(data, data_string);
                 if (error)
                 {
-                    Serial.printf("[web_socket] Failed to parse JSON: %s\n", error.c_str());
+                    log_error("[web_socket] Failed to parse JSON: %s", error.c_str());
+                    log_error("[web_socket] Received data: %s", data_string.c_str());
                     return;
                 }
 
