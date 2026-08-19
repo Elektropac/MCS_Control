@@ -22,7 +22,7 @@ static TCA9535 expander(ADDR_SERIAL_CONTROL);
 #define CHB_RE        4
 #define CHB_TERM      5
 
-static uint8_t s_port0 = 0x00;
+uint8_t serial_control_port0 = 0x00;  // shared with relays.cpp (bits 6-7)
 static uint8_t s_port1 = 0x00;
 
 static void set_bit(uint8_t &port, uint8_t bit, bool high) {
@@ -35,18 +35,18 @@ void serial_control_init() {
     expander.set_port_direction(0, 0x00);
     expander.set_port_direction(1, 0x00);
 
-    // Default: everything off
-    s_port0 = 0x00;
-    set_bit(s_port0, CHA_EN, true);
-    set_bit(s_port0, CHA_RE, true);
-    set_bit(s_port0, CHA_TERM, true);
+    // Default: everything off (preserve relay bits 6-7)
+    serial_control_port0 &= 0xC0;
+    set_bit(serial_control_port0, CHA_EN, true);
+    set_bit(serial_control_port0, CHA_RE, true);
+    set_bit(serial_control_port0, CHA_TERM, true);
 
     s_port1 = 0x00;
     set_bit(s_port1, CHB_EN, true);
     set_bit(s_port1, CHB_RE, true);
     set_bit(s_port1, CHB_TERM, true);
 
-    expander.write_port(0, s_port0);
+    expander.write_port(0, serial_control_port0);
     expander.write_port(1, s_port1);
     i2c_give();
 }
@@ -58,28 +58,28 @@ void serial_set_mode(SerialChannel ch, ComMode mode) {
     if (ch == CHANNEL_A) {
         switch (mode) {
             case COM_OFF:
-                set_bit(s_port0, CHA_FORCEOFF, false);
-                set_bit(s_port0, CHA_EN, true);
-                set_bit(s_port0, CHA_FORCEON, false);
-                set_bit(s_port0, CHA_DE, false);
-                set_bit(s_port0, CHA_RE, true);
+                set_bit(serial_control_port0, CHA_FORCEOFF, false);
+                set_bit(serial_control_port0, CHA_EN, true);
+                set_bit(serial_control_port0, CHA_FORCEON, false);
+                set_bit(serial_control_port0, CHA_DE, false);
+                set_bit(serial_control_port0, CHA_RE, true);
                 break;
             case COM_RS232:
-                set_bit(s_port0, CHA_FORCEOFF, true);
-                set_bit(s_port0, CHA_EN, false);
-                set_bit(s_port0, CHA_FORCEON, true);
-                set_bit(s_port0, CHA_DE, false);
-                set_bit(s_port0, CHA_RE, true);
+                set_bit(serial_control_port0, CHA_FORCEOFF, true);
+                set_bit(serial_control_port0, CHA_EN, false);
+                set_bit(serial_control_port0, CHA_FORCEON, true);
+                set_bit(serial_control_port0, CHA_DE, false);
+                set_bit(serial_control_port0, CHA_RE, true);
                 break;
             case COM_RS485:
-                set_bit(s_port0, CHA_FORCEOFF, false);
-                set_bit(s_port0, CHA_EN, true);
-                set_bit(s_port0, CHA_FORCEON, false);
-                set_bit(s_port0, CHA_DE, false);
-                set_bit(s_port0, CHA_RE, false);
+                set_bit(serial_control_port0, CHA_FORCEOFF, false);
+                set_bit(serial_control_port0, CHA_EN, true);
+                set_bit(serial_control_port0, CHA_FORCEON, false);
+                set_bit(serial_control_port0, CHA_DE, false);
+                set_bit(serial_control_port0, CHA_RE, false);
                 break;
         }
-        expander.write_port(0, s_port0);
+        expander.write_port(0, serial_control_port0);
     } else {
         switch (mode) {
             case COM_OFF:
@@ -114,9 +114,9 @@ void serial_rs485_transmit(SerialChannel ch, bool enable) {
     if (!i2c_take(100)) return;
 
     if (ch == CHANNEL_A) {
-        set_bit(s_port0, CHA_DE, enable);
-        set_bit(s_port0, CHA_RE, enable);
-        expander.write_port(0, s_port0);
+        set_bit(serial_control_port0, CHA_DE, enable);
+        set_bit(serial_control_port0, CHA_RE, enable);
+        expander.write_port(0, serial_control_port0);
     } else {
         set_bit(s_port1, CHB_DE, enable);
         set_bit(s_port1, CHB_RE, enable);
@@ -130,8 +130,8 @@ void serial_rs485_termination(SerialChannel ch, bool enable) {
     if (!i2c_take(100)) return;
 
     if (ch == CHANNEL_A) {
-        set_bit(s_port0, CHA_TERM, !enable);
-        expander.write_port(0, s_port0);
+        set_bit(serial_control_port0, CHA_TERM, !enable);
+        expander.write_port(0, serial_control_port0);
     } else {
         set_bit(s_port1, CHB_TERM, !enable);
         expander.write_port(1, s_port1);
