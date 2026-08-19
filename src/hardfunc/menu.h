@@ -29,5 +29,7 @@ bool menu_is_animating();
 
 // Custom screen rendering (replaces menu when set)
 typedef void (*ScreenRenderFunc)();
+typedef void (*ScreenButtonFunc)(uint8_t button);
 void menu_set_screen(ScreenRenderFunc func);  // set to nullptr to return to menu
+void menu_set_screen_buttons(ScreenButtonFunc func);  // custom button handler for screen
 ScreenRenderFunc menu_get_screen();

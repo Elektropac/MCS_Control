@@ -1,6 +1,9 @@
 #include "menu_registry.h"
 #include "menu_icons.h"
 #include "menu_tanks.h"
+#include "menu_relays.h"
+#include "menu_voltage.h"
+#include "ssd1306.h"
 #include "config.h"
 #include <ArduinoJson.h>
 
@@ -8,18 +11,27 @@
 static void action_pumps() {}
 static void action_config() {}
 static void action_network() {}
-static void action_reboot() { ESP.restart(); }
+static void action_reboot() {
+    oled_begin();
+    oled_set_font_bold();
+    oled_draw_text(20, 36, "Rebooting...");
+    oled_end();
+    ESP.restart();
+}
 static void action_diagnostics() {}
+static void action_relays_menu();  // forward declare
+static void action_voltage_menu();  // forward declare
 
 // --- Full registry of all possible menu items ---
-// --- Full registry of all possible menu items ---
 static MenuRegistryEntry s_registry[] = {
-    { "tanks",       "Tanks",       icon_tanks_frames,   nullptr,            nullptr, 0 },
-    { "pumps",       "Pumps",       icon_pumps_frames,   action_pumps,       nullptr, 0 },
-    { "config",      "Config",      icon_config_frames,  action_config,      nullptr, 0 },
-    { "network",     "Network",     icon_network_frames, action_network,     nullptr, 0 },
-    { "reboot",      "Reboot",      icon_reboot_frames,  action_reboot,      nullptr, 0 },
-    { "diagnostics", "Diagnostics", icon_diag_frames,    action_diagnostics, nullptr, 0 },
+    { "tanks",       "Tanks",       icon_tanks_frames,   nullptr,             nullptr, 0 },
+    { "pumps",       "Pumps",       icon_pumps_frames,   action_pumps,        nullptr, 0 },
+    { "relays",      "Relays",      icon_config_frames,  action_relays_menu,  nullptr, 0 },
+    { "voltage",     "Voltage",     icon_config_frames,  action_voltage_menu, nullptr, 0 },
+    { "config",      "Config",      icon_config_frames,  action_config,       nullptr, 0 },
+    { "network",     "Network",     icon_network_frames, action_network,      nullptr, 0 },
+    { "reboot",      "Reboot",      icon_reboot_frames,  action_reboot,       nullptr, 0 },
+    { "diagnostics", "Diagnostics", icon_diag_frames,    action_diagnostics,  nullptr, 0 },
 };
 
 static const uint8_t REGISTRY_COUNT = sizeof(s_registry) / sizeof(s_registry[0]);
@@ -88,4 +100,22 @@ uint8_t menu_build_from_config(MenuItem* out, uint8_t max_items) {
     }
 
     return count;
+}
+
+// --- Relay menu action ---
+static void action_relays_menu() {
+    relay_submenu_build();
+    const MenuItem* items = relay_submenu_get_items();
+    if (items && items[0].action) {
+        items[0].action();
+    }
+}
+
+// --- Voltage menu action ---
+static void action_voltage_menu() {
+    voltage_submenu_build();
+    const MenuItem* items = voltage_submenu_get_items();
+    if (items && items[0].action) {
+        items[0].action();
+    }
 }

@@ -42,6 +42,8 @@ namespace config
     "items": [
       { "id": "tanks" },
       { "id": "pumps" },
+      { "id": "relays" },
+      { "id": "voltage" },
       { "id": "config" },
       { "id": "network" },
       { "id": "diagnostics" },

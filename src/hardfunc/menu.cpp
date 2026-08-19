@@ -33,6 +33,7 @@ static unsigned long s_last_icon_switch = 0;
 
 // --- Custom screen mode ---
 static ScreenRenderFunc s_custom_screen = nullptr;
+static ScreenButtonFunc s_custom_buttons = nullptr;
 
 // Menu stack for submenus
 #define MAX_DEPTH 4
@@ -92,6 +93,20 @@ void menu_init(const MenuItem* items, uint8_t count) {
 }
 
 void menu_handle_button(uint8_t button) {
+    // If custom screen is active, route buttons to its handler
+    if (s_custom_screen && s_custom_buttons) {
+        s_custom_buttons(button);
+        return;
+    }
+    // If custom screen without handler, LEFT exits
+    if (s_custom_screen) {
+        if (button == BTN_LEFT) {
+            s_custom_screen = nullptr;
+            s_custom_buttons = nullptr;
+        }
+        return;
+    }
+
     switch (button) {
         case BTN_UP:
             if (s_scroll_offset != 0) break;  // ignore if still animating
@@ -121,10 +136,8 @@ void menu_handle_button(uint8_t button) {
             }
             break;
         case BTN_LEFT:
-            // Close custom screen first, then go back in menu
-            if (s_custom_screen) {
-                s_custom_screen = nullptr;
-            } else if (s_depth > 0) {
+            // Go back in menu
+            if (s_depth > 0) {
                 s_depth--;
                 s_items = s_stack[s_depth].items;
                 s_count = s_stack[s_depth].count;
@@ -213,6 +226,11 @@ bool menu_is_animating() {
 
 void menu_set_screen(ScreenRenderFunc func) {
     s_custom_screen = func;
+    if (!func) s_custom_buttons = nullptr;
+}
+
+void menu_set_screen_buttons(ScreenButtonFunc func) {
+    s_custom_buttons = func;
 }
 
 ScreenRenderFunc menu_get_screen() {
