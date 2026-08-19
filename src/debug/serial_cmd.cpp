@@ -470,6 +470,23 @@ static void serial_cmd_task(void* param) {
             char lc = tolower(c);
             switch (lc) {
                 case 'a': adc_read_all();        continue;
+                case 'b': {
+                    // Show raw button ADC for 10 seconds
+                    Serial.println("Button ADC (10s) — press buttons:");
+                    unsigned long end = millis() + 10000;
+                    Button last = BTN_NONE;
+                    while (millis() < end) {
+                        int val = analogRead(PIN_BUTTON);
+                        Button raw = buttons_read_raw();
+                        if (raw != last) {
+                            Serial.printf("  ADC=%4d  → %s\n", val, buttons_to_text(raw));
+                            last = raw;
+                        }
+                        delay(50);
+                    }
+                    Serial.println("Done.\n");
+                    continue;
+                }
                 case 'd': debug_all();           continue;
                 case 'f': inputs_voltage_mode(); continue;
                 case 'n': inputs_ma_mode();      continue;
