@@ -504,6 +504,25 @@ static void serial_cmd_task(void* param) {
                     relay_set(RELAY_B, !relay_get(RELAY_B));
                     Serial.printf("Relay B → %s\n", relay_get(RELAY_B) ? "ON" : "OFF");
                     continue;
+                case 'h':  // SSR test: all B inputs HIGH (pullup on, shunt off)
+                    voltage_select_set_b(VOLTAGE_12V);
+                    for (int i = INPUT_B1; i <= INPUT_B4; i++) {
+                        input_config_set((Input)i, SW_PULLUP, true);
+                        input_config_set((Input)i, SW_SHUNT, false);
+                        input_config_set((Input)i, SW_ANALOG, false);
+                        input_config_set((Input)i, SW_DIGITAL, false);
+                    }
+                    Serial.println("B1-B4: HIGH (12V pullup x4)");
+                    continue;
+                case 'l':  // SSR test: all B inputs LOW (pullup off, shunt on)
+                    for (int i = INPUT_B1; i <= INPUT_B4; i++) {
+                        input_config_set((Input)i, SW_PULLUP, false);
+                        input_config_set((Input)i, SW_SHUNT, true);
+                        input_config_set((Input)i, SW_ANALOG, false);
+                        input_config_set((Input)i, SW_DIGITAL, false);
+                    }
+                    Serial.println("B1-B4: LOW (shunt x4)");
+                    continue;
                 case '?':
                     Serial.println("\nCommands:");
                     Serial.println("  a    read all ADC channels");
