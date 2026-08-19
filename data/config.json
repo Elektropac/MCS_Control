@@ -1,7 +1,7 @@
 {
     "connection": {
         "server": {
-            "loacl": {
+            "local": {
                 "host": "192.168.10.129",
                 "port": 3000,
                 "path": "/ws"
@@ -16,12 +16,12 @@
         "internet_client": "wifi",
 
         "settings": {
-            // "wifi": {
-            //     "ssid": "MCS_Dev",
-            //     "password": "012345678"
-            // },
+            "wifi": {
+                "ssid": "MCS_Dev",
+                "password": "48172095"
+            },
             "ethernet": {
-                "dhcp": true
+                "dhcp": false
                 // "ip": "192.168.1.167",
                 // "gateway": "192.168.1.1",
                 // "subnet": "255.255.255.0"
