@@ -95,6 +95,7 @@ namespace w5500
 
         SPI.begin(W5500_SCK, W5500_MISO, W5500_MOSI, W5500_CS);
         Ethernet.init(W5500_CS);
+        
         int init_result = 0;
         if (mode == "dhcp") init_result = run_dhcp();
         else if (mode == "static") init_result = run_static();

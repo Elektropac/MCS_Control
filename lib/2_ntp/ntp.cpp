@@ -24,12 +24,47 @@ namespace
                (unsigned long)buffer[43];
     }
 
-    void prepare_packet(uint8_t *buffer)
+    void prepare_packet(uint8_t *buffer, uint32_t transmit_timestamp)
     {
         memset(buffer, 0, packet_size);
         buffer[0] = 0b11100011;
         buffer[2] = 6;
         buffer[3] = 0xEC;
+        buffer[40] = (uint8_t)(transmit_timestamp >> 24);
+        buffer[41] = (uint8_t)(transmit_timestamp >> 16);
+        buffer[42] = (uint8_t)(transmit_timestamp >> 8);
+        buffer[43] = (uint8_t)transmit_timestamp;
+    }
+
+    // Rejects packets that aren't a genuine, unsynchronized-free server reply to our own request.
+    bool validate_response(uint8_t *buffer, int len, IPAddress remote_ip, IPAddress expected_ip,
+                            uint16_t remote_port, uint32_t sent_transmit_timestamp)
+    {
+        if (len < (int)packet_size)
+            return false;
+        if (remote_ip != expected_ip || remote_port != port)
+            return false;
+
+        uint8_t leap_indicator = (buffer[0] >> 6) & 0x03;
+        if (leap_indicator == 3) // unsynchronized/alarm condition
+            return false;
+
+        uint8_t mode = buffer[0] & 0x07;
+        if (mode != 4) // 4 = server reply
+            return false;
+
+        uint8_t stratum = buffer[1];
+        if (stratum == 0 || stratum > 15) // 0 = kiss-of-death, >15 invalid
+            return false;
+
+        unsigned long origin_timestamp = ((unsigned long)buffer[24] << 24) |
+                                          ((unsigned long)buffer[25] << 16) |
+                                          ((unsigned long)buffer[26] << 8) |
+                                          (unsigned long)buffer[27];
+        if (origin_timestamp != sent_transmit_timestamp)
+            return false;
+
+        return true;
     }
 }
 
@@ -50,7 +85,8 @@ namespace ntp_ethernet
             return 0;
         }
 
-        prepare_packet(buffer);
+        uint32_t transmit_timestamp = (uint32_t)micros();
+        prepare_packet(buffer, transmit_timestamp);
         udp.beginPacket(server_ip, port);
         udp.write(buffer, packet_size);
         udp.endPacket();
@@ -58,9 +94,15 @@ namespace ntp_ethernet
         unsigned long start = millis();
         while (millis() - start < 3000)
         {
-            if (udp.parsePacket() >= packet_size)
+            int len = udp.parsePacket();
+            if (len >= packet_size)
             {
                 udp.read(buffer, packet_size);
+                if (!validate_response(buffer, len, udp.remoteIP(), server_ip, udp.remotePort(), transmit_timestamp))
+                {
+                    log_error("[ntp][ethernet] Ignoring invalid NTP response");
+                    continue;
+                }
                 return read_timestamp(buffer) - epoch_offset;
             }
             delay(10);
@@ -75,7 +117,6 @@ namespace ntp_ethernet
             log_info("[ntp][ethernet] Sync already executed once, skipping.");
             return;
         }
-        has_run = true;
         log_info("[ntp][ethernet] Syncing time...");
         udp.begin(8888);
         for (uint8_t i = 0; i < retries; i++)
@@ -86,6 +127,7 @@ namespace ntp_ethernet
                 timeval tv = {(time_t)timestamp, 0};
                 settimeofday(&tv, nullptr);
                 log_info("[ntp][ethernet] Time synced: %lu", timestamp);
+                has_run = true;
                 udp.stop();
                 return;
             }
@@ -112,16 +154,23 @@ namespace ntp_wifi
             return 0;
         }
 
-        prepare_packet(buffer);
+        uint32_t transmit_timestamp = (uint32_t)micros();
+        prepare_packet(buffer, transmit_timestamp);
         udp.beginPacket(server_ip, port);
         udp.write(buffer, packet_size);
         udp.endPacket();
         unsigned long start = millis();
         while (millis() - start < 3000)
         {
-            if (udp.parsePacket() >= packet_size)
+            int len = udp.parsePacket();
+            if (len >= packet_size)
             {
                 udp.read(buffer, packet_size);
+                if (!validate_response(buffer, len, udp.remoteIP(), server_ip, udp.remotePort(), transmit_timestamp))
+                {
+                    log_error("[ntp][wifi] Ignoring invalid NTP response");
+                    continue;
+                }
                 return read_timestamp(buffer) - epoch_offset;
             }
             delay(10);
@@ -136,7 +185,6 @@ namespace ntp_wifi
             log_info("[ntp][wifi] Sync already executed once, skipping.");
             return;
         }
-        has_run = true;
         log_info("[ntp][wifi] Syncing time...");
         udp.begin(8889);
         for (uint8_t i = 0; i < retries; i++)
@@ -147,6 +195,7 @@ namespace ntp_wifi
                 timeval tv = {(time_t)timestamp, 0};
                 settimeofday(&tv, nullptr);
                 log_info("[ntp][wifi] Time synced: %lu", timestamp);
+                has_run = true;
                 udp.stop();
                 return;
             }

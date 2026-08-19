@@ -17,6 +17,13 @@ namespace web_socket
 
     bool run(String host, int port, String path)
     {
+        if (web_socket_client != nullptr)
+        {
+            web_socket_client->stop();
+            delete web_socket_client;
+            web_socket_client = nullptr;
+        }
+
         bool use_ssl = (port == 443);
         web_socket_client = new WebSocketClient(ssl_manager.client(), host.c_str(), port);
         ssl_manager.configure(host.c_str(), port, use_ssl);
@@ -89,7 +96,7 @@ namespace web_socket
 
     void poll()
     {
-        if (is_connected && web_socket_client)
+        if (web_socket_client && is_connected)
         {
             int message_size = web_socket_client->parseMessage();
             if (message_size > 0)

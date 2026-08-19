@@ -4,28 +4,38 @@
 #include "logging.h"
 #include "web_files.h"
 
-Request parse_request(String raw)
+Request::Request(Client &client)
 {
-    Request req;
+    String raw = client.readString();
+
     int firstLineEnd = raw.indexOf("\r\n");
-    if (firstLineEnd == -1) return req;
+    if (firstLineEnd == -1) return;
 
     String requestLine = raw.substring(0, firstLineEnd);
     int methodEnd = requestLine.indexOf(' ');
     int pathEnd = requestLine.indexOf(' ', methodEnd + 1);
-    if (methodEnd == -1 || pathEnd == -1) return req;
+    if (methodEnd == -1 || pathEnd == -1) return;
 
-    req.method = requestLine.substring(0, methodEnd);
-    req.path = requestLine.substring(methodEnd + 1, pathEnd);
+    method = requestLine.substring(0, methodEnd);
+    path = requestLine.substring(methodEnd + 1, pathEnd);
+
     int headersEnd = raw.indexOf("\r\n\r\n");
-    if (headersEnd == -1) return req;
+    if (headersEnd == -1) return;
 
-    int pos = firstLineEnd + 2;
-    while (pos < headersEnd)
+    raw_headers = raw.substring(firstLineEnd + 2, headersEnd);
+    raw_body = raw.substring(headersEnd + 4);
+    raw_body.trim();
+}
+
+JsonDocument Request::get_headers() const
+{
+    JsonDocument headers;
+    int pos = 0;
+    while (pos < static_cast<int>(raw_headers.length()))
     {
-        int lineEnd = raw.indexOf("\r\n", pos);
-        if (lineEnd == -1 || lineEnd > headersEnd) lineEnd = headersEnd;
-        String line = raw.substring(pos, lineEnd);
+        int lineEnd = raw_headers.indexOf("\r\n", pos);
+        if (lineEnd == -1) lineEnd = raw_headers.length();
+        String line = raw_headers.substring(pos, lineEnd);
         int colon = line.indexOf(':');
         if (colon != -1)
         {
@@ -33,24 +43,28 @@ Request parse_request(String raw)
             String value = line.substring(colon + 1);
             key.trim();
             value.trim();
-            req.headers[key] = value;
+            headers[key] = value;
         }
         pos = lineEnd + 2;
     }
+    return headers;
+}
 
-    String bodyString = raw.substring(headersEnd + 4);
-    bodyString.trim();
-    if (bodyString.length() > 0)
+JsonDocument Request::get_body() const
+{
+    JsonDocument body;
+    if (raw_body.length() > 0)
     {
-        DeserializationError error = deserializeJson(req.body, bodyString);
+        DeserializationError error = deserializeJson(body, raw_body);
         if (error) log_error("[web_server] Failed to parse JSON body: %s", error.c_str());
     }
-    return req;
+    return body;
 }
 
 void handle_api_request(Client &client, Request &req)
 {
-    String result = function_silo::run_function_silo(req.body);
+    auto data = req.get_body();
+    String result = function_silo::run_function_silo(data);
     if (result.length() == 0)
     {
         client.println("HTTP/1.1 400 Bad Request");

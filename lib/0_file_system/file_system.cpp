@@ -10,7 +10,7 @@ namespace file_system
     void init()
     {
         log_info("[file_system] Initializing LittleFS...");
-        is_mounted = LittleFS.begin(true, MOUNT_POINT, MAX_OPEN_FILES, PARTITION_LABEL);
+        is_mounted = LittleFS.begin(false, MOUNT_POINT, MAX_OPEN_FILES, PARTITION_LABEL);
 
         if (is_mounted)
         {

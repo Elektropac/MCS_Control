@@ -4,14 +4,19 @@
 #include <ArduinoJson.h>
 #include <Client.h>
 
-struct Request
+class Request
 {
+public:
     String method;
     String path;
-    JsonDocument headers;
-    JsonDocument body;
+    String raw_headers;
+    String raw_body;
+
+    explicit Request(Client &client);
+
+    JsonDocument get_headers() const;
+    JsonDocument get_body() const;
 };
 
-Request parse_request(String raw);
 void handle_api_request(Client &client, Request &req);
 void handle_page_request(Client &client, Request &req);

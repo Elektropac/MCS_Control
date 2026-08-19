@@ -15,6 +15,8 @@ namespace config
 
     void init()
     {
+        config.clear();
+
         if (file_system::is_mounted == false)
         {
             log_info("[config] File system not mounted. Cannot load configuration.");
@@ -32,7 +34,6 @@ namespace config
         if (error)
         {
             log_info("[config] Failed to parse config file. Using default configuration.");
-            config.clear();
             is_loaded = false;
         }
         else

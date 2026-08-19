@@ -25,12 +25,15 @@ namespace web_server
     {
         if (req.path == "" || req.method == "") return;
         if (!req.path.startsWith("/")) return;
+
         log_info("[web_server] Request: %s %s", req.method, req.path);
+        
         if (req.path.startsWith("/api/") || req.path == "/api")
         {
             handle_api_request(client, req);
             return;
         }
+        
         handle_page_request(client, req);
     }
 
@@ -39,7 +42,8 @@ namespace web_server
         EthernetClient eth_client = eth_server.available();
         if (eth_client)
         {
-            Request req = parse_request(eth_client.readString());
+            Request req(eth_client);
+            log_info("[web_server] \n%s", req.raw_body.c_str());
             handle_client(eth_client, req);
             eth_client.stop();
         }
@@ -49,7 +53,7 @@ namespace web_server
             WiFiClient wifi_client = wifi_server.available();
             if (wifi_client)
             {
-                Request req = parse_request(wifi_client.readString());
+                Request req(wifi_client);
                 handle_client(wifi_client, req);
                 wifi_client.stop();
             }

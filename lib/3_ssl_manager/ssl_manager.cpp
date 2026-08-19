@@ -74,7 +74,7 @@ void SSLManager::configure(const char *host, uint16_t port, bool use_ssl)
     {
         ssl_client_.setCACert(k_default_root_ca);
         ssl_client_.validate(host, port);
-        ssl_client_.setBufferSizes(4096, 1024);
+        ssl_client_.setBufferSizes(2048, 2048);
     }
 }
 
