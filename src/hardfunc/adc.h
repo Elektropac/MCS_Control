@@ -18,3 +18,9 @@ int16_t adc_read_raw_mv(AdcInput input);
 int32_t adc_read_mv(AdcInput input);
 float adc_read_ma(AdcInput input, float shunt_ohms);
 int32_t adc_read_diff_mv(AdcDiffPair pair);
+
+// Calibration — zero offset
+void adc_calibrate_zero();          // Runs zero-cal on all 8 channels (uses shunt to GND)
+void adc_calibrate_load();          // Load saved offsets from LittleFS
+void adc_calibrate_save();          // Save current offsets to LittleFS
+int16_t adc_get_offset(AdcInput input);  // Get stored offset for a channel (mV, raw)

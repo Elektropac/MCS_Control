@@ -7,14 +7,216 @@
 #include "hardfunc/relays.h"
 #include "hardfunc/adc.h"
 #include "hardfunc/input_config.h"
+#include "hardfunc/serial_control.h"
+#include "buzzer.h"
 #include "buttons.h"
 #include "hal.h"
 #include "pins.h"
 #include "tca9535.h"
 
+static bool s_uart_a_init = false;
+static bool s_uart_b_init = false;
+
+static void uart_init_a(uint32_t baud = 9600) {
+    Serial1.begin(baud, SERIAL_8N1, UART_A_RX, UART_A_TX);
+    s_uart_a_init = true;
+    Serial.printf("UART A init @ %d baud (TX=%d, RX=%d)\n", baud, UART_A_TX, UART_A_RX);
+}
+
+static void uart_init_b(uint32_t baud = 9600) {
+    Serial2.begin(baud, SERIAL_8N1, UART_B_RX, UART_B_TX);
+    s_uart_b_init = true;
+    Serial.printf("UART B init @ %d baud (TX=%d, RX=%d)\n", baud, UART_B_TX, UART_B_RX);
+}
+
+static void uart_test_cmd(const char* cmd) {
+    // Commands:
+    //   ua232  — set ch A to RS-232 mode + init
+    //   ua485  — set ch A to RS-485 mode + init
+    //   ub232  — set ch B to RS-232 mode + init
+    //   ub485  — set ch B to RS-485 mode + init
+    //   uat    — toggle ch A termination
+    //   ubt    — toggle ch B termination
+    //   usa XX — send string XX on ch A
+    //   usb XX — send string XX on ch B
+    //   ul     — listen on both (5 sec, shows received bytes)
+    //   uloop  — loopback test: send on A, listen on B (and vice versa)
+
+    if (strlen(cmd) < 2) {
+        Serial.println("UART commands:");
+        Serial.println("  ua232   Ch A → RS-232");
+        Serial.println("  ua485   Ch A → RS-485");
+        Serial.println("  ub232   Ch B → RS-232");
+        Serial.println("  ub485   Ch B → RS-485");
+        Serial.println("  uat     Toggle Ch A termination");
+        Serial.println("  ubt     Toggle Ch B termination");
+        Serial.println("  usa XX  Send XX on Ch A");
+        Serial.println("  usb XX  Send XX on Ch B");
+        Serial.println("  ul      Listen 5s (both channels)");
+        Serial.println("  uloop   Loopback A→B + B→A");
+        return;
+    }
+
+    char sub[16];
+    size_t slen = strlen(cmd + 1);
+    if (slen >= sizeof(sub)) slen = sizeof(sub) - 1;
+    for (size_t i = 0; i < slen; i++) sub[i] = tolower(cmd[1 + i]);
+    sub[slen] = '\0';
+
+    // Mode commands
+    if (strcmp(sub, "a232") == 0) {
+        serial_set_mode(CHANNEL_A, COM_RS232);
+        uart_init_a();
+        Serial.println("Ch A → RS-232 mode");
+        return;
+    }
+    if (strcmp(sub, "a485") == 0) {
+        serial_set_mode(CHANNEL_A, COM_RS485);
+        uart_init_a();
+        Serial.println("Ch A → RS-485 mode");
+        return;
+    }
+    if (strcmp(sub, "b232") == 0) {
+        serial_set_mode(CHANNEL_B, COM_RS232);
+        uart_init_b();
+        Serial.println("Ch B → RS-232 mode");
+        return;
+    }
+    if (strcmp(sub, "b485") == 0) {
+        serial_set_mode(CHANNEL_B, COM_RS485);
+        uart_init_b();
+        Serial.println("Ch B → RS-485 mode");
+        return;
+    }
+
+    // Termination toggle
+    if (strcmp(sub, "at") == 0) {
+        static bool term_a = false;
+        term_a = !term_a;
+        serial_rs485_termination(CHANNEL_A, term_a);
+        Serial.printf("Ch A termination: %s\n", term_a ? "ON" : "OFF");
+        return;
+    }
+    if (strcmp(sub, "bt") == 0) {
+        static bool term_b = false;
+        term_b = !term_b;
+        serial_rs485_termination(CHANNEL_B, term_b);
+        Serial.printf("Ch B termination: %s\n", term_b ? "ON" : "OFF");
+        return;
+    }
+
+    // Send on A
+    if (sub[0] == 's' && sub[1] == 'a' && sub[2] == ' ') {
+        if (!s_uart_a_init) { Serial.println("Init A first (ua232/ua485)"); return; }
+        const char* msg = cmd + 4;  // skip "usa "
+        // Enable DE for RS-485
+        serial_rs485_transmit(CHANNEL_A, true);
+        delayMicroseconds(100);
+        Serial1.print(msg);
+        Serial1.flush();
+        delayMicroseconds(100);
+        serial_rs485_transmit(CHANNEL_A, false);
+        Serial.printf("Sent on A: \"%s\"\n", msg);
+        return;
+    }
+
+    // Send on B
+    if (sub[0] == 's' && sub[1] == 'b' && sub[2] == ' ') {
+        if (!s_uart_b_init) { Serial.println("Init B first (ub232/ub485)"); return; }
+        const char* msg = cmd + 4;  // skip "usb "
+        serial_rs485_transmit(CHANNEL_B, true);
+        delayMicroseconds(100);
+        Serial2.print(msg);
+        Serial2.flush();
+        delayMicroseconds(100);
+        serial_rs485_transmit(CHANNEL_B, false);
+        Serial.printf("Sent on B: \"%s\"\n", msg);
+        return;
+    }
+
+    // Listen
+    if (sub[0] == 'l' && sub[1] == '\0') {
+        Serial.println("Listening 5s (both channels)...");
+        unsigned long end = millis() + 5000;
+        while (millis() < end) {
+            if (s_uart_a_init && Serial1.available()) {
+                Serial.printf("  A rx: 0x%02X '%c'\n", Serial1.peek(), Serial1.peek() >= 32 ? Serial1.peek() : '.');
+                Serial1.read();
+            }
+            if (s_uart_b_init && Serial2.available()) {
+                Serial.printf("  B rx: 0x%02X '%c'\n", Serial2.peek(), Serial2.peek() >= 32 ? Serial2.peek() : '.');
+                Serial2.read();
+            }
+            delay(1);
+        }
+        Serial.println("Listen done.");
+        return;
+    }
+
+    // Loopback test (A→B and B→A)
+    if (strncmp(sub, "loop", 4) == 0) {
+        if (!s_uart_a_init || !s_uart_b_init) {
+            Serial.println("Init both channels first (ua232/ua485 + ub232/ub485)");
+            return;
+        }
+        // Flush
+        while (Serial1.available()) Serial1.read();
+        while (Serial2.available()) Serial2.read();
+
+        // A → B
+        Serial.println("Loopback test: A → B");
+        ComMode mode_a = serial_get_mode(CHANNEL_A);
+        ComMode mode_b = serial_get_mode(CHANNEL_B);
+        if (mode_a == COM_RS485) serial_rs485_transmit(CHANNEL_A, true);
+        delayMicroseconds(100);
+        Serial1.print("HELLO");
+        Serial1.flush();
+        delayMicroseconds(100);
+        if (mode_a == COM_RS485) serial_rs485_transmit(CHANNEL_A, false);
+        delay(50);
+        
+        char buf[32];
+        uint8_t pos = 0;
+        unsigned long timeout = millis() + 200;
+        while (millis() < timeout && pos < sizeof(buf) - 1) {
+            if (Serial2.available()) {
+                buf[pos++] = Serial2.read();
+            }
+        }
+        buf[pos] = '\0';
+        Serial.printf("  Sent on A: \"HELLO\", received on B: \"%s\" %s\n", 
+                      buf, strcmp(buf, "HELLO") == 0 ? "✓" : "✗");
+
+        // B → A
+        Serial.println("Loopback test: B → A");
+        while (Serial1.available()) Serial1.read();
+        if (mode_b == COM_RS485) serial_rs485_transmit(CHANNEL_B, true);
+        delayMicroseconds(100);
+        Serial2.print("WORLD");
+        Serial2.flush();
+        delayMicroseconds(100);
+        if (mode_b == COM_RS485) serial_rs485_transmit(CHANNEL_B, false);
+        delay(50);
+
+        pos = 0;
+        timeout = millis() + 200;
+        while (millis() < timeout && pos < sizeof(buf) - 1) {
+            if (Serial1.available()) {
+                buf[pos++] = Serial1.read();
+            }
+        }
+        buf[pos] = '\0';
+        Serial.printf("  Sent on B: \"WORLD\", received on A: \"%s\" %s\n",
+                      buf, strcmp(buf, "WORLD") == 0 ? "✓" : "✗");
+
+        return;
+    }
+
+    Serial.println("Unknown uart cmd. Send 'u' for help.");
+}
+
 static char s_cmd_buf[64];
 static uint8_t s_cmd_pos = 0;
-static uint8_t s_port0_test = 0xFF;  // for raw port0 test writes
 
 static void i2c_scan() {
     // Known devices on the Control board
@@ -61,31 +263,6 @@ static void i2c_scan() {
     if (unknown == 0) Serial.println("  (no unknown devices)");
 
     Serial.printf("\nTotal: %d device(s) found\n\n", found);
-}
-
-static void voltage_cmd(const char* cmd) {
-    // cmd is "va X" or "vb X" where X = 0/5/12/24
-    char ch = cmd[1];
-    int val = atoi(cmd + 3);
-    Voltage v;
-    switch (val) {
-        case 0:  v = VOLTAGE_OFF; break;
-        case 5:  v = VOLTAGE_5V;  break;
-        case 12: v = VOLTAGE_12V; break;
-        case 24: v = VOLTAGE_24V; break;
-        default:
-            Serial.printf("Invalid voltage: %d (use 0/5/12/24)\n", val);
-            return;
-    }
-    if (ch == 'a') {
-        voltage_select_set_a(v);
-        Serial.printf("Channel A → %dV\n", val);
-    } else if (ch == 'b') {
-        voltage_select_set_b(v);
-        Serial.printf("Channel B → %dV\n", val);
-    } else {
-        Serial.println("Use: va <0/5/12/24> or vb <0/5/12/24>");
-    }
 }
 
 static void adc_read_all() {
@@ -258,16 +435,6 @@ static void version_cmd() {
     Serial.printf("Module version:   %d\n", mod);
 }
 
-static void port0_write(uint8_t val) {
-    if (!i2c_take(100)) { Serial.println("I2C busy"); return; }
-    TCA9535 exp(ADDR_VOLTAGE_SELECT);
-    exp.write_port(0, val);
-    i2c_give();
-    Serial.printf("Port0 = 0x%02X = ", val);
-    for (int i = 7; i >= 0; i--) Serial.print((val >> i) & 1);
-    Serial.println();
-}
-
 static void process_command(const char* cmd) {
     // Make a lowercase copy for easier matching
     char lc[64];
@@ -279,28 +446,89 @@ static void process_command(const char* cmd) {
     // Single character commands
     if (len == 1) {
         switch (lc[0]) {
-            case 'd': debug_all();           return;
-            case 't': debug_task_list();     return;
-            case 'r': debug_runtime_stats(); return;
-            case 'm': debug_memory();        return;
-            case 'i': i2c_scan();            return;
-            case 'v': version_cmd();         return;
+            case 'a': adc_read_all();           return;
+            case 'd': debug_all();              return;
+            case 't': debug_task_list();        return;
+            case 'r': debug_runtime_stats();    return;
+            case 'm': debug_memory();           return;
+            case 'i': i2c_scan();               return;
+            case 'v': version_cmd();            return;
+            case 'f': inputs_voltage_mode();    return;
+            case 'n': inputs_ma_mode();         return;
+            case 'o': inputs_off();             return;
+            case 'w': inputs_selftest();        return;
+            case 'x':
+                relay_set(RELAY_A, !relay_get(RELAY_A));
+                Serial.printf("Relay A → %s\n", relay_get(RELAY_A) ? "ON" : "OFF");
+                return;
+            case 'y':
+                relay_set(RELAY_B, !relay_get(RELAY_B));
+                Serial.printf("Relay B → %s\n", relay_get(RELAY_B) ? "ON" : "OFF");
+                return;
+            case 'c':
+                Serial.println("\n⚠ ADC ZERO CALIBRATION");
+                Serial.println("  Disconnect all inputs first!");
+                Serial.println("  Running...");
+                adc_calibrate_zero();
+                Serial.println("  Done. Offsets:");
+                for (int i = 0; i < 8; i++) {
+                    const char* n[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
+                    Serial.printf("    %s: %d mV\n", n[i], adc_get_offset((AdcInput)i));
+                }
+                Serial.println();
+                return;
+            case 'z':
+                buzzer_beep(1200, 150);
+                Serial.println("Beep! (use z1-z6 for sounds)");
+                return;
+            case 'u':
+                uart_test_cmd("");
+                return;
             case '?':
-                Serial.println("\nCommands:");
+                Serial.println("\nCommands (all require Enter):");
+                Serial.println("  a           read all ADC");
                 Serial.println("  d           full debug dump");
                 Serial.println("  t           task list");
                 Serial.println("  r           runtime info");
                 Serial.println("  m           memory info");
                 Serial.println("  i           I2C bus scan");
                 Serial.println("  v           HW/module version");
-                Serial.println("  va <0/5/12/24>  channel A voltage");
-                Serial.println("  vb <0/5/12/24>  channel B voltage");
+                Serial.println("  f           all inputs → voltage mode");
+                Serial.println("  n           all inputs → mA mode");
+                Serial.println("  o           all inputs → off");
+                Serial.println("  w           self-test");
+                Serial.println("  x           toggle relay A");
+                Serial.println("  y           toggle relay B");
+                Serial.println("  c           ADC zero calibration");
+                Serial.println("  z/z1-z6     buzzer sounds");
+                Serial.println("  u           UART test (ua232/ub485/usa/ul/uloop)");
+                Serial.println("  va0-24      channel A voltage");
+                Serial.println("  vb0-24      channel B voltage");
                 Serial.println("  s <name>    suspend task");
                 Serial.println("  g <name>    resume task");
-                Serial.println("  8/2/4/6/5   menu nav");
+                Serial.println("  8/2/4/6/5   menu nav (no Enter needed)");
                 Serial.println("  ?           this help\n");
                 return;
         }
+    }
+
+    // Buzzer sounds: z1-z6
+    if (len == 2 && lc[0] == 'z' && lc[1] >= '1' && lc[1] <= '6') {
+        switch (lc[1]) {
+            case '1': buzzer_sound_ok();       Serial.println("OK sound"); break;
+            case '2': buzzer_sound_error();    Serial.println("Error sound"); break;
+            case '3': buzzer_sound_startup();  Serial.println("Startup sound"); break;
+            case '4': buzzer_sound_click();    Serial.println("Click sound"); break;
+            case '5': buzzer_sound_warning();  Serial.println("Warning sound"); break;
+            case '6': buzzer_sound_complete(); Serial.println("Complete sound"); break;
+        }
+        return;
+    }
+
+    // UART test commands: ua232, ua485, ub232, ub485, uat, ubt, usa X, usb X, ul, uloop
+    if (len >= 2 && lc[0] == 'u') {
+        uart_test_cmd(cmd);
+        return;
     }
 
     // Voltage commands: va0, va5, va12, va24, vb0, vb5, vb12, vb24
@@ -356,76 +584,6 @@ static void process_command(const char* cmd) {
     Serial.printf("Unknown: %s (send ? for help)\n", cmd);
 }
 
-// --- Voltage state machine ---
-// Collects 'v' + 'a'/'b' + digits, executes when complete
-static enum { VS_IDLE, VS_GOT_V, VS_GOT_CH } s_vstate = VS_IDLE;
-static char s_vchannel = 0;
-static char s_vdigits[4];
-static uint8_t s_vdigit_pos = 0;
-
-static void vs_reset() {
-    s_vstate = VS_IDLE;
-    s_vchannel = 0;
-    s_vdigit_pos = 0;
-}
-
-static void vs_execute() {
-    s_vdigits[s_vdigit_pos] = '\0';
-    int val = atoi(s_vdigits);
-    Voltage volt;
-    switch (val) {
-        case 0:  volt = VOLTAGE_OFF; break;
-        case 5:  volt = VOLTAGE_5V;  break;
-        case 12: volt = VOLTAGE_12V; break;
-        case 24: volt = VOLTAGE_24V; break;
-        default:
-            Serial.printf("Invalid: %d (use 0/5/12/24)\n", val);
-            vs_reset();
-            return;
-    }
-    if (s_vchannel == 'a') {
-        voltage_select_set_a(volt);
-        Serial.printf("A→%dV\n", val);
-    } else {
-        voltage_select_set_b(volt);
-        Serial.printf("B→%dV\n", val);
-    }
-    vs_reset();
-}
-
-// Returns true if character was consumed by voltage state machine
-static bool vs_feed(char c) {
-    c = tolower(c);
-    switch (s_vstate) {
-        case VS_IDLE:
-            if (c == 'v') { s_vstate = VS_GOT_V; return true; }
-            return false;
-        case VS_GOT_V:
-            if (c == 'a' || c == 'b') {
-                s_vchannel = c;
-                s_vstate = VS_GOT_CH;
-                s_vdigit_pos = 0;
-                return true;
-            }
-            // Not a/b — it was 'v' for version, put back
-            vs_reset();
-            return false;
-        case VS_GOT_CH:
-            if (c >= '0' && c <= '9' && s_vdigit_pos < 2) {
-                s_vdigits[s_vdigit_pos++] = c;
-                // Execute immediately if we have enough (5=1 digit, 12/24=2 digits)
-                if (s_vdigit_pos == 2 || c == '0' || c == '5') {
-                    vs_execute();
-                }
-                return true;
-            }
-            // Got non-digit — execute what we have if anything
-            if (s_vdigit_pos > 0) vs_execute();
-            else vs_reset();
-            return false;
-    }
-    return false;
-}
 
 static void serial_cmd_task(void* param) {
     (void)param;
@@ -433,19 +591,8 @@ static void serial_cmd_task(void* param) {
         while (Serial.available()) {
             char c = Serial.read();
 
-            // Skip CR/LF
+            // Skip CR/LF → process buffered command
             if (c == '\n' || c == '\r') {
-                // If voltage state machine is waiting, handle it
-                if (s_vstate == VS_GOT_V) {
-                    // 'v' + Enter = version command
-                    version_cmd();
-                    vs_reset();
-                } else if (s_vstate == VS_GOT_CH && s_vdigit_pos > 0) {
-                    vs_execute();
-                } else {
-                    vs_reset();
-                }
-                // Process buffered command if any
                 if (s_cmd_pos > 0) {
                     s_cmd_buf[s_cmd_pos] = '\0';
                     process_command(s_cmd_buf);
@@ -454,101 +601,18 @@ static void serial_cmd_task(void* param) {
                 continue;
             }
 
-            // Try voltage state machine first
-            if (vs_feed(c)) continue;
-
-            // Menu keys respond immediately
-            switch (c) {
-                case '8': menu_handle_button(BTN_UP);    continue;
-                case '2': menu_handle_button(BTN_DOWN);  continue;
-                case '4': menu_handle_button(BTN_LEFT);  continue;
-                case '6': menu_handle_button(BTN_RIGHT); continue;
-                case '5': menu_handle_button(BTN_OK);    continue;
-            }
-
-            // Single-char instant commands
-            char lc = tolower(c);
-            switch (lc) {
-                case 'a': adc_read_all();        continue;
-                case 'b': {
-                    // Show raw button ADC for 10 seconds
-                    Serial.println("Button ADC (10s) — press buttons:");
-                    unsigned long end = millis() + 10000;
-                    Button last = BTN_NONE;
-                    while (millis() < end) {
-                        int val = analogRead(PIN_BUTTON);
-                        Button raw = buttons_read_raw();
-                        if (raw != last) {
-                            Serial.printf("  ADC=%4d  → %s\n", val, buttons_to_text(raw));
-                            last = raw;
-                        }
-                        delay(50);
-                    }
-                    Serial.println("Done.\n");
-                    continue;
+            // Menu keys respond immediately (only when not building a command)
+            if (s_cmd_pos == 0) {
+                switch (c) {
+                    case '8': menu_handle_button(BTN_UP);    continue;
+                    case '2': menu_handle_button(BTN_DOWN);  continue;
+                    case '4': menu_handle_button(BTN_LEFT);  continue;
+                    case '6': menu_handle_button(BTN_RIGHT); continue;
+                    case '5': menu_handle_button(BTN_OK);    continue;
                 }
-                case 'd': debug_all();           continue;
-                case 'f': inputs_voltage_mode(); continue;
-                case 'n': inputs_ma_mode();      continue;
-                case 'o': inputs_off();          continue;
-                case 'w': inputs_selftest();    continue;
-                case 't': debug_task_list();     continue;
-                case 'r': debug_runtime_stats(); continue;
-                case 'm': debug_memory();        continue;
-                case 'i': i2c_scan();            continue;
-                case 'x':  // toggle relay A
-                    relay_set(RELAY_A, !relay_get(RELAY_A));
-                    Serial.printf("Relay A → %s\n", relay_get(RELAY_A) ? "ON" : "OFF");
-                    continue;
-                case 'y':  // toggle relay B
-                    relay_set(RELAY_B, !relay_get(RELAY_B));
-                    Serial.printf("Relay B → %s\n", relay_get(RELAY_B) ? "ON" : "OFF");
-                    continue;
-                case 'h':  // SSR test: all B inputs HIGH (pullup on, shunt off)
-                    voltage_select_set_b(VOLTAGE_12V);
-                    for (int i = INPUT_B1; i <= INPUT_B4; i++) {
-                        input_config_set((Input)i, SW_PULLUP, true);
-                        input_config_set((Input)i, SW_SHUNT, false);
-                        input_config_set((Input)i, SW_ANALOG, false);
-                        input_config_set((Input)i, SW_DIGITAL, false);
-                    }
-                    Serial.println("B1-B4: HIGH (12V pullup x4)");
-                    continue;
-                case 'l':  // SSR test: all B inputs LOW (pullup off, shunt on)
-                    for (int i = INPUT_B1; i <= INPUT_B4; i++) {
-                        input_config_set((Input)i, SW_PULLUP, false);
-                        input_config_set((Input)i, SW_SHUNT, true);
-                        input_config_set((Input)i, SW_ANALOG, false);
-                        input_config_set((Input)i, SW_DIGITAL, false);
-                    }
-                    Serial.println("B1-B4: LOW (shunt x4)");
-                    continue;
-                case '?':
-                    Serial.println("\nCommands:");
-                    Serial.println("  a    read all ADC channels");
-                    Serial.println("  f    all inputs → voltage mode");
-                    Serial.println("  n    all inputs → mA mode");
-                    Serial.println("  o    all inputs → off");
-                    Serial.println("  w    self-test (5V+pullup→ADC)");
-                    Serial.println("  d    full debug dump");
-                    Serial.println("  t    task list");
-                    Serial.println("  r    runtime info");
-                    Serial.println("  m    memory info");
-                    Serial.println("  i    I2C scan");
-                    Serial.println("  v    HW version");
-                    Serial.println("  va5  channel A 5V");
-                    Serial.println("  va12 channel A 12V");
-                    Serial.println("  va24 channel A 24V");
-                    Serial.println("  va0  channel A off");
-                    Serial.println("  vb.. same for B");
-                    Serial.println("  x    toggle relay A");
-                    Serial.println("  y    toggle relay B");
-                    Serial.println("  8/2/4/6/5 menu nav");
-                    Serial.println("  ?    this help\n");
-                    continue;
             }
 
-            // Buffer anything else (for 's name' / 'g name')
+            // Buffer everything else
             if (s_cmd_pos < sizeof(s_cmd_buf) - 1) {
                 s_cmd_buf[s_cmd_pos++] = c;
             }

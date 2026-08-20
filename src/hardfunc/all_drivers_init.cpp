@@ -50,6 +50,7 @@ void all_drivers_init() {
     // Non-I2C peripherals
     oled_init(OLED_CLK, OLED_DIN, OLED_CS, OLED_DC, OLED_RST);
     buzzer_init(PIN_BUZZER);
+    buzzer_sound_startup();
     buttons_init(PIN_BUTTON);
 
     // Boot screen

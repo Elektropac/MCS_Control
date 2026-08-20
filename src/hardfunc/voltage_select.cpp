@@ -65,6 +65,8 @@
 
 static TCA9535 expander(ADDR_VOLTAGE_SELECT);
 static uint8_t s_port0 = 0xFF;
+static Voltage s_voltage_a = VOLTAGE_OFF;
+static Voltage s_voltage_b = VOLTAGE_OFF;
 
 void voltage_select_init() {
     if (!i2c_take(100)) return;
@@ -79,6 +81,7 @@ void voltage_select_set_a(Voltage v) {
     if (!hw_available(HW_VOLTAGE_SELECT)) return;
     if (!i2c_take(100)) return;
 
+    s_voltage_a = v;
     s_port0 |= 0x07;  // disable (P00=1, P01=1, P02=1)
 
     if (v != VOLTAGE_OFF) {
@@ -101,6 +104,7 @@ void voltage_select_set_b(Voltage v) {
     if (!hw_available(HW_VOLTAGE_SELECT)) return;
     if (!i2c_take(100)) return;
 
+    s_voltage_b = v;
     s_port0 |= 0xE0;  // disable (P05=1, P06=1, P07=1)
 
     if (v != VOLTAGE_OFF) {
@@ -117,3 +121,6 @@ void voltage_select_set_b(Voltage v) {
     expander.write_port(0, s_port0);
     i2c_give();
 }
+
+Voltage voltage_select_get_a() { return s_voltage_a; }
+Voltage voltage_select_get_b() { return s_voltage_b; }

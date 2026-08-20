@@ -138,3 +138,44 @@ void serial_rs485_termination(SerialChannel ch, bool enable) {
     }
     i2c_give();
 }
+
+// --- Query functions ---
+
+ComMode serial_get_mode(SerialChannel ch) {
+    if (ch == CHANNEL_A) {
+        bool forceon = (serial_control_port0 >> CHA_FORCEON) & 1;
+        bool en = (serial_control_port0 >> CHA_EN) & 1;
+        if (forceon && !en) return COM_RS232;
+        if (!forceon && en) {
+            bool re = (serial_control_port0 >> CHA_RE) & 1;
+            if (!re) return COM_RS485;
+        }
+        return COM_OFF;
+    } else {
+        bool forceon = (s_port1 >> CHB_FORCEON) & 1;
+        bool en = (s_port1 >> CHB_EN) & 1;
+        if (forceon && !en) return COM_RS232;
+        if (!forceon && en) {
+            bool re = (s_port1 >> CHB_RE) & 1;
+            if (!re) return COM_RS485;
+        }
+        return COM_OFF;
+    }
+}
+
+bool serial_get_de(SerialChannel ch) {
+    if (ch == CHANNEL_A) return (serial_control_port0 >> CHA_DE) & 1;
+    return (s_port1 >> CHB_DE) & 1;
+}
+
+bool serial_get_re(SerialChannel ch) {
+    // RE is active low in the register
+    if (ch == CHANNEL_A) return !((serial_control_port0 >> CHA_RE) & 1);
+    return !((s_port1 >> CHB_RE) & 1);
+}
+
+bool serial_get_termination(SerialChannel ch) {
+    // TERM is active low in register
+    if (ch == CHANNEL_A) return !((serial_control_port0 >> CHA_TERM) & 1);
+    return !((s_port1 >> CHB_TERM) & 1);
+}

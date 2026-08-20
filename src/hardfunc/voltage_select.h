@@ -11,3 +11,5 @@ enum Voltage : uint8_t {
 void voltage_select_init();
 void voltage_select_set_a(Voltage v);
 void voltage_select_set_b(Voltage v);
+Voltage voltage_select_get_a();
+Voltage voltage_select_get_b();

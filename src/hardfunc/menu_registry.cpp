@@ -3,6 +3,10 @@
 #include "menu_tanks.h"
 #include "menu_relays.h"
 #include "menu_voltage.h"
+#include "menu_status_channel.h"
+#include "menu_status_uart.h"
+#include "menu_input_config.h"
+#include "menu_calibrate.h"
 #include "ssd1306.h"
 #include "config.h"
 #include <ArduinoJson.h>
@@ -21,6 +25,11 @@ static void action_reboot() {
 static void action_diagnostics() {}
 static void action_relays_menu();  // forward declare
 static void action_voltage_menu();  // forward declare
+static void action_status_ch_a() { channel_a_status_show(); }
+static void action_status_ch_b() { channel_b_status_show(); }
+static void action_status_uart() { uart_status_show(); }
+static void action_inputs() { input_config_menu_show(); }
+static void action_calibrate() { calibrate_menu_show(); }
 
 // --- Full registry of all possible menu items ---
 static MenuRegistryEntry s_registry[] = {
@@ -28,6 +37,11 @@ static MenuRegistryEntry s_registry[] = {
     { "pumps",       "Pumps",       icon_pumps_frames,   action_pumps,        nullptr, 0 },
     { "relays",      "Relays",      icon_config_frames,  action_relays_menu,  nullptr, 0 },
     { "voltage",     "Voltage",     icon_config_frames,  action_voltage_menu, nullptr, 0 },
+    { "inputs",      "Inputs",      icon_diag_frames,    action_inputs,       nullptr, 0 },
+    { "calibrate",   "Calibrate",   icon_diag_frames,    action_calibrate,    nullptr, 0 },
+    { "status_a",    "Status A",    icon_diag_frames,    action_status_ch_a,  nullptr, 0 },
+    { "status_b",    "Status B",    icon_diag_frames,    action_status_ch_b,  nullptr, 0 },
+    { "status_uart", "UART",        icon_network_frames, action_status_uart,  nullptr, 0 },
     { "config",      "Config",      icon_config_frames,  action_config,       nullptr, 0 },
     { "network",     "Network",     icon_network_frames, action_network,      nullptr, 0 },
     { "reboot",      "Reboot",      icon_reboot_frames,  action_reboot,       nullptr, 0 },

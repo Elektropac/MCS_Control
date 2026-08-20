@@ -42,6 +42,11 @@ namespace config
     "items": [
       { "id": "tanks" },
       { "id": "pumps" },
+      { "id": "inputs" },
+      { "id": "calibrate" },
+      { "id": "status_a" },
+      { "id": "status_b" },
+      { "id": "status_uart" },
       { "id": "relays" },
       { "id": "voltage" },
       { "id": "config" },
