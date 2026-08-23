@@ -60,6 +60,7 @@ namespace web_server
 
         if (eth_client)
         {
+            eth_client.setTimeout(30); // 30 seconds for long-running tests
             String request_line = eth_client.readString();
 
             Request req = parse_request(request_line);
@@ -74,6 +75,7 @@ namespace web_server
 
             if (wifi_client)
             {
+                wifi_client.setTimeout(30); // 30 seconds for long-running tests
                 String request_line = wifi_client.readString();
                 Request req = parse_request(request_line);
 

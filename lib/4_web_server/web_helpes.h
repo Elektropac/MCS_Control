@@ -104,9 +104,20 @@ void handle_api_request(Client &client, Request &req)
 
     client.println("HTTP/1.1 200 OK");
     client.println("Content-Type: application/json");
+    client.print("Content-Length: ");
+    client.println(result.length());
     client.println("Connection: close");
     client.println();
-    client.print(result);
+
+    // Send in chunks to avoid TCP buffer overflow
+    const size_t chunk_size = 512;
+    size_t sent = 0;
+    while (sent < result.length()) {
+        size_t to_send = result.length() - sent;
+        if (to_send > chunk_size) to_send = chunk_size;
+        client.write((const uint8_t*)(result.c_str() + sent), to_send);
+        sent += to_send;
+    }
     return;
 }
 

@@ -12,4 +12,5 @@
 namespace function_silo
 {
     String run_function_silo(JsonDocument &json_packet);
+    void register_external_handler(String (*handler)(const String&, JsonDocument&));
 }

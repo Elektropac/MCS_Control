@@ -3,6 +3,13 @@
 
 namespace function_silo
 {
+    // External handler callback (set from src/ code)
+    static String (*s_ext_handler)(const String&, JsonDocument&) = nullptr;
+
+    void register_external_handler(String (*handler)(const String&, JsonDocument&)) {
+        s_ext_handler = handler;
+    }
+
     String run_function_silo(JsonDocument &json_packet)
     {
         bool is_subject = json_packet["subject"].isNull();
@@ -46,6 +53,12 @@ namespace function_silo
         {
             ESP.restart();
             return "{\"result\": \"Rebooting...\"}";
+        }
+
+        // -- external handlers (test api etc.) --
+        if (s_ext_handler) {
+            String ext_result = s_ext_handler(function_name, json_packet);
+            if (ext_result.length() > 0) return ext_result;
         }
 
         return "";

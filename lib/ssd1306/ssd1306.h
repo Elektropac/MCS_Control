@@ -42,6 +42,9 @@ void oled_draw_box(int x, int y, int w, int h);
 // Draw XBM bitmap (16x16 icons etc)
 void oled_draw_xbm(int x, int y, int w, int h, const uint8_t* bitmap);
 
+// Draw bitmap in Adafruit_GFX format (MSB first, row-major, PROGMEM)
+void oled_draw_bitmap(int x, int y, int w, int h, const uint8_t* bitmap);
+
 // Pixel-level text (x, y = baseline position)
 void oled_draw_text(int x, int y, const char* text);
 

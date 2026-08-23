@@ -115,6 +115,12 @@ void oled_draw_xbm(int x, int y, int w, int h, const uint8_t* bitmap) {
     if (s_oled) s_oled->drawXBM(x, y, w, h, bitmap);
 }
 
+void oled_draw_bitmap(int x, int y, int w, int h, const uint8_t* bitmap) {
+    // Draws a PROGMEM bitmap in Adafruit_GFX format (MSB first, row-major)
+    // U8g2 drawBitmap uses same format: cnt = bytes per row, h = rows
+    if (s_oled) s_oled->drawBitmap(x, y, w / 8, h, bitmap);
+}
+
 void oled_draw_text(int x, int y, const char* text) {
     if (s_oled) s_oled->drawStr(x, y, text);
 }

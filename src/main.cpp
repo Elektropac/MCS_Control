@@ -5,6 +5,8 @@
 #include "file_system.h"
 #include "config.h"
 #include "hardfunc/all_drivers_init.h"
+#include "hardfunc/test_api.h"
+#include "function_silo.h"
 #include "tasks/sampler.h"
 #include "tasks/flow_guard.h"
 #include "tasks/buttons_task.h"
@@ -26,6 +28,9 @@ void setup() {
     sampler_init();                 // 4 kHz pulse sampling (ISR, always on)
     flow_guard_init();              // flow guard state (cursor synced to sampler)
     all_drivers_init();             // probe I2C chips + init all peripherals
+
+    // Register test API handler for web UI
+    function_silo::register_external_handler(test_api::handle);
 
     // FreeRTOS tasks
     flow_guard_start_task();        // monitors pulses without active transaction
