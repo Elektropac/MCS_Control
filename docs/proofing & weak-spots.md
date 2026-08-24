@@ -1,6 +1,7 @@
 ---
 name: "Proofing & Weak Spots"
 description: "Use when creating or modifying source files. Enforces proofing and weak spot checks."
+actions: "read the file, check for weak spots, and report issues"
 applyTo: "lib/{0-99}_*.{cpp,h}"
 ---
 
@@ -24,7 +25,7 @@ Severity legend:
 ### lib/1_w5500/w5500.h
 
 #### w5500::run_static
-- Mid: the static Ethernet path still passes the gateway IP as both the gateway and DNS values. This can break hostname resolution if the gateway is not also a DNS server.
+- Mid: the static Ethernet path still passes the gateway IP as both the gateway and DNS values. This can break hostname resolution if the gateway is not also a DNS server. // note this is not a problem
 - Recommendation: add an explicit DNS field or document a known fallback.
 
 #### w5500::init

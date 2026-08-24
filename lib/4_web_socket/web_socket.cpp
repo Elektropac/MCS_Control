@@ -25,17 +25,24 @@ namespace web_socket
         }
 
         bool use_ssl = (port == 443);
+
         web_socket_client = new WebSocketClient(ssl_manager.client(), host.c_str(), port);
         ssl_manager.configure(host.c_str(), port, use_ssl);
         auto init_result = web_socket_client->begin(path.c_str());
+
         is_secure = ssl_manager.isSecure();
+        
         if (init_result == 0)
         {
             log_info("[web_socket] WebSocket connected.");
             log_info("[web_socket] Secure connection: %s", is_secure ? "Yes" : "No");
             return true;
         }
+
+
+        
         log_error("[web_socket] WebSocket connection failed.");
+
         return false;
     }
 

@@ -43,7 +43,6 @@ namespace web_server
         if (eth_client)
         {
             Request req(eth_client);
-            log_info("[web_server] \n%s", req.raw_body.c_str());
             handle_client(eth_client, req);
             eth_client.stop();
         }

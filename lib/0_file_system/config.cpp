@@ -16,6 +16,7 @@ namespace config
     void init()
     {
         config.clear();
+        is_loaded = false;
 
         if (file_system::is_mounted == false)
         {
