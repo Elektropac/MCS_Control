@@ -16,8 +16,16 @@ static ADS1115 adc_b(ADDR_ADC_B);
 // Zero-offset calibration (raw mV before divider ratio)
 static int16_t s_offset[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
+// Gain correction factors (multiply after offset correction)
+static float s_gain[8] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+// Last gain calibration result (for display/API)
+static AdcGainResult s_gain_result = {};
+
 #define CAL_FILE "/adc_cal.json"
+#define GAIN_FILE "/adc_gain.json"
 #define CAL_SAMPLES 8  // average N readings for stable offset
+#define GAIN_SAMPLES 16 // more samples for gain (higher precision needed)
 
 // Channel mapping: AdcInput → {chip, channel}
 struct AdcMap { ADS1115* chip; uint8_t channel; };
@@ -51,9 +59,10 @@ void adc_init() {
 
     // Load saved calibration if available
     adc_calibrate_load();
+    adc_gain_load();
 }
 
-// Internal: read raw mV WITHOUT offset correction (for calibration)
+// Internal: read raw mV WITHOUT any correction (for calibration)
 static int16_t adc_read_raw_uncalibrated(AdcInput input) {
     if (input <= ADC_A4 && !hw_available(HW_ADC_A)) return 0;
     if (input >= ADC_B1 && !hw_available(HW_ADC_B)) return 0;
@@ -70,7 +79,11 @@ static int16_t adc_read_raw_uncalibrated(AdcInput input) {
 
 int16_t adc_read_raw_mv(AdcInput input) {
     int16_t raw = adc_read_raw_uncalibrated(input);
-    return raw - s_offset[input];
+    // Apply zero offset
+    float corrected = (float)(raw - s_offset[input]);
+    // Apply gain correction
+    corrected *= s_gain[input];
+    return (int16_t)corrected;
 }
 
 int32_t adc_read_mv(AdcInput input) {
@@ -97,31 +110,21 @@ int32_t adc_read_diff_mv(AdcDiffPair pair) {
     return mv * DIVIDER_RATIO;
 }
 
-// --- Calibration ---
+// --- Zero Calibration ---
 
 void adc_calibrate_zero() {
-    // Save current input states so we can restore them
-    // Set each input to: shunt ON only (200Ω to GND, nothing else)
-    // This gives ~0V at ADC input
-    // Read multiple samples and average for stable offset
-
     log_info("[adc_cal] Starting zero calibration...");
 
     for (uint8_t i = 0; i < 8; i++) {
         Input inp = (Input)i;
-
-        // Turn off all switches first
         input_config_set(inp, SW_ANALOG, false);
         input_config_set(inp, SW_PULLUP, false);
         input_config_set(inp, SW_DIGITAL, false);
-        // Turn on shunt only (200Ω to GND)
         input_config_set(inp, SW_SHUNT, true);
     }
 
-    // Wait for settling
     vTaskDelay(pdMS_TO_TICKS(50));
 
-    // Read and average
     for (uint8_t i = 0; i < 8; i++) {
         AdcInput adc_in = (AdcInput)i;
         int32_t sum = 0;
@@ -132,18 +135,15 @@ void adc_calibrate_zero() {
         }
 
         s_offset[i] = (int16_t)(sum / CAL_SAMPLES);
-        log_info("[adc_cal] %s offset: %d mV (raw)", 
-                 (i < 4) ? "A" : "B", s_offset[i]);
+        log_info("[adc_cal] %s%d offset: %d mV (raw)", 
+                 (i < 4) ? "A" : "B", (i < 4) ? i+1 : i-3, s_offset[i]);
     }
 
-    // Turn off all shunts
     for (uint8_t i = 0; i < 8; i++) {
         input_config_set((Input)i, SW_SHUNT, false);
     }
 
-    // Save to flash
     adc_calibrate_save();
-
     log_info("[adc_cal] Zero calibration complete.");
 }
 
@@ -159,7 +159,6 @@ void adc_calibrate_save() {
         return;
     }
 
-    // Simple CSV: one offset per line
     for (uint8_t i = 0; i < 8; i++) {
         f.printf("%d\n", s_offset[i]);
     }
@@ -172,10 +171,7 @@ void adc_calibrate_load() {
     if (!LittleFS.begin(true)) return;
 
     File f = LittleFS.open(CAL_FILE, "r");
-    if (!f) {
-        // No calibration file — offsets stay at 0
-        return;
-    }
+    if (!f) return;
 
     for (uint8_t i = 0; i < 8; i++) {
         String line = f.readStringUntil('\n');
@@ -191,4 +187,176 @@ void adc_calibrate_load() {
 int16_t adc_get_offset(AdcInput input) {
     if (input > ADC_B4) return 0;
     return s_offset[input];
+}
+
+// --- Gain Calibration (2-point) ---
+// 
+// Method:
+//   1. Set pullup ON (all other OFF) on all 4 inputs of each channel
+//      → All 4 see the same voltage (~4.5V via 5kΩ pullup to supply)
+//      → Measure all 4, compute mean = "true" value (high point)
+//   2. Set pullup + shunt ON on all 4 inputs of each channel  
+//      → All 4 see the same voltage (~230mV via divider)
+//      → Measure all 4, compute mean = "true" value (low point)
+//   3. Per input: linear correction from 2 measured vs 2 "true" values
+//      → gain_factor = (true_high - true_low) / (measured_high - measured_low)
+//
+// NOTE: Requires voltage supply active and NO external cables connected!
+
+void adc_calibrate_gain() {
+    log_info("[adc_gain] Starting gain calibration...");
+    log_info("[adc_gain] Ensure voltage is ON and all inputs disconnected!");
+
+    // Temporarily disable gain correction during calibration
+    float saved_gain[8];
+    for (uint8_t i = 0; i < 8; i++) {
+        saved_gain[i] = s_gain[i];
+        s_gain[i] = 1.0f;
+    }
+
+    // --- HIGH POINT: pullup only ---
+    for (uint8_t i = 0; i < 8; i++) {
+        Input inp = (Input)i;
+        input_config_set(inp, SW_ANALOG, true);
+        input_config_set(inp, SW_PULLUP, true);
+        input_config_set(inp, SW_SHUNT, false);
+        input_config_set(inp, SW_DIGITAL, false);
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(100));  // Let voltages settle
+
+    int32_t high_raw[8];
+    for (uint8_t i = 0; i < 8; i++) {
+        int32_t sum = 0;
+        for (uint8_t s = 0; s < GAIN_SAMPLES; s++) {
+            sum += adc_read_raw_uncalibrated((AdcInput)i) - s_offset[i];
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
+        high_raw[i] = sum / GAIN_SAMPLES;
+        s_gain_result.high_mv[i] = high_raw[i];
+    }
+
+    // Compute mean for channel A (0-3) and channel B (4-7) separately
+    int32_t mean_a_high = 0, mean_b_high = 0;
+    for (uint8_t i = 0; i < 4; i++) mean_a_high += high_raw[i];
+    for (uint8_t i = 4; i < 8; i++) mean_b_high += high_raw[i];
+    mean_a_high /= 4;
+    mean_b_high /= 4;
+
+    log_info("[adc_gain] High-point mean A: %d mV, B: %d mV", mean_a_high, mean_b_high);
+
+    // --- LOW POINT: pullup + shunt ---
+    for (uint8_t i = 0; i < 8; i++) {
+        input_config_set((Input)i, SW_SHUNT, true);
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    int32_t low_raw[8];
+    for (uint8_t i = 0; i < 8; i++) {
+        int32_t sum = 0;
+        for (uint8_t s = 0; s < GAIN_SAMPLES; s++) {
+            sum += adc_read_raw_uncalibrated((AdcInput)i) - s_offset[i];
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
+        low_raw[i] = sum / GAIN_SAMPLES;
+        s_gain_result.low_mv[i] = low_raw[i];
+    }
+
+    int32_t mean_a_low = 0, mean_b_low = 0;
+    for (uint8_t i = 0; i < 4; i++) mean_a_low += low_raw[i];
+    for (uint8_t i = 4; i < 8; i++) mean_b_low += low_raw[i];
+    mean_a_low /= 4;
+    mean_b_low /= 4;
+
+    log_info("[adc_gain] Low-point mean A: %d mV, B: %d mV", mean_a_low, mean_b_low);
+
+    // Store mean for API
+    s_gain_result.high_mean = (mean_a_high + mean_b_high) / 2;
+    s_gain_result.low_mean = (mean_a_low + mean_b_low) / 2;
+
+    // --- Compute gain factor per channel ---
+    // factor = (mean_high - mean_low) / (measured_high - measured_low)
+    // Each channel uses its own ADC's mean (A channels use A mean, B channels use B mean)
+    for (uint8_t i = 0; i < 8; i++) {
+        int32_t mean_high = (i < 4) ? mean_a_high : mean_b_high;
+        int32_t mean_low  = (i < 4) ? mean_a_low  : mean_b_low;
+
+        int32_t span_true = mean_high - mean_low;
+        int32_t span_meas = high_raw[i] - low_raw[i];
+
+        if (span_meas > 10) {  // sanity check: need reasonable span
+            s_gain[i] = (float)span_true / (float)span_meas;
+        } else {
+            s_gain[i] = 1.0f;  // fallback: no correction
+            log_error("[adc_gain] Ch %d: span too small (%d mV), skipping", i, span_meas);
+        }
+
+        s_gain_result.factor[i] = s_gain[i];
+        log_info("[adc_gain] %s%d: high=%d low=%d factor=%.4f", 
+                 (i < 4) ? "A" : "B", (i < 4) ? i+1 : i-3,
+                 high_raw[i], low_raw[i], s_gain[i]);
+    }
+
+    // --- Cleanup: turn off all switches ---
+    for (uint8_t i = 0; i < 8; i++) {
+        input_config_mode((Input)i, MODE_OFF);
+    }
+
+    adc_gain_save();
+    log_info("[adc_gain] Gain calibration complete.");
+}
+
+void adc_gain_save() {
+    if (!LittleFS.begin(true)) {
+        log_error("[adc_gain] LittleFS mount failed");
+        return;
+    }
+
+    File f = LittleFS.open(GAIN_FILE, "w");
+    if (!f) {
+        log_error("[adc_gain] Cannot write %s", GAIN_FILE);
+        return;
+    }
+
+    // One gain factor per line (float with 6 decimals)
+    for (uint8_t i = 0; i < 8; i++) {
+        f.printf("%.6f\n", s_gain[i]);
+    }
+    f.close();
+
+    log_info("[adc_gain] Gain factors saved to %s", GAIN_FILE);
+}
+
+void adc_gain_load() {
+    if (!LittleFS.begin(true)) return;
+
+    File f = LittleFS.open(GAIN_FILE, "r");
+    if (!f) return;
+
+    for (uint8_t i = 0; i < 8; i++) {
+        String line = f.readStringUntil('\n');
+        if (line.length() > 0) {
+            float val = line.toFloat();
+            // Sanity: gain factor should be close to 1.0 (0.9 to 1.1)
+            if (val > 0.9f && val < 1.1f) {
+                s_gain[i] = val;
+            } else {
+                log_error("[adc_gain] Ch %d: loaded factor %.4f out of range, using 1.0", i, val);
+                s_gain[i] = 1.0f;
+            }
+        }
+    }
+    f.close();
+
+    log_info("[adc_gain] Loaded gain factors from %s", GAIN_FILE);
+}
+
+float adc_get_gain(AdcInput input) {
+    if (input > ADC_B4) return 1.0f;
+    return s_gain[input];
+}
+
+const AdcGainResult& adc_get_gain_result() {
+    return s_gain_result;
 }

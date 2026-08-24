@@ -669,6 +669,58 @@ static String io_control_json(JsonDocument& json_packet) {
     return result;
 }
 
+static String calibrate_gain_json(JsonDocument& json_packet) {
+    // Requires voltage ON (5V) and all inputs disconnected
+    // Optionally set voltage first
+    int voltage = 5;
+    if (!json_packet["data"].isNull() && !json_packet["data"]["voltage"].isNull())
+        voltage = json_packet["data"]["voltage"].as<int>();
+
+    // Set voltage on both channels
+    Voltage volt;
+    switch (voltage) {
+        case 5:  volt = VOLTAGE_5V;  break;
+        case 12: volt = VOLTAGE_12V; break;
+        case 24: volt = VOLTAGE_24V; break;
+        default: volt = VOLTAGE_5V; voltage = 5; break;
+    }
+    voltage_select_set_a(volt);
+    voltage_select_set_b(volt);
+    delay(50);
+
+    // Run gain calibration
+    adc_calibrate_gain();
+
+    // Turn off voltage
+    voltage_select_set_a(VOLTAGE_OFF);
+    voltage_select_set_b(VOLTAGE_OFF);
+
+    // Return results
+    const AdcGainResult& r = adc_get_gain_result();
+    const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
+
+    JsonDocument doc;
+    doc["voltage"] = voltage;
+    doc["high_mean_mv"] = r.high_mean;
+    doc["low_mean_mv"] = r.low_mean;
+
+    JsonArray channels = doc["channels"].to<JsonArray>();
+    for (int i = 0; i < 8; i++) {
+        JsonObject ch = channels.add<JsonObject>();
+        ch["name"] = names[i];
+        ch["high_mv"] = r.high_mv[i];
+        ch["low_mv"] = r.low_mv[i];
+        ch["factor"] = String(r.factor[i], 6);
+        // Deviation from mean in percent
+        float dev = (r.factor[i] - 1.0f) * 100.0f;
+        ch["deviation_pct"] = String(dev, 3);
+    }
+
+    String result;
+    serializeJson(doc, result);
+    return result;
+}
+
 String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_i2c_scan")     return i2c_scan_json();
     if (function_name == "test_adc_read")     return adc_read_json();
@@ -679,7 +731,8 @@ String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_selftest")     return selftest_json(json_packet);
     if (function_name == "test_uart_loopback") return uart_loopback_json(json_packet);
     if (function_name == "test_io")           return io_control_json(json_packet);
-    if (function_name == "test_pulse")       return pulse_test_json(json_packet);
+    if (function_name == "test_pulse")        return pulse_test_json(json_packet);
+    if (function_name == "test_calibrate_gain") return calibrate_gain_json(json_packet);
     return ""; // not handled
 }
 

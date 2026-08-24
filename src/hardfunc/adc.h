@@ -24,3 +24,19 @@ void adc_calibrate_zero();          // Runs zero-cal on all 8 channels (uses shu
 void adc_calibrate_load();          // Load saved offsets from LittleFS
 void adc_calibrate_save();          // Save current offsets to LittleFS
 int16_t adc_get_offset(AdcInput input);  // Get stored offset for a channel (mV, raw)
+
+// Calibration — gain (2-point)
+void adc_calibrate_gain();          // Runs gain-cal: pullup then pullup+shunt, computes correction factors
+void adc_gain_load();               // Load gain factors from LittleFS
+void adc_gain_save();               // Save gain factors to LittleFS
+float adc_get_gain(AdcInput input); // Get stored gain factor for a channel (1.0 = no correction)
+
+// Calibration results (for UI/display)
+struct AdcGainResult {
+    float factor[8];                // Gain correction factor per channel (multiply raw reading)
+    int32_t high_mv[8];            // Measured high-point (pullup) in mV per channel
+    int32_t low_mv[8];             // Measured low-point (pullup+shunt) in mV per channel
+    int32_t high_mean;             // Mean of high-points (used as reference)
+    int32_t low_mean;              // Mean of low-points (used as reference)
+};
+const AdcGainResult& adc_get_gain_result();

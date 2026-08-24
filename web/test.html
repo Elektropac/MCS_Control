@@ -67,6 +67,13 @@
     <button class="btn" onclick="io('set_digital_off')">↓ Digital OFF</button>
   </div>
 
+  <h2>Gain Calibrate (disconnect all inputs!)</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_calibrate_gain',{voltage:5})">🎯 Gain Cal @ 5V</button>
+    <button class="btn" onclick="run('test_calibrate_gain',{voltage:12})">🎯 Gain Cal @ 12V</button>
+    <button class="btn" onclick="run('test_calibrate_gain',{voltage:24})">🎯 Gain Cal @ 24V</button>
+  </div>
+
   <h2>Pulse Test (wire A1→B1, A2→B2, A3→B3, A4→B4)</h2>
   <div class="grid">
     <button class="btn" onclick="run('test_pulse',{pulses:10})">⚡ 10 pulser</button>
@@ -206,6 +213,16 @@
         else if (json.digital !== undefined) log(`  GPIO: ${json.digital} — ${json.state}`, 'pass');
         else if (json.result) log(`  ${json.result}`, 'pass');
         else log('  ' + JSON.stringify(json), 'info');
+      } else if (subject === 'test_calibrate_gain') {
+        log(`\n=== Gain Calibration @ ${json.voltage}V ===\n`, 'info');
+        log(`  Reference: high=${json.high_mean_mv} mV, low=${json.low_mean_mv} mV\n`);
+        log(`  Channel  High(mV)  Low(mV)  Factor     Deviation`, 'info');
+        log(`  ───────  ────────  ───────  ─────────  ─────────`);
+        for (const ch of json.channels) {
+          const dev = parseFloat(ch.deviation_pct);
+          const cls = Math.abs(dev) < 0.5 ? 'pass' : Math.abs(dev) < 1.5 ? 'warn' : 'fail';
+          log(`  ${ch.name.padEnd(7)}  ${String(ch.high_mv).padStart(8)}  ${String(ch.low_mv).padStart(7)}  ${ch.factor}  ${ch.deviation_pct}%`, cls);
+        }
       } else {
         log('\n' + JSON.stringify(json, null, 2), 'info');
       }

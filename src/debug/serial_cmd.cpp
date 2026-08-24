@@ -500,6 +500,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  x           toggle relay A");
                 Serial.println("  y           toggle relay B");
                 Serial.println("  c           ADC zero calibration");
+                Serial.println("  cg/cg5/cg12 ADC gain calibration");
                 Serial.println("  z/z1-z6     buzzer sounds");
                 Serial.println("  u           UART test (ua232/ub485/usa/ul/uloop)");
                 Serial.println("  va0-24      channel A voltage");
@@ -522,6 +523,39 @@ static void process_command(const char* cmd) {
             case '5': buzzer_sound_warning();  Serial.println("Warning sound"); break;
             case '6': buzzer_sound_complete(); Serial.println("Complete sound"); break;
         }
+        return;
+    }
+
+    // Gain calibration: cg or cg5, cg12, cg24 (default 5V)
+    if (len >= 2 && lc[0] == 'c' && lc[1] == 'g') {
+        int voltage = 5;
+        if (len > 2) voltage = atoi(lc + 2);
+        Voltage volt;
+        switch (voltage) {
+            case 5:  volt = VOLTAGE_5V;  break;
+            case 12: volt = VOLTAGE_12V; break;
+            case 24: volt = VOLTAGE_24V; break;
+            default: Serial.println("Use: cg, cg5, cg12, cg24"); return;
+        }
+        Serial.printf("\n⚠ ADC GAIN CALIBRATION @ %dV\n", voltage);
+        Serial.println("  Disconnect all inputs first!");
+        Serial.println("  Running...");
+        voltage_select_set_a(volt);
+        voltage_select_set_b(volt);
+        delay(50);
+        adc_calibrate_gain();
+        voltage_select_set_a(VOLTAGE_OFF);
+        voltage_select_set_b(VOLTAGE_OFF);
+        Serial.println("  Done. Gain factors:");
+        const char* n[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
+        const AdcGainResult& r = adc_get_gain_result();
+        Serial.println("  Ch   High    Low     Factor    Dev");
+        for (int i = 0; i < 8; i++) {
+            float dev = (r.factor[i] - 1.0f) * 100.0f;
+            Serial.printf("  %s  %5d  %5d   %.4f   %+.2f%%\n",
+                         n[i], r.high_mv[i], r.low_mv[i], r.factor[i], dev);
+        }
+        Serial.println();
         return;
     }
 
