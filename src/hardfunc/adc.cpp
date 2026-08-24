@@ -87,7 +87,12 @@ int16_t adc_read_raw_mv(AdcInput input) {
 }
 
 int32_t adc_read_mv(AdcInput input) {
-    return (int32_t)adc_read_raw_mv(input) * DIVIDER_RATIO;
+    int32_t raw_mv = (int32_t)adc_read_raw_mv(input) * DIVIDER_RATIO;
+    // Switch compensation: corrects for CMOS analog switch Ron effect
+    // Calibrated against Fluke 177 at 1-5V, max error ±3 mV
+    #define SWITCH_GAIN   1.004528f
+    #define SWITCH_OFFSET 33.9f
+    return (int32_t)(raw_mv * SWITCH_GAIN + SWITCH_OFFSET);
 }
 
 float adc_read_ma(AdcInput input, float shunt_ohms) {
