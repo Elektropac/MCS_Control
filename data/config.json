@@ -29,6 +29,7 @@
             }
         }
     },
+    "tank_read_interval": 60, // in sec
     "groups": {
         "pump_1": {
             "type": "standard-pump-controller",

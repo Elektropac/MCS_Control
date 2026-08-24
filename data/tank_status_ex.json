@@ -1,0 +1,27 @@
+{
+    "subject": "tank_status",
+    "data": [
+        {
+            "group": "probe_1",
+            "raw": {
+                "value": 1,
+                "unit": "mA"
+            },
+            "conversion": {
+                "value": 100,
+                "unit": "L"
+            }
+        },
+        {
+            "group": "probe_2",
+            "raw": {
+                "value": 0,
+                "unit": "mA"
+            },
+            "conversion": {
+                "value": 50,
+                "unit": "L"
+            }
+        }
+    ]
+}
