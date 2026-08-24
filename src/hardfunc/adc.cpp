@@ -189,32 +189,27 @@ int16_t adc_get_offset(AdcInput input) {
     return s_offset[input];
 }
 
-// --- Gain Calibration (2-point) ---
+// --- Gain Calibration ---
 // 
-// Method:
-//   1. Set pullup ON (all other OFF) on all 4 inputs of each channel
-//      → All 4 see the same voltage (~4.5V via 5kΩ pullup to supply)
-//      → Measure all 4, compute mean = "true" value (high point)
-//   2. Set pullup + shunt ON on all 4 inputs of each channel  
-//      → All 4 see the same voltage (~230mV via divider)
-//      → Measure all 4, compute mean = "true" value (low point)
-//   3. Per input: linear correction from 2 measured vs 2 "true" values
-//      → gain_factor = (true_high - true_low) / (measured_high - measured_low)
-//
-// NOTE: Requires voltage supply active and NO external cables connected!
+// Method (simple and correct):
+//   1. Set pullup ON (all other OFF) on all 8 inputs, voltage at 5V
+//      → All inputs see the same voltage via identical 5kΩ pullup
+//      → Measure all 8 (after zero correction)
+//      → Mean of all 8 = "true" value
+//      → Per input: factor = mean / measured
+//   
+// That's it. Direct correction factor per channel.
+// Requires voltage supply at 5V and NO external cables connected!
 
 void adc_calibrate_gain() {
     log_info("[adc_gain] Starting gain calibration...");
-    log_info("[adc_gain] Ensure voltage is ON and all inputs disconnected!");
 
     // Temporarily disable gain correction during calibration
-    float saved_gain[8];
     for (uint8_t i = 0; i < 8; i++) {
-        saved_gain[i] = s_gain[i];
         s_gain[i] = 1.0f;
     }
 
-    // --- HIGH POINT: pullup only ---
+    // Set pullup on all 8 inputs, analog switch on
     for (uint8_t i = 0; i < 8; i++) {
         Input inp = (Input)i;
         input_config_set(inp, SW_ANALOG, true);
@@ -225,80 +220,46 @@ void adc_calibrate_gain() {
 
     vTaskDelay(pdMS_TO_TICKS(100));  // Let voltages settle
 
-    int32_t high_raw[8];
+    // Measure all 8 channels (multiple samples, averaged)
+    int32_t measured[8];
     for (uint8_t i = 0; i < 8; i++) {
         int32_t sum = 0;
         for (uint8_t s = 0; s < GAIN_SAMPLES; s++) {
             sum += adc_read_raw_uncalibrated((AdcInput)i) - s_offset[i];
             vTaskDelay(pdMS_TO_TICKS(10));
         }
-        high_raw[i] = sum / GAIN_SAMPLES;
-        s_gain_result.high_mv[i] = high_raw[i];
+        measured[i] = sum / GAIN_SAMPLES;
+        s_gain_result.high_mv[i] = measured[i];
     }
 
-    // Compute mean for channel A (0-3) and channel B (4-7) separately
-    int32_t mean_a_high = 0, mean_b_high = 0;
-    for (uint8_t i = 0; i < 4; i++) mean_a_high += high_raw[i];
-    for (uint8_t i = 4; i < 8; i++) mean_b_high += high_raw[i];
-    mean_a_high /= 4;
-    mean_b_high /= 4;
+    // Compute mean of all 8
+    int32_t total = 0;
+    for (uint8_t i = 0; i < 8; i++) total += measured[i];
+    int32_t mean = total / 8;
 
-    log_info("[adc_gain] High-point mean A: %d mV, B: %d mV", mean_a_high, mean_b_high);
+    s_gain_result.high_mean = mean;
+    s_gain_result.low_mean = 0;  // Not used in simple method
 
-    // --- LOW POINT: pullup + shunt ---
+    log_info("[adc_gain] Mean: %d mV", mean);
+
+    // Compute gain factor per channel: factor = mean / measured
     for (uint8_t i = 0; i < 8; i++) {
-        input_config_set((Input)i, SW_SHUNT, true);
-    }
-
-    vTaskDelay(pdMS_TO_TICKS(100));
-
-    int32_t low_raw[8];
-    for (uint8_t i = 0; i < 8; i++) {
-        int32_t sum = 0;
-        for (uint8_t s = 0; s < GAIN_SAMPLES; s++) {
-            sum += adc_read_raw_uncalibrated((AdcInput)i) - s_offset[i];
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }
-        low_raw[i] = sum / GAIN_SAMPLES;
-        s_gain_result.low_mv[i] = low_raw[i];
-    }
-
-    int32_t mean_a_low = 0, mean_b_low = 0;
-    for (uint8_t i = 0; i < 4; i++) mean_a_low += low_raw[i];
-    for (uint8_t i = 4; i < 8; i++) mean_b_low += low_raw[i];
-    mean_a_low /= 4;
-    mean_b_low /= 4;
-
-    log_info("[adc_gain] Low-point mean A: %d mV, B: %d mV", mean_a_low, mean_b_low);
-
-    // Store mean for API
-    s_gain_result.high_mean = (mean_a_high + mean_b_high) / 2;
-    s_gain_result.low_mean = (mean_a_low + mean_b_low) / 2;
-
-    // --- Compute gain factor per channel ---
-    // factor = (mean_high - mean_low) / (measured_high - measured_low)
-    // Each channel uses its own ADC's mean (A channels use A mean, B channels use B mean)
-    for (uint8_t i = 0; i < 8; i++) {
-        int32_t mean_high = (i < 4) ? mean_a_high : mean_b_high;
-        int32_t mean_low  = (i < 4) ? mean_a_low  : mean_b_low;
-
-        int32_t span_true = mean_high - mean_low;
-        int32_t span_meas = high_raw[i] - low_raw[i];
-
-        if (span_meas > 10) {  // sanity check: need reasonable span
-            s_gain[i] = (float)span_true / (float)span_meas;
+        if (measured[i] > 100) {  // sanity check
+            s_gain[i] = (float)mean / (float)measured[i];
         } else {
-            s_gain[i] = 1.0f;  // fallback: no correction
-            log_error("[adc_gain] Ch %d: span too small (%d mV), skipping", i, span_meas);
+            s_gain[i] = 1.0f;
+            log_error("[adc_gain] Ch %d: reading too low (%d mV), skipping", i, measured[i]);
         }
 
         s_gain_result.factor[i] = s_gain[i];
-        log_info("[adc_gain] %s%d: high=%d low=%d factor=%.4f", 
+        s_gain_result.low_mv[i] = 0;
+
+        log_info("[adc_gain] %s%d: measured=%d factor=%.4f", 
                  (i < 4) ? "A" : "B", (i < 4) ? i+1 : i-3,
-                 high_raw[i], low_raw[i], s_gain[i]);
+                 measured[i], s_gain[i]);
     }
 
-    // --- Cleanup: turn off all switches ---
+    // Cleanup: turn off all switches
     for (uint8_t i = 0; i < 8; i++) {
         input_config_mode((Input)i, MODE_OFF);
     }

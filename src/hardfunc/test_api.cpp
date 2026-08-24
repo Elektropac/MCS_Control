@@ -670,37 +670,34 @@ static String io_control_json(JsonDocument& json_packet) {
 }
 
 static String calibrate_gain_json(JsonDocument& json_packet) {
-    // Requires voltage ON (5V) and all inputs disconnected
-    // Optionally set voltage first
-    int voltage = 5;
-    if (!json_packet["data"].isNull() && !json_packet["data"]["voltage"].isNull())
-        voltage = json_packet["data"]["voltage"].as<int>();
+    // Complete calibration sequence:
+    // 1. Zero-cal: shunt to GND, measure offsets
+    // 2. Gain-cal: pullup at 5V, measure and compute correction factors
+    // 3. Verify: read all channels with pullup, should now be identical
 
-    // Set voltage on both channels
-    Voltage volt;
-    switch (voltage) {
-        case 5:  volt = VOLTAGE_5V;  break;
-        case 12: volt = VOLTAGE_12V; break;
-        case 24: volt = VOLTAGE_24V; break;
-        default: volt = VOLTAGE_5V; voltage = 5; break;
-    }
-    voltage_select_set_a(volt);
-    voltage_select_set_b(volt);
-    delay(50);
+    const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
+    JsonDocument doc;
 
-    // Run gain calibration
-    adc_calibrate_gain();
-
-    // Turn off voltage
+    // --- Step 1: Zero calibration ---
     voltage_select_set_a(VOLTAGE_OFF);
     voltage_select_set_b(VOLTAGE_OFF);
+    delay(20);
+    adc_calibrate_zero();
 
-    // Return results
+    JsonArray offsets = doc["zero_offsets"].to<JsonArray>();
+    for (int i = 0; i < 8; i++) {
+        JsonObject o = offsets.add<JsonObject>();
+        o["name"] = names[i];
+        o["offset_mv"] = adc_get_offset((AdcInput)i);
+    }
+
+    // --- Step 2: Gain calibration at 5V ---
+    voltage_select_set_a(VOLTAGE_5V);
+    voltage_select_set_b(VOLTAGE_5V);
+    delay(50);
+    adc_calibrate_gain();
+
     const AdcGainResult& r = adc_get_gain_result();
-    const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
-
-    JsonDocument doc;
-    doc["voltage"] = voltage;
     doc["high_mean_mv"] = r.high_mean;
     doc["low_mean_mv"] = r.low_mean;
 
@@ -711,10 +708,51 @@ static String calibrate_gain_json(JsonDocument& json_packet) {
         ch["high_mv"] = r.high_mv[i];
         ch["low_mv"] = r.low_mv[i];
         ch["factor"] = String(r.factor[i], 6);
-        // Deviation from mean in percent
         float dev = (r.factor[i] - 1.0f) * 100.0f;
-        ch["deviation_pct"] = String(dev, 3);
+        ch["deviation_pct"] = String(dev, 2);
     }
+
+    // --- Step 3: Verify — read all with pullup, corrections now applied ---
+    // Set pullup on all inputs
+    for (int i = 0; i < 8; i++) {
+        input_config_set((Input)i, SW_ANALOG, true);
+        input_config_set((Input)i, SW_PULLUP, true);
+        input_config_set((Input)i, SW_SHUNT, false);
+        input_config_set((Input)i, SW_DIGITAL, false);
+    }
+    delay(100);
+
+    JsonArray verify = doc["verify"].to<JsonArray>();
+    int32_t verify_sum = 0;
+    int32_t verify_vals[8];
+    for (int i = 0; i < 8; i++) {
+        // Average 16 samples for stable verification
+        int32_t sum = 0;
+        for (int s = 0; s < 16; s++) {
+            sum += adc_read_mv((AdcInput)i);
+            delay(10);
+        }
+        verify_vals[i] = sum / 16;
+        verify_sum += verify_vals[i];
+    }
+    int32_t verify_mean = verify_sum / 8;
+
+    for (int i = 0; i < 8; i++) {
+        JsonObject v = verify.add<JsonObject>();
+        v["name"] = names[i];
+        v["mv"] = verify_vals[i];
+        v["volt"] = String(verify_vals[i] / 1000.0, 3);
+        float err = ((float)(verify_vals[i] - verify_mean) / (float)verify_mean) * 100.0f;
+        v["error_pct"] = String(err, 2);
+    }
+    doc["verify_mean_mv"] = verify_mean;
+
+    // Cleanup
+    for (int i = 0; i < 8; i++) {
+        input_config_mode((Input)i, MODE_OFF);
+    }
+    voltage_select_set_a(VOLTAGE_OFF);
+    voltage_select_set_b(VOLTAGE_OFF);
 
     String result;
     serializeJson(doc, result);

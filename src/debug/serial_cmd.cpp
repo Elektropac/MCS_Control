@@ -500,7 +500,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  x           toggle relay A");
                 Serial.println("  y           toggle relay B");
                 Serial.println("  c           ADC zero calibration");
-                Serial.println("  cg/cg5/cg12 ADC gain calibration");
+                Serial.println("  cg          ADC gain calibration");
                 Serial.println("  z/z1-z6     buzzer sounds");
                 Serial.println("  u           UART test (ua232/ub485/usa/ul/uloop)");
                 Serial.println("  va0-24      channel A voltage");
@@ -526,22 +526,13 @@ static void process_command(const char* cmd) {
         return;
     }
 
-    // Gain calibration: cg or cg5, cg12, cg24 (default 5V)
-    if (len >= 2 && lc[0] == 'c' && lc[1] == 'g') {
-        int voltage = 5;
-        if (len > 2) voltage = atoi(lc + 2);
-        Voltage volt;
-        switch (voltage) {
-            case 5:  volt = VOLTAGE_5V;  break;
-            case 12: volt = VOLTAGE_12V; break;
-            case 24: volt = VOLTAGE_24V; break;
-            default: Serial.println("Use: cg, cg5, cg12, cg24"); return;
-        }
-        Serial.printf("\n⚠ ADC GAIN CALIBRATION @ %dV\n", voltage);
+    // Gain calibration: cg (always 5V — only voltage with full ADC range)
+    if (len == 2 && lc[0] == 'c' && lc[1] == 'g') {
+        Serial.println("\n⚠ ADC GAIN CALIBRATION @ 5V");
         Serial.println("  Disconnect all inputs first!");
         Serial.println("  Running...");
-        voltage_select_set_a(volt);
-        voltage_select_set_b(volt);
+        voltage_select_set_a(VOLTAGE_5V);
+        voltage_select_set_b(VOLTAGE_5V);
         delay(50);
         adc_calibrate_gain();
         voltage_select_set_a(VOLTAGE_OFF);

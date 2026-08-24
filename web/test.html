@@ -69,9 +69,7 @@
 
   <h2>Gain Calibrate (disconnect all inputs!)</h2>
   <div class="grid">
-    <button class="btn" onclick="run('test_calibrate_gain',{voltage:5})">🎯 Gain Cal @ 5V</button>
-    <button class="btn" onclick="run('test_calibrate_gain',{voltage:12})">🎯 Gain Cal @ 12V</button>
-    <button class="btn" onclick="run('test_calibrate_gain',{voltage:24})">🎯 Gain Cal @ 24V</button>
+    <button class="btn" onclick="run('test_calibrate_gain',{voltage:5})">🎯 Gain Calibrate</button>
   </div>
 
   <h2>Pulse Test (wire A1→B1, A2→B2, A3→B3, A4→B4)</h2>
@@ -214,14 +212,31 @@
         else if (json.result) log(`  ${json.result}`, 'pass');
         else log('  ' + JSON.stringify(json), 'info');
       } else if (subject === 'test_calibrate_gain') {
-        log(`\n=== Gain Calibration @ ${json.voltage}V ===\n`, 'info');
-        log(`  Reference: high=${json.high_mean_mv} mV, low=${json.low_mean_mv} mV\n`);
-        log(`  Channel  High(mV)  Low(mV)  Factor     Deviation`, 'info');
-        log(`  ───────  ────────  ───────  ─────────  ─────────`);
+        log(`\n=== ADC Calibration (zero + gain + verify) ===\n`, 'info');
+        
+        // Step 1: Zero offsets
+        log(`── Step 1: Zero Calibration ──`, 'info');
+        for (const o of json.zero_offsets) {
+          log(`  ${o.name}: offset ${o.offset_mv} mV`, Math.abs(o.offset_mv) < 10 ? 'pass' : 'warn');
+        }
+        
+        // Step 2: Gain factors
+        log(`\n── Step 2: Gain Calibration @ 5V ──`, 'info');
+        log(`  Mean: ${json.high_mean_mv} mV`);
+        log(`  Channel  Measured  Factor     Deviation`, 'info');
         for (const ch of json.channels) {
           const dev = parseFloat(ch.deviation_pct);
-          const cls = Math.abs(dev) < 0.5 ? 'pass' : Math.abs(dev) < 1.5 ? 'warn' : 'fail';
-          log(`  ${ch.name.padEnd(7)}  ${String(ch.high_mv).padStart(8)}  ${String(ch.low_mv).padStart(7)}  ${ch.factor}  ${ch.deviation_pct}%`, cls);
+          const cls = Math.abs(dev) < 0.2 ? 'pass' : Math.abs(dev) < 0.5 ? 'warn' : 'fail';
+          log(`  ${ch.name.padEnd(7)}  ${String(ch.high_mv).padStart(8)}  ${ch.factor}  ${ch.deviation_pct}%`, cls);
+        }
+        
+        // Step 3: Verification
+        log(`\n── Step 3: Verification (all should read the same) ──`, 'info');
+        log(`  Mean: ${json.verify_mean_mv} mV (${(json.verify_mean_mv/1000).toFixed(3)} V)`);
+        for (const v of json.verify) {
+          const err = parseFloat(v.error_pct);
+          const cls = Math.abs(err) < 0.1 ? 'pass' : Math.abs(err) < 0.5 ? 'warn' : 'fail';
+          log(`  ${v.name}: ${v.volt} V  (${v.error_pct}% from mean)`, cls);
         }
       } else {
         log('\n' + JSON.stringify(json, null, 2), 'info');
