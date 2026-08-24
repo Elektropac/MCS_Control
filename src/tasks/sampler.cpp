@@ -2,7 +2,7 @@
 #include "pins.h"
 #include <driver/gpio.h>
 
-static const uint32_t SAMPLER_INTERVAL_US = 250;
+static const uint32_t SAMPLER_INTERVAL_US = 200;
 static const size_t   SAMPLER_BUFFER_SIZE = 4096;
 
 static volatile SamplerEvent s_ring[SAMPLER_BUFFER_SIZE];

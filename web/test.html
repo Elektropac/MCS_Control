@@ -67,6 +67,25 @@
     <button class="btn" onclick="io('set_digital_off')">↓ Digital OFF</button>
   </div>
 
+  <h2>Fueling Simulation (A1=nozzle, A4=pulses, Relay A=pump)</h2>
+  <div style="margin-bottom:8px;">
+    <label style="color:#7ec8e3;">Pulses/liter: </label>
+    <input id="ppl" type="number" value="10" min="1" max="10000" style="width:80px;padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+  </div>
+  <div class="grid">
+    <button class="btn" onclick="fuelStart()">▶ Start Pump</button>
+    <button class="btn" onclick="fuelStop()">⏹ Stop</button>
+  </div>
+  <div id="fuel-live" style="background:#0d1117;border:1px solid #333;border-radius:6px;padding:12px;font-family:'SF Mono',monospace;font-size:14px;margin:8px 0;display:none;">
+    <div>State: <span id="fl-state">—</span></div>
+    <div>Nozzle: <span id="fl-nozzle">—</span></div>
+    <div>Pump: <span id="fl-pump">—</span></div>
+    <div>Pulses: <span id="fl-pulses">0</span></div>
+    <div>Liters: <span id="fl-liters">0.00</span> L</div>
+    <div>Duration: <span id="fl-duration">0.0</span> sec</div>
+    <div style="color:#666;font-size:11px;margin-top:4px;">Raw: <span id="fl-raw">—</span></div>
+  </div>
+
   <h2>Gain Calibrate (disconnect all inputs!)</h2>
   <div class="grid">
     <button class="btn" onclick="run('test_calibrate_gain',{voltage:5})">🎯 Gain Calibrate</button>
@@ -132,6 +151,64 @@
     function io(action) {
       const port = parseInt(document.getElementById('port').value);
       run('test_io', {port, action});
+    }
+
+    let fuelInterval = null;
+
+    async function fuelStart() {
+      const ppl = parseInt(document.getElementById('ppl').value);
+      await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_fueling', data: {action: 'start', ppl}})
+      });
+      document.getElementById('fuel-live').style.display = 'block';
+      clear();
+      log('⛽ Fueling started — live view active', 'pass');
+      if (fuelInterval) clearInterval(fuelInterval);
+      fuelInterval = setInterval(fuelPoll, 500);
+    }
+
+    async function fuelStop() {
+      if (fuelInterval) { clearInterval(fuelInterval); fuelInterval = null; }
+      const r = await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_fueling', data: {action: 'stop'}})
+      });
+      const json = await r.json();
+      document.getElementById('fl-state').textContent = 'STOPPED';
+      document.getElementById('fl-state').style.color = '#d29922';
+      document.getElementById('fl-pulses').textContent = json.pulses;
+      document.getElementById('fl-liters').textContent = json.liters;
+      document.getElementById('fl-duration').textContent = json.duration_sec;
+      clear();
+      log(`⛽ Fueling COMPLETE`, 'pass');
+      log(`  Total: ${json.pulses} pulses = ${json.liters} L (${json.ppl} ppl)`, 'pass');
+      log(`  Duration: ${json.duration_sec} sec`, 'info');
+    }
+
+    async function fuelPoll() {
+      try {
+        const r = await fetch('/api/function_silo', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject: 'test_fueling', data: {action: 'status'}})
+        });
+        const json = await r.json();
+        document.getElementById('fl-state').textContent = json.state.toUpperCase();
+        document.getElementById('fl-state').style.color = json.state === 'running' ? '#3fb950' : '#eee';
+        document.getElementById('fl-nozzle').textContent = json.nozzle || '—';
+        document.getElementById('fl-nozzle').style.color = json.nozzle === 'lifted' ? '#3fb950' : '#d29922';
+        document.getElementById('fl-pump').textContent = json.pump_relay || '—';
+        document.getElementById('fl-pump').style.color = json.pump_relay === 'ON' ? '#3fb950' : '#f85149';
+        document.getElementById('fl-pulses').textContent = json.pulses;
+        document.getElementById('fl-liters').textContent = json.liters;
+        document.getElementById('fl-duration').textContent = json.duration_sec;
+        if (json.raw_state !== undefined) {
+          document.getElementById('fl-raw').textContent = '0b' + json.raw_state.toString(2).padStart(8,'0');
+        }
+      } catch(e) {}
     }
 
     async function run(subject, data) {
@@ -211,6 +288,30 @@
         else if (json.digital !== undefined) log(`  GPIO: ${json.digital} — ${json.state}`, 'pass');
         else if (json.result) log(`  ${json.result}`, 'pass');
         else log('  ' + JSON.stringify(json), 'info');
+      } else if (subject === 'test_fueling') {
+        if (json.state === 'running') {
+          log(`\n⛽ Fueling: ${json.state.toUpperCase()}`, 'info');
+          if (json.message) log(`  ${json.message}`, 'info');
+          if (json.nozzle !== undefined) {
+            log(`  Nozzle: ${json.nozzle}`, json.nozzle === 'lifted' ? 'pass' : 'warn');
+            log(`  Pump relay: ${json.pump_relay}`, json.pump_relay === 'ON' ? 'pass' : 'warn');
+            log(`  Pulses: ${json.pulses}  (${json.liters} L @ ${json.ppl} ppl)`, 'pass');
+            log(`  Duration: ${json.duration_sec} sec`, 'info');
+            if (json.raw_state !== undefined) log(`  Raw state: 0b${json.raw_state.toString(2).padStart(8,'0')} (A1=bit0, A4=bit3)`, 'info');
+          }
+        } else if (json.state === 'stopped') {
+          log(`\n⛽ Fueling COMPLETE`, 'pass');
+          log(`  Total pulses: ${json.pulses}`, 'pass');
+          log(`  Total liters: ${json.liters} L`, 'pass');
+          log(`  Pulses/liter: ${json.ppl}`, 'info');
+          log(`  Duration: ${json.duration_sec} sec`, 'info');
+        } else {
+          log(`\n⛽ Fueling: IDLE`, 'info');
+          if (json.nozzle !== undefined) {
+            log(`  Nozzle: ${json.nozzle}`, 'info');
+            log(`  Pump relay: ${json.pump_relay}`, 'info');
+          }
+        }
       } else if (subject === 'test_calibrate_gain') {
         log(`\n=== ADC Calibration (zero + gain + verify) ===\n`, 'info');
         

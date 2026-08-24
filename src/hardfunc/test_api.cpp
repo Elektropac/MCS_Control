@@ -759,6 +759,122 @@ static String calibrate_gain_json(JsonDocument& json_packet) {
     return result;
 }
 
+static String fueling_sim_json(JsonDocument& json_packet) {
+    // Virtual pump test:
+    // - Relay A = pump
+    // - A1 (bit 0) = nozzle switch (pullup, LOW = lifted)
+    // - A4 (bit 3) = flow pulses (pullup, count falling edges)
+    //
+    // Actions: "start", "status", "stop"
+    
+    String action = "status";
+    int ppl = 10;  // pulses per liter (default)
+    if (!json_packet["data"].isNull()) {
+        if (!json_packet["data"]["action"].isNull())
+            action = json_packet["data"]["action"].as<String>();
+        if (!json_packet["data"]["ppl"].isNull())
+            ppl = json_packet["data"]["ppl"].as<int>();
+    }
+
+    // Static state (persists between calls)
+    static bool s_fueling_active = false;
+    static uint32_t s_pulse_cursor = 0;
+    static uint32_t s_pulse_count = 0;
+    static uint32_t s_start_time = 0;
+    static int s_ppl = 10;
+    static uint8_t s_prev_state = 0;
+
+    JsonDocument doc;
+
+    if (action == "start") {
+        // Set voltage for pullup to drive opto
+        voltage_select_set_a(VOLTAGE_12V);
+        delay(20);
+
+        // Setup: pullup on A1 and A4, digital mode for sampler
+        input_config_set(INPUT_A1, SW_ANALOG, false);
+        input_config_set(INPUT_A1, SW_PULLUP, true);
+        input_config_set(INPUT_A1, SW_SHUNT, false);
+        input_config_set(INPUT_A1, SW_DIGITAL, true);
+
+        input_config_set(INPUT_A4, SW_ANALOG, false);
+        input_config_set(INPUT_A4, SW_PULLUP, true);
+        input_config_set(INPUT_A4, SW_SHUNT, false);
+        input_config_set(INPUT_A4, SW_DIGITAL, true);
+
+        // Turn on pump relay
+        relay_set(RELAY_A, true);
+
+        // Wait for signals to settle after config change
+        delay(50);
+
+        // Reset counters AFTER settling (avoids counting config transients)
+        s_pulse_cursor = sampler_write_position();
+        s_pulse_count = 0;
+        s_start_time = millis();
+        s_ppl = ppl;
+        s_prev_state = sampler_current_state();
+        s_fueling_active = true;
+
+        doc["state"] = "running";
+        doc["message"] = "Pump ON. Waiting for nozzle lift (A1 LOW) and pulses (A4)...";
+    }
+    else if (action == "stop") {
+        relay_set(RELAY_A, false);
+        s_fueling_active = false;
+
+        // Count remaining pulses
+        SamplerEvent evt;
+        while (sampler_read_next(s_pulse_cursor, evt)) {
+            uint8_t prev_bit = (s_prev_state >> 3) & 1;  // A4 = bit 3
+            uint8_t curr_bit = (evt.state >> 3) & 1;
+            if (prev_bit == 1 && curr_bit == 0) s_pulse_count++;  // falling edge
+            s_prev_state = evt.state;
+        }
+
+        float liters = (float)s_pulse_count / (float)s_ppl;
+        uint32_t duration_ms = millis() - s_start_time;
+
+        doc["state"] = "stopped";
+        doc["pulses"] = s_pulse_count;
+        doc["liters"] = String(liters, 2);
+        doc["ppl"] = s_ppl;
+        doc["duration_sec"] = String(duration_ms / 1000.0, 1);
+
+        input_config_mode(INPUT_A1, MODE_OFF);
+        input_config_mode(INPUT_A4, MODE_OFF);
+        voltage_select_set_a(VOLTAGE_OFF);
+    }
+    else {  // status
+        // Count pulses since last check
+        SamplerEvent evt;
+        while (sampler_read_next(s_pulse_cursor, evt)) {
+            uint8_t prev_bit = (s_prev_state >> 3) & 1;  // A4 = bit 3
+            uint8_t curr_bit = (evt.state >> 3) & 1;
+            if (prev_bit == 1 && curr_bit == 0) s_pulse_count++;  // falling edge
+            s_prev_state = evt.state;
+        }
+
+        uint8_t current = sampler_current_state();
+        bool nozzle_lifted = ((current >> 0) & 1);  // A1: GPIO 1 = nozzle lifted (switch closed to GND)
+        float liters = (float)s_pulse_count / (float)s_ppl;
+        uint32_t duration_ms = s_fueling_active ? (millis() - s_start_time) : 0;
+
+        doc["state"] = s_fueling_active ? "running" : "idle";
+        doc["nozzle"] = nozzle_lifted ? "lifted" : "hung";
+        doc["pump_relay"] = relay_get(RELAY_A) ? "ON" : "OFF";
+        doc["pulses"] = s_pulse_count;
+        doc["liters"] = String(liters, 2);
+        doc["ppl"] = s_ppl;
+        doc["duration_sec"] = String(duration_ms / 1000.0, 1);
+        doc["raw_state"] = current;  // debug: show raw sampler byte
+    }
+
+    String result;
+    serializeJson(doc, result);
+    return result;
+}
+
 String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_i2c_scan")     return i2c_scan_json();
     if (function_name == "test_adc_read")     return adc_read_json();
@@ -771,6 +887,7 @@ String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_io")           return io_control_json(json_packet);
     if (function_name == "test_pulse")        return pulse_test_json(json_packet);
     if (function_name == "test_calibrate_gain") return calibrate_gain_json(json_packet);
+    if (function_name == "test_fueling")      return fueling_sim_json(json_packet);
     return ""; // not handled
 }
 
