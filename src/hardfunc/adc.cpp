@@ -52,9 +52,9 @@ static DiffMap DIFF_MAP[4] = {
 };
 
 void adc_init() {
-    adc_a.set_pga(PGA_4096);
+    adc_a.set_pga(PGA_6144);
     adc_a.set_data_rate(DR_128SPS);
-    adc_b.set_pga(PGA_4096);
+    adc_b.set_pga(PGA_6144);
     adc_b.set_data_rate(DR_128SPS);
 
     // Load saved calibration if available

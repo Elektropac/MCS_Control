@@ -622,13 +622,13 @@ static String io_control_json(JsonDocument& json_packet) {
     }
     else if (action == "read_shunt") {
         input_config_set(inp, SW_ANALOG, true);
-        input_config_set(inp, SW_PULLUP, true);
+        input_config_set(inp, SW_PULLUP, false);
         input_config_set(inp, SW_SHUNT, true);
         delay(20);
         int32_t mv = adc_read_mv(adc_inp);
-        int32_t supply_mv = mv * 26;
+        float ma = mv / 200.0f;  // 200Ω shunt
         doc["mv"] = mv;
-        doc["supply_mv"] = supply_mv;
+        doc["ma"] = String(ma, 2);
         doc["volt"] = String(mv / 1000.0, 3);
     }
     else if (action == "read_digital") {

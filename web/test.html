@@ -207,7 +207,7 @@
       } else if (subject === 'test_io') {
         log(`\n${json.name} — ${json.action}:`, 'info');
         if (json.error) { log(`  ✗ ${json.error}`, 'fail'); }
-        else if (json.volt !== undefined) log(`  ${json.volt} V  (${json.mv} mV)${json.supply_mv ? '  supply ~'+json.supply_mv+' mV' : ''}`, 'pass');
+        else if (json.volt !== undefined) log(`  ${json.volt} V  (${json.mv} mV)${json.ma ? '  = '+json.ma+' mA' : ''}`, 'pass');
         else if (json.digital !== undefined) log(`  GPIO: ${json.digital} — ${json.state}`, 'pass');
         else if (json.result) log(`  ${json.result}`, 'pass');
         else log('  ' + JSON.stringify(json), 'info');
