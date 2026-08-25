@@ -67,6 +67,27 @@
     <button class="btn" onclick="io('set_digital_off')">↓ Digital OFF</button>
   </div>
 
+  <h2>Probe Live (all 8 channels)</h2>
+  <div style="margin-bottom:8px;">
+    <label style="color:#7ec8e3;">Mode: </label>
+    <select id="probe-mode" style="padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+      <option value="ma">4-20 mA</option>
+      <option value="voltage">Voltage</option>
+    </select>
+  </div>
+  <div class="grid">
+    <button class="btn" onclick="probeStart()">▶ Start</button>
+    <button class="btn" onclick="probeStop()">⏹ Stop</button>
+  </div>
+  <div id="probe-live" style="background:#0d1117;border:1px solid #333;border-radius:6px;padding:12px;font-family:'SF Mono',monospace;font-size:14px;margin:8px 0;display:none;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;">
+      <div>A1: <span id="pl-a1">—</span></div><div>B1: <span id="pl-b1">—</span></div>
+      <div>A2: <span id="pl-a2">—</span></div><div>B2: <span id="pl-b2">—</span></div>
+      <div>A3: <span id="pl-a3">—</span></div><div>B3: <span id="pl-b3">—</span></div>
+      <div>A4: <span id="pl-a4">—</span></div><div>B4: <span id="pl-b4">—</span></div>
+    </div>
+  </div>
+
   <h2>Fueling Simulation (A1=nozzle, A4=pulses, Relay A=pump)</h2>
   <div style="margin-bottom:8px;">
     <label style="color:#7ec8e3;">Pulses/liter: </label>
@@ -154,6 +175,58 @@
     }
 
     let fuelInterval = null;
+    let probeInterval = null;
+
+    async function probeStart() {
+      const mode = document.getElementById('probe-mode').value;
+      await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_probes', data: {action: 'start', mode}})
+      });
+      document.getElementById('probe-live').style.display = 'block';
+      clear();
+      log('📊 Probes active — live view', 'pass');
+      if (probeInterval) clearInterval(probeInterval);
+      probeInterval = setInterval(probePoll, 500);
+    }
+
+    async function probeStop() {
+      if (probeInterval) { clearInterval(probeInterval); probeInterval = null; }
+      await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_probes', data: {action: 'stop'}})
+      });
+      document.getElementById('probe-live').style.display = 'none';
+      clear();
+      log('📊 Probes stopped', 'info');
+    }
+
+    async function probePoll() {
+      try {
+        const r = await fetch('/api/function_silo', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject: 'test_probes', data: {action: 'status'}})
+        });
+        const json = await r.json();
+        if (json.channels) {
+          const ids = ['a1','a2','a3','a4','b1','b2','b3','b4'];
+          for (let i = 0; i < 8; i++) {
+            const ch = json.channels[i];
+            const el = document.getElementById('pl-' + ids[i]);
+            if (ch.ma !== undefined) {
+              el.textContent = ch.ma + ' mA';
+              el.style.color = parseFloat(ch.ma) > 3.5 ? '#3fb950' : '#d29922';
+            } else {
+              el.textContent = ch.volt + ' V';
+              el.style.color = '#3fb950';
+            }
+          }
+        }
+      } catch(e) {}
+    }
 
     async function fuelStart() {
       const ppl = parseInt(document.getElementById('ppl').value);

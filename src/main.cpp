@@ -16,7 +16,7 @@
 
 void setup() {
     Serial.begin(115200);
-    delay(2000);                    // wait for USB serial connection
+    delay(200);                     // minimal settle time
     log_init();                     // log system (serial + ring buffer)
 
     // Filesystem + config (before tasks, so menu can read it)

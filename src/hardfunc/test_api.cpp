@@ -875,6 +875,92 @@ static String fueling_sim_json(JsonDocument& json_packet) {
     return result;
 }
 
+static String probe_live_json(JsonDocument& json_packet) {
+    // Live probe monitoring: reads one input per channel (A+B) in selected mode
+    // Actions: "start", "status", "stop"
+    // Modes: "voltage" (default), "ma"
+    
+    String action = "status";
+    String mode = "ma";
+    if (!json_packet["data"].isNull()) {
+        if (!json_packet["data"]["action"].isNull())
+            action = json_packet["data"]["action"].as<String>();
+        if (!json_packet["data"]["mode"].isNull())
+            mode = json_packet["data"]["mode"].as<String>();
+    }
+
+    static bool s_probe_active = false;
+    static String s_mode = "ma";
+
+    const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
+    JsonDocument doc;
+
+    if (action == "start") {
+        s_mode = mode;
+        
+        // Set voltage on both channels
+        voltage_select_set_a(VOLTAGE_24V);
+        voltage_select_set_b(VOLTAGE_24V);
+        delay(20);
+
+        // Configure all 8 inputs
+        for (int i = 0; i < 8; i++) {
+            Input inp = (Input)i;
+            if (s_mode == "ma") {
+                // 4-20mA: analog + shunt (200Ω to GND)
+                input_config_set(inp, SW_ANALOG, true);
+                input_config_set(inp, SW_PULLUP, false);
+                input_config_set(inp, SW_SHUNT, true);
+                input_config_set(inp, SW_DIGITAL, false);
+            } else {
+                // Voltage: just analog switch
+                input_config_set(inp, SW_ANALOG, true);
+                input_config_set(inp, SW_PULLUP, false);
+                input_config_set(inp, SW_SHUNT, false);
+                input_config_set(inp, SW_DIGITAL, false);
+            }
+        }
+        delay(50);
+        s_probe_active = true;
+
+        doc["state"] = "running";
+        doc["mode"] = s_mode;
+        doc["message"] = String("Probes active (") + s_mode + "). Reading all 8 channels...";
+    }
+    else if (action == "stop") {
+        s_probe_active = false;
+        for (int i = 0; i < 8; i++) {
+            input_config_mode((Input)i, MODE_OFF);
+        }
+        voltage_select_set_a(VOLTAGE_OFF);
+        voltage_select_set_b(VOLTAGE_OFF);
+
+        doc["state"] = "stopped";
+    }
+    else {  // status
+        doc["state"] = s_probe_active ? "running" : "idle";
+        doc["mode"] = s_mode;
+
+        JsonArray channels = doc["channels"].to<JsonArray>();
+        for (int i = 0; i < 8; i++) {
+            int32_t mv = adc_read_mv((AdcInput)i);
+            JsonObject ch = channels.add<JsonObject>();
+            ch["name"] = names[i];
+            ch["mv"] = mv;
+            if (s_mode == "ma") {
+                float ma = mv / 200.0f;
+                ch["ma"] = String(ma, 2);
+            } else {
+                ch["volt"] = String(mv / 1000.0, 3);
+            }
+        }
+    }
+
+    String result;
+    serializeJson(doc, result);
+    return result;
+}
+
 String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_i2c_scan")     return i2c_scan_json();
     if (function_name == "test_adc_read")     return adc_read_json();
@@ -888,6 +974,7 @@ String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_pulse")        return pulse_test_json(json_packet);
     if (function_name == "test_calibrate_gain") return calibrate_gain_json(json_packet);
     if (function_name == "test_fueling")      return fueling_sim_json(json_packet);
+    if (function_name == "test_probes")       return probe_live_json(json_packet);
     return ""; // not handled
 }
 
