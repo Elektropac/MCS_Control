@@ -5,6 +5,7 @@
 #include "hardware/all_drivers_init.h"
 #include "platform/sampler.h"
 #include "apps/flow_guard/flow_guard.h"
+#include "apps/cloudgauge/cloudgauge.h"
 #include "platform/buttons_task.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
@@ -19,8 +20,12 @@ void setup() {
     flow_guard_init();              // flow guard state (cursor synced to sampler)
     all_drivers_init();             // probe I2C chips + init all peripherals
 
+    // Apps
+    cloudgauge_init();              // configure probe channels (24V, all off)
+
     // FreeRTOS tasks
     flow_guard_start_task();        // monitors pulses without active transaction
+    cloudgauge_start_task();        // reads 8 probes @ 1 Hz with averaging
     buttons_start_task();           // polls button ADC every 50ms
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)
     serial_cmd_start_task();        // serial debug commands (send ? for help)
