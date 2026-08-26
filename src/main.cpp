@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "pins.h"
-#include "hal.h"
+#include "i2c.h"
 #include "logging.h"
 #include "file_system.h"
 #include "config.h"

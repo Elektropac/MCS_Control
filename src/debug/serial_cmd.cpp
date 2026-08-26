@@ -10,7 +10,7 @@
 #include "hardfunc/serial_control.h"
 #include "buzzer.h"
 #include "buttons.h"
-#include "hal.h"
+#include "i2c.h"
 #include "pins.h"
 #include "tca9535.h"
 

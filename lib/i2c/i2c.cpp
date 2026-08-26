@@ -1,4 +1,4 @@
-#include "hal.h"
+#include "i2c.h"
 
 static SemaphoreHandle_t s_i2c_mutex = nullptr;
 

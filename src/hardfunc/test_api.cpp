@@ -1,5 +1,5 @@
 #include "test_api.h"
-#include "hal.h"
+#include "i2c.h"
 #include "../pins.h"
 #include "tca9535.h"
 #include "ads1115.h"

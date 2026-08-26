@@ -60,7 +60,7 @@
 #include "voltage_select.h"
 #include "hw_status.h"
 #include "pins.h"
-#include "hal.h"
+#include "i2c.h"
 #include "tca9535.h"
 
 static TCA9535 expander(ADDR_VOLTAGE_SELECT);
