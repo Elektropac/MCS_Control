@@ -92,10 +92,11 @@ static void read_all_probes() {
     // Calculate next probe index
     uint8_t next_probe = (s_current_probe + 1) % NUM_PROBES;
 
-    // Turn ON shunt for next probe (will be read next cycle)
+    // Turn ON analog+shunt for next probe (will be read next cycle)
+    input_config_set((Input)next_probe, SW_ANALOG, true);
     input_config_set((Input)next_probe, SW_SHUNT, true);
 
-    // Read current probe (shunt was turned on last cycle — 1s settle time)
+    // Read current probe (was turned on last cycle — 1s settle time)
     if (!s_first_round) {
         adc_read_mv((AdcInput)s_current_probe);  // discard (MUX settle)
         int32_t mv = adc_read_mv((AdcInput)s_current_probe);  // keep
@@ -103,7 +104,8 @@ static void read_all_probes() {
         add_sample(s_probes[s_current_probe], ma);
     }
 
-    // Turn OFF shunt on current probe (done reading)
+    // Turn OFF analog+shunt on current probe (done reading)
+    input_config_set((Input)s_current_probe, SW_ANALOG, false);
     input_config_set((Input)s_current_probe, SW_SHUNT, false);
 
     // Advance
@@ -118,7 +120,8 @@ static void read_all_probes() {
 static void cloudgauge_task(void* param) {
     (void)param;
 
-    // Kick off: turn on shunt for first probe
+    // Kick off: turn on analog+shunt for first probe
+    input_config_set((Input)0, SW_ANALOG, true);
     input_config_set((Input)0, SW_SHUNT, true);
     s_current_probe = 0;
     s_first_round = true;
@@ -147,16 +150,15 @@ void cloudgauge_init() {
     voltage_select_set_b(VOLTAGE_24V);
     vTaskDelay(pdMS_TO_TICKS(20));
 
-    // Configure all 8 inputs: analog ON (always), shunt OFF (toggled per read)
+    // All inputs OFF — analog+shunt toggled per read
     for (uint8_t i = 0; i < 8; i++) {
-        input_config_set((Input)i, SW_ANALOG, true);
+        input_config_set((Input)i, SW_ANALOG, false);
         input_config_set((Input)i, SW_PULLUP, false);
         input_config_set((Input)i, SW_SHUNT, false);
         input_config_set((Input)i, SW_DIGITAL, false);
     }
-    vTaskDelay(pdMS_TO_TICKS(50));
 
-    Serial.println("[cloudgauge] Initialized, 8 probes @ 24V, shunt toggled per read, 1 Hz");
+    Serial.println("[cloudgauge] Initialized, 8 probes @ 24V, 1s settle, 1 probe at a time");
 }
 
 void cloudgauge_start_task() {
