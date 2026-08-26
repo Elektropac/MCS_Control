@@ -14,7 +14,21 @@ static void process_command(const char* cmd) {
             case 'r': debug_runtime_stats(); return;
             case 'm': debug_memory();        return;
             case 'p':
-                Serial.println(cloudgauge_get_all());
+                {
+                    Serial.println("\n=== CloudGauge Probes ===");
+                    Serial.println("Input     mA       cm");
+                    Serial.println("-----   ------   ------");
+                    for (uint8_t i = 0; i < 8; i++) {
+                        const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
+                        String json = cloudgauge_get(names[i]);
+                        JsonDocument doc;
+                        deserializeJson(doc, json);
+                        float ma = doc["ma"];
+                        float cm = doc["cm"];
+                        Serial.printf("  %s     %5.2f    %5.1f\n", names[i], ma, cm);
+                    }
+                    Serial.println();
+                }
                 return;
             case '?':
                 Serial.println("Commands:");
