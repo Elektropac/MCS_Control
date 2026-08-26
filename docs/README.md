@@ -40,6 +40,7 @@ Welcome to the MCS Control documentation. This index covers all aspects of the M
 | Document | Description |
 |----------|-------------|
 | [Firmware Architecture](firmware-architecture.md) | FreeRTOS task model, memory strategy, library structure, build system, responsibility split |
+| [App Architecture](app-architecture.md) | How to write apps for MCS Control — API, structure, lifecycle, examples |
 | [Hardware Reference](hardware-reference.md) | Pin mapping, I2C device map, ADC specs, DC-DC converters, isolation design |
 | [API Reference](api-reference.md) | Web API (HTTP JSON), serial commands, web pages |
 
