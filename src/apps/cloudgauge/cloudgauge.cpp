@@ -83,36 +83,40 @@ static void add_sample(ProbeState& p, float ma) {
 }
 
 // --- Read probes: prepare next, read current ---
-// Each second: turn on shunt for NEXT probe, read CURRENT probe (settled for 1s)
+// Order: A1, B1, A2, B2, A3, B3, A4, B4 (alternating channels)
+// This ensures never two probes on same DC-DC at once.
 
-static uint8_t s_current_probe = 0;
+static const uint8_t PROBE_ORDER[] = {0, 4, 1, 5, 2, 6, 3, 7};  // A1,B1,A2,B2,A3,B3,A4,B4
+static uint8_t s_order_idx = 0;
 static bool s_first_round = true;
 
 static void read_all_probes() {
-    // Calculate next probe index
-    uint8_t next_probe = (s_current_probe + 1) % NUM_PROBES;
+    // Current and next in the alternating order
+    uint8_t current = PROBE_ORDER[s_order_idx];
+    uint8_t next_idx = (s_order_idx + 1) % NUM_PROBES;
+    uint8_t next = PROBE_ORDER[next_idx];
 
     // Turn ON analog+shunt for next probe (will be read next cycle)
-    input_config_set((Input)next_probe, SW_ANALOG, true);
-    input_config_set((Input)next_probe, SW_SHUNT, true);
+    input_config_set((Input)next, SW_ANALOG, true);
+    input_config_set((Input)next, SW_SHUNT, true);
 
     // Read current probe (was turned on last cycle — 1s settle time)
     if (!s_first_round) {
-        adc_read_mv((AdcInput)s_current_probe);  // discard (MUX settle)
-        int32_t mv = adc_read_mv((AdcInput)s_current_probe);  // keep
+        adc_read_mv((AdcInput)current);  // discard (MUX settle)
+        int32_t mv = adc_read_mv((AdcInput)current);  // keep
         float ma = mv / 200.0f;
-        add_sample(s_probes[s_current_probe], ma);
+        add_sample(s_probes[current], ma);
     }
 
     // Turn OFF analog+shunt on current probe (done reading)
-    input_config_set((Input)s_current_probe, SW_ANALOG, false);
-    input_config_set((Input)s_current_probe, SW_SHUNT, false);
+    input_config_set((Input)current, SW_ANALOG, false);
+    input_config_set((Input)current, SW_SHUNT, false);
 
     // Advance
-    s_current_probe = next_probe;
+    s_order_idx = next_idx;
 
     // After first full round, we have valid data
-    if (s_current_probe == 0) s_first_round = false;
+    if (s_order_idx == 0) s_first_round = false;
 }
 
 // --- Task: one probe per second ---
@@ -120,10 +124,10 @@ static void read_all_probes() {
 static void cloudgauge_task(void* param) {
     (void)param;
 
-    // Kick off: turn on analog+shunt for first probe
-    input_config_set((Input)0, SW_ANALOG, true);
-    input_config_set((Input)0, SW_SHUNT, true);
-    s_current_probe = 0;
+    // Kick off: turn on analog+shunt for first probe in order (A1)
+    input_config_set((Input)PROBE_ORDER[0], SW_ANALOG, true);
+    input_config_set((Input)PROBE_ORDER[0], SW_SHUNT, true);
+    s_order_idx = 0;
     s_first_round = true;
 
     for (;;) {
