@@ -82,35 +82,18 @@ static void add_sample(ProbeState& p, float ma) {
     p.avg_ma = compute_average(p);
 }
 
-// --- Read one pair of probes (A-side + B-side in parallel) ---
+// --- Read all probes (all switches stay ON, just read ADC) ---
 
-static void read_probe_pair(uint8_t index_a, uint8_t index_b) {
-    // Enable analog + shunt on both channels simultaneously
-    input_config_set((Input)index_a, SW_ANALOG, true);
-    input_config_set((Input)index_a, SW_SHUNT, true);
-    input_config_set((Input)index_b, SW_ANALOG, true);
-    input_config_set((Input)index_b, SW_SHUNT, true);
+static void read_all_probes() {
+    for (uint8_t i = 0; i < NUM_PROBES; i++) {
+        // Double-read for MUX settle
+        adc_read_mv((AdcInput)i);  // discard
+        int32_t mv = adc_read_mv((AdcInput)i);  // keep
 
-    // Wait for current loop to settle
-    vTaskDelay(pdMS_TO_TICKS(SETTLE_TIME_MS));
-
-    // Read both ADCs
-    int32_t mv_a = adc_read_mv((AdcInput)index_a);
-    int32_t mv_b = adc_read_mv((AdcInput)index_b);
-
-    // Turn off both
-    input_config_set((Input)index_a, SW_ANALOG, false);
-    input_config_set((Input)index_a, SW_SHUNT, false);
-    input_config_set((Input)index_b, SW_ANALOG, false);
-    input_config_set((Input)index_b, SW_SHUNT, false);
-
-    // Convert mV to mA (200Ω shunt: I = V/R)
-    float ma_a = mv_a / 200.0f;
-    float ma_b = mv_b / 200.0f;
-
-    // Store samples
-    add_sample(s_probes[index_a], ma_a);
-    add_sample(s_probes[index_b], ma_b);
+        // Convert mV to mA (200Ω shunt: I = V/R)
+        float ma = mv / 200.0f;
+        add_sample(s_probes[i], ma);
+    }
 }
 
 // --- Task: reads all probes every SAMPLE_INTERVAL_MS ---
@@ -119,11 +102,7 @@ static void cloudgauge_task(void* param) {
     (void)param;
 
     for (;;) {
-        // Read 4 pairs: A1+B1, A2+B2, A3+B3, A4+B4
-        for (uint8_t i = 0; i < 4; i++) {
-            read_probe_pair(i, i + 4);
-        }
-
+        read_all_probes();
         vTaskDelay(pdMS_TO_TICKS(SAMPLE_INTERVAL_MS));
     }
 }
@@ -144,21 +123,31 @@ void cloudgauge_init() {
     // Set both channels to 24V (probes need it)
     voltage_select_set_a(VOLTAGE_24V);
     voltage_select_set_b(VOLTAGE_24V);
+    vTaskDelay(pdMS_TO_TICKS(20));
 
-    // All inputs OFF to start (no current draw)
+    // Configure all 8 inputs for 4-20mA: analog + shunt ON permanently
     for (uint8_t i = 0; i < 8; i++) {
-        input_config_set((Input)i, SW_ANALOG, false);
+        input_config_set((Input)i, SW_ANALOG, true);
         input_config_set((Input)i, SW_PULLUP, false);
-        input_config_set((Input)i, SW_SHUNT, false);
+        input_config_set((Input)i, SW_SHUNT, true);
         input_config_set((Input)i, SW_DIGITAL, false);
     }
+    vTaskDelay(pdMS_TO_TICKS(50));
 
-    Serial.println("[cloudgauge] Initialized, 8 probes @ 24V, 1 Hz sampling");
+    Serial.println("[cloudgauge] Initialized, 8 probes @ 24V, all switches ON, 1 Hz sampling");
 }
 
 void cloudgauge_start_task() {
     xTaskCreate(cloudgauge_task, "cloudgauge", 4096, nullptr, 2, &s_task_handle);
     task_register(s_task_handle, "cloudgauge", 2, 4096);
+}
+
+void cloudgauge_stop() {
+    if (s_task_handle) vTaskSuspend(s_task_handle);
+}
+
+void cloudgauge_start() {
+    if (s_task_handle) vTaskResume(s_task_handle);
 }
 
 String cloudgauge_get_all() {
