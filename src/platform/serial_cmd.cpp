@@ -1,6 +1,7 @@
 #include "serial_cmd.h"
 #include "debug.h"
 #include "task_registry.h"
+#include "apps/cloudgauge/cloudgauge.h"
 
 static char s_cmd_buf[64];
 static uint8_t s_cmd_pos = 0;
@@ -12,12 +13,16 @@ static void process_command(const char* cmd) {
             case 't': debug_task_list();     return;
             case 'r': debug_runtime_stats(); return;
             case 'm': debug_memory();        return;
+            case 'p':
+                Serial.println(cloudgauge_get_all());
+                return;
             case '?':
                 Serial.println("Commands:");
                 Serial.println("  d         - full debug dump");
                 Serial.println("  t         - task list");
                 Serial.println("  r         - runtime info");
                 Serial.println("  m         - memory info");
+                Serial.println("  p         - probe readings (cloudgauge)");
                 Serial.println("  s <name>  - suspend task");
                 Serial.println("  g <name>  - resume (go) task");
                 Serial.println("  ?         - this help");
