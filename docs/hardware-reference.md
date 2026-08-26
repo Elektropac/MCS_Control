@@ -260,10 +260,11 @@ Each channel is fully isolated from the ESP32 core and from the other channel:
 
 | Parameter | Value |
 |-----------|-------|
+| Part | TE Connectivity T9GV1L14-5 (5V coil) |
 | Type | Electromechanical, SPST-NO |
-| Coil voltage | 5 V |
+| Coil voltage | 5 V DC |
 | Coil current | ~70 mA |
-| Contact rating | 5 A @ 250 V AC / 30 V DC |
+| Contact rating | 15 A @ 250 V AC / 30 A @ 30 V DC |
 | Control | Via I2C expander at 0x27 |
 
 Two relays available: one per channel (AR and BR). Driven by the relay/serial board expander.
