@@ -6,7 +6,7 @@
 // Used by all drivers that communicate on the I2C bus.
 //
 // Usage:
-//   #include "hal.h"
+//   #include "i2c.h"
 //
 //   if (i2c_take(100)) {
 //       Wire.beginTransmission(addr);

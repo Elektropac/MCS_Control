@@ -1,6 +1,6 @@
 #include "buttons_task.h"
 #include "buttons.h"
-#include "debug/task_registry.h"
+#include "platform/task_registry.h"
 
 static void buttons_task(void* param) {
     (void)param;

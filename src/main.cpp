@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include "pins.h"
-#include "hal.h"
+#include "i2c.h"
 #include "logging.h"
-#include "hardfunc/all_drivers_init.h"
-#include "tasks/sampler.h"
-#include "tasks/flow_guard.h"
-#include "tasks/buttons_task.h"
-#include "tasks/network_task.h"
-#include "debug/serial_cmd.h"
+#include "hardware/all_drivers_init.h"
+#include "platform/sampler.h"
+#include "apps/flow_guard/flow_guard.h"
+#include "platform/buttons_task.h"
+#include "platform/network_task.h"
+#include "platform/serial_cmd.h"
 
 void setup() {
     Serial.begin(115200);

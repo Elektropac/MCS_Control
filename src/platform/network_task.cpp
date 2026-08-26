@@ -6,7 +6,7 @@
 #include "web_socket.h"
 #include "web_server.h"
 #include "rgb.h"
-#include "debug/task_registry.h"
+#include "platform/task_registry.h"
 
 static void network_task(void* param) {
     (void)param;

@@ -1,7 +1,5 @@
 #include "app_registry.h"
 #include "../demo_sensor/demo_sensor.h"
-// #include "../pump_controller/pump_controller.h"  // uncomment when ready
-// #include "../tank_gauge/tank_gauge.h"            // uncomment when ready
 
 namespace app_registry {
 

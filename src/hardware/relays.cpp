@@ -1,7 +1,7 @@
 #include "relays.h"
 #include "hw_status.h"
 #include "pins.h"
-#include "hal.h"
+#include "i2c.h"
 #include "tca9535.h"
 
 // Relays are on the serial_control expander (0x27), port 0, bits 6+7

@@ -1,7 +1,7 @@
 #include "all_drivers_init.h"
 #include "hw_status.h"
 #include "pins.h"
-#include "hal.h"
+#include "i2c.h"
 #include "logging.h"
 #include "ssd1306.h"
 #include "buzzer.h"

@@ -1,11 +1,11 @@
 #include "mcs_api.h"
-#include "hardfunc/adc.h"
-#include "hardfunc/input_config.h"
-#include "hardfunc/relays.h"
-#include "hardfunc/voltage_select.h"
+#include "hardware/adc.h"
+#include "hardware/input_config.h"
+#include "hardware/relays.h"
+#include "hardware/voltage_select.h"
 #include "buzzer.h"
 #include "logging.h"
-#include "tasks/sampler.h"
+#include "platform/sampler.h"
 #include "pins.h"
 
 // -------------------------------------------------------
@@ -131,15 +131,12 @@ void mcs_log(McsLogLevel level, const char* tag, const char* fmt, ...) {
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
-    LogLevel ll;
     switch (level) {
-        case MCS_LOG_DEBUG: ll = LOG_DEBUG; break;
-        case MCS_LOG_INFO:  ll = LOG_INFO;  break;
-        case MCS_LOG_WARN:  ll = LOG_WARN;  break;
-        case MCS_LOG_ERROR: ll = LOG_ERROR; break;
-        default: ll = LOG_INFO;
+        case MCS_LOG_ERROR: log_error("[%s] %s", tag, buf); break;
+        case MCS_LOG_WARN:  log_error("[%s] %s", tag, buf); break;
+        case MCS_LOG_INFO:  log_info("[%s] %s", tag, buf);  break;
+        case MCS_LOG_DEBUG: log_debug("[%s] %s", tag, buf); break;
     }
-    log_write(ll, tag, buf);
 }
 
 uint32_t mcs_uptime_ms() {

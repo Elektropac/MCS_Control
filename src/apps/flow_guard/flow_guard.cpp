@@ -1,6 +1,6 @@
 #include "flow_guard.h"
-#include "sampler.h"
-#include "debug/task_registry.h"
+#include "platform/sampler.h"
+#include "platform/task_registry.h"
 
 static const uint8_t  NOISE_THRESHOLD   = 3;
 static const uint32_t CHECK_INTERVAL_MS = 500;

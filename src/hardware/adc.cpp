@@ -1,7 +1,7 @@
 #include "adc.h"
 #include "hw_status.h"
 #include "pins.h"
-#include "hal.h"
+#include "i2c.h"
 #include "ads1115.h"
 
 static ADS1115 adc_a(ADDR_ADC_A);
