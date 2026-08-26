@@ -82,28 +82,50 @@ static void add_sample(ProbeState& p, float ma) {
     p.avg_ma = compute_average(p);
 }
 
-// --- Read all probes (all switches stay ON, just read ADC) ---
+// --- Read probes: prepare next, read current ---
+// Each second: turn on shunt for NEXT probe, read CURRENT probe (settled for 1s)
+
+static uint8_t s_current_probe = 0;
+static bool s_first_round = true;
 
 static void read_all_probes() {
-    for (uint8_t i = 0; i < NUM_PROBES; i++) {
-        // Double-read for MUX settle
-        adc_read_mv((AdcInput)i);  // discard
-        int32_t mv = adc_read_mv((AdcInput)i);  // keep
+    // Calculate next probe index
+    uint8_t next_probe = (s_current_probe + 1) % NUM_PROBES;
 
-        // Convert mV to mA (200Ω shunt: I = V/R)
+    // Turn ON shunt for next probe (will be read next cycle)
+    input_config_set((Input)next_probe, SW_SHUNT, true);
+
+    // Read current probe (shunt was turned on last cycle — 1s settle time)
+    if (!s_first_round) {
+        adc_read_mv((AdcInput)s_current_probe);  // discard (MUX settle)
+        int32_t mv = adc_read_mv((AdcInput)s_current_probe);  // keep
         float ma = mv / 200.0f;
-        add_sample(s_probes[i], ma);
+        add_sample(s_probes[s_current_probe], ma);
     }
+
+    // Turn OFF shunt on current probe (done reading)
+    input_config_set((Input)s_current_probe, SW_SHUNT, false);
+
+    // Advance
+    s_current_probe = next_probe;
+
+    // After first full round, we have valid data
+    if (s_current_probe == 0) s_first_round = false;
 }
 
-// --- Task: reads all probes every SAMPLE_INTERVAL_MS ---
+// --- Task: one probe per second ---
 
 static void cloudgauge_task(void* param) {
     (void)param;
 
+    // Kick off: turn on shunt for first probe
+    input_config_set((Input)0, SW_SHUNT, true);
+    s_current_probe = 0;
+    s_first_round = true;
+
     for (;;) {
-        read_all_probes();
         vTaskDelay(pdMS_TO_TICKS(SAMPLE_INTERVAL_MS));
+        read_all_probes();
     }
 }
 
@@ -125,16 +147,16 @@ void cloudgauge_init() {
     voltage_select_set_b(VOLTAGE_24V);
     vTaskDelay(pdMS_TO_TICKS(20));
 
-    // Configure all 8 inputs for 4-20mA: analog + shunt ON permanently
+    // Configure all 8 inputs: analog ON (always), shunt OFF (toggled per read)
     for (uint8_t i = 0; i < 8; i++) {
         input_config_set((Input)i, SW_ANALOG, true);
         input_config_set((Input)i, SW_PULLUP, false);
-        input_config_set((Input)i, SW_SHUNT, true);
+        input_config_set((Input)i, SW_SHUNT, false);
         input_config_set((Input)i, SW_DIGITAL, false);
     }
     vTaskDelay(pdMS_TO_TICKS(50));
 
-    Serial.println("[cloudgauge] Initialized, 8 probes @ 24V, all switches ON, 1 Hz sampling");
+    Serial.println("[cloudgauge] Initialized, 8 probes @ 24V, shunt toggled per read, 1 Hz");
 }
 
 void cloudgauge_start_task() {
