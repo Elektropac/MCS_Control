@@ -203,8 +203,6 @@ function renderProbes(probes) {
       <input type="text" value="${p.id||''}" placeholder="ID" data-field="id" />
       <select data-field="type">${PROBE_TYPES.map(t=>`<option value="${t}" ${t===p.type?'selected':''}>${t}</option>`).join('')}</select>
       <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.input?'selected':''}>${inp}</option>`).join('')}</select>
-      <input type="number" value="${p.range_cm||300}" data-field="range_cm" style="width:60px" title="Range (cm)" />
-      <span style="font-size:11px;color:#888">cm</span>
       <select data-field="media" onchange="onMediaChange(${i},this)">${MEDIA.map(m=>{
         const d = p.density||1.0;
         const isMatch = m.density > 0 && Math.abs(d - m.density) < 0.005;
@@ -303,7 +301,6 @@ function readProbes() {
       id: row.querySelector('[data-field="id"]').value,
       type: row.querySelector('[data-field="type"]').value,
       input: row.querySelector('[data-field="input"]').value,
-      range_cm: parseInt(row.querySelector('[data-field="range_cm"]').value) || 300,
       density: parseFloat(row.querySelector('[data-field="density"]').value) || 1.0,
       min_level: parseInt(row.querySelector('[data-field="min_level"]').value) || 0,
     };
