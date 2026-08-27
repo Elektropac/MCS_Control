@@ -302,6 +302,7 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["capacity"] = (int)capacity;
     obj["min_level"] = (int)p.min_level;
     obj["has_lut"] = p.lut_count > 0;
+    obj["density"] = serialized(String(p.density, 2));
     if (capacity > 0) obj["pct"] = serialized(String((liters / capacity) * 100.0f, 1));
     if (p.min_level > 0) obj["low"] = liters < p.min_level;
 }

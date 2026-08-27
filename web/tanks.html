@@ -59,6 +59,14 @@
     const API = '/api/';
     let probeCount = 0;
 
+    function densityToMedia(d) {
+      d = parseFloat(d);
+      if (Math.abs(d - 0.84) < 0.01) return 'Diesel';
+      if (Math.abs(d - 1.09) < 0.01) return 'AdBlue';
+      if (Math.abs(d - 1.0) < 0.01) return 'Water';
+      return 'ρ ' + d.toFixed(2);
+    }
+
     async function api(subject) {
       try {
         const r = await fetch(API, {
@@ -83,7 +91,7 @@
           <div class="tank-card" id="card-${i}">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div class="id">${p.id}</div>
-              <span class="type-badge">${p.type}</span>
+              <span class="type-badge">${densityToMedia(p.density)}</span>
             </div>
             <div class="value" id="val-${i}">—</div>
             <div class="sub" id="sub-${i}">Waiting...</div>
