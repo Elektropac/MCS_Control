@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCS Control — Config</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+    h1 { font-size: 18px; color: #00d4ff; margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: #888; margin-bottom: 20px; }
+    .product-badge { display: inline-block; background: #00d4ff; color: #1a1a2e; padding: 2px 10px;
+      border-radius: 12px; font-weight: bold; font-size: 13px; margin-left: 8px; }
+    .section { background: #16213e; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .section h2 { font-size: 14px; color: #00d4ff; margin-bottom: 12px; border-bottom: 1px solid #0e3460; padding-bottom: 6px; }
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    label { font-size: 13px; color: #aaa; min-width: 100px; }
+    input, select { background: #0f3460; border: 1px solid #1a5276; color: #fff; padding: 6px 10px;
+      border-radius: 4px; font-size: 13px; }
+    input:focus, select:focus { outline: none; border-color: #00d4ff; }
+    input[type="text"] { width: 200px; }
+    input[type="number"] { width: 80px; }
+    select { min-width: 80px; }
+    .probe-row { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid #0e3460; }
+    .probe-row:last-child { border-bottom: none; }
+    .probe-row input { width: 120px; }
+    .probe-row select { width: 120px; }
+    .probe-num { color: #00d4ff; font-weight: bold; min-width: 24px; text-align: center; }
+    .btn { padding: 8px 20px; font-size: 14px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
+    .btn-primary { background: #00d4ff; color: #1a1a2e; }
+    .btn-primary:hover { background: #00b8d4; }
+    .btn-danger { background: #e74c3c; color: #fff; }
+    .btn-danger:hover { background: #c0392b; }
+    .btn-secondary { background: #2c3e50; color: #fff; }
+    .btn-secondary:hover { background: #34495e; }
+    .btn-small { padding: 4px 10px; font-size: 12px; }
+    .actions { display: flex; gap: 10px; margin-top: 16px; align-items: center; }
+    .status { font-size: 13px; margin-left: 10px; }
+    .status.ok { color: #2ecc71; }
+    .status.err { color: #e74c3c; }
+    .status.warn { color: #f39c12; }
+    .raw-toggle { font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; }
+    .raw-editor { display: none; margin-top: 12px; }
+    .raw-editor textarea { width: 100%; height: 300px; background: #0a0a1a; color: #0f0; border: 1px solid #1a5276;
+      border-radius: 4px; padding: 10px; font-family: monospace; font-size: 12px; resize: vertical; }
+  </style>
+</head>
+<body>
+
+<h1>MCS Control <span class="product-badge" id="badge">—</span></h1>
+<div class="subtitle">Configuration Editor</div>
+
+<!-- General -->
+<div class="section">
+  <h2>General</h2>
+  <div class="row">
+    <label>Product</label>
+    <select id="product" onchange="onProductChange()">
+      <option value="cloudgauge2">CloudGauge 2</option>
+      <option value="micro_fms">Micro FMS</option>
+      <option value="poseidon">Poseidon</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>Name</label>
+    <input type="text" id="name" placeholder="Site name" />
+  </div>
+</div>
+
+<!-- Channels -->
+<div class="section">
+  <h2>Channels</h2>
+  <div class="row">
+    <label>Channel A</label>
+    <select id="volt_a"><option value="5">5V</option><option value="12">12V</option><option value="24" selected>24V</option></select>
+  </div>
+  <div class="row">
+    <label>Channel B</label>
+    <select id="volt_b"><option value="5">5V</option><option value="12">12V</option><option value="24" selected>24V</option></select>
+  </div>
+</div>
+
+<!-- Probes (cloudgauge2 / micro_fms) -->
+<div class="section" id="probes-section">
+  <h2>Probes <button class="btn btn-secondary btn-small" onclick="addProbe()">+ Add</button></h2>
+  <div id="probes-list"></div>
+</div>
+
+<!-- Pumps (micro_fms) -->
+<div class="section" id="pumps-section" style="display:none">
+  <h2>Pumps</h2>
+  <div id="pumps-list"></div>
+</div>
+
+<!-- IO (poseidon) -->
+<div class="section" id="io-section" style="display:none">
+  <h2>I/O <button class="btn btn-secondary btn-small" onclick="addIO()">+ Add</button></h2>
+  <div id="io-list"></div>
+</div>
+
+<!-- Connection -->
+<div class="section">
+  <h2>Connection</h2>
+  <div class="row">
+    <label>DHCP</label>
+    <select id="dhcp"><option value="true">On</option><option value="false" selected>Off</option></select>
+  </div>
+</div>
+
+<!-- Actions -->
+<div class="actions">
+  <button class="btn btn-primary" onclick="saveConfig()">Save &amp; Reboot</button>
+  <button class="btn btn-secondary" onclick="loadConfig()">Reload</button>
+  <span class="status" id="status"></span>
+</div>
+
+<!-- Raw JSON toggle -->
+<div style="margin-top: 16px;">
+  <span class="raw-toggle" onclick="toggleRaw()">Show raw JSON</span>
+  <div class="raw-editor" id="raw-editor">
+    <textarea id="raw-json"></textarea>
+    <div style="margin-top:8px">
+      <button class="btn btn-secondary btn-small" onclick="applyRaw()">Apply to form</button>
+      <button class="btn btn-secondary btn-small" onclick="updateRaw()">Update from form</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api/';
+const INPUTS = ['A1','A2','A3','A4','B1','B2','B3','B4'];
+const PROBE_TYPES = ['mcs_level','mcs_level_temp','mcs_serial_probe'];
+const IO_MODES = ['output','digital','analog_current','analog_voltage','pulse','disabled'];
+
+let config = {};
+
+async function api(subject, data) {
+  try {
+    const body = data ? {subject, data} : {subject};
+    const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    return await r.json();
+  } catch(e) { setStatus('API error: '+e.message, 'err'); return null; }
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + (cls||'');
+  if (cls === 'ok') setTimeout(() => el.textContent = '', 3000);
+}
+
+// --- Load ---
+async function loadConfig() {
+  setStatus('Loading...', 'warn');
+  const data = await api('config_get');
+  if (!data) return;
+  config = data;
+  populateForm(data);
+  setStatus('Loaded', 'ok');
+}
+
+function populateForm(c) {
+  document.getElementById('product').value = c.product || 'cloudgauge2';
+  document.getElementById('badge').textContent = document.getElementById('product').selectedOptions[0].text;
+  document.getElementById('name').value = c.name || '';
+  document.getElementById('volt_a').value = c.channels?.A?.voltage || 24;
+  document.getElementById('volt_b').value = c.channels?.B?.voltage || 24;
+  document.getElementById('dhcp').value = String(c.connection?.settings?.ethernet?.dhcp ?? false);
+  
+  renderProbes(c.probes || []);
+  renderPumps(c.pumps || []);
+  renderIO(c.io || []);
+  onProductChange();
+  updateRaw();
+}
+
+// --- Probes ---
+function renderProbes(probes) {
+  const list = document.getElementById('probes-list');
+  list.innerHTML = '';
+  probes.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'probe-row';
+    row.innerHTML = `
+      <span class="probe-num">${i+1}</span>
+      <input type="text" value="${p.id||''}" placeholder="ID" data-field="id" />
+      <select data-field="type">${PROBE_TYPES.map(t=>`<option value="${t}" ${t===p.type?'selected':''}>${t}</option>`).join('')}</select>
+      <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.input?'selected':''}>${inp}</option>`).join('')}</select>
+      <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addProbe() {
+  const list = document.getElementById('probes-list');
+  const i = list.children.length;
+  const row = document.createElement('div');
+  row.className = 'probe-row';
+  row.innerHTML = `
+    <span class="probe-num">${i+1}</span>
+    <input type="text" value="tank_${i+1}" placeholder="ID" data-field="id" />
+    <select data-field="type">${PROBE_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')}</select>
+    <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}">${inp}</option>`).join('')}</select>
+    <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeProbe(i) {
+  const probes = readProbes();
+  probes.splice(i, 1);
+  renderProbes(probes);
+}
+
+function readProbes() {
+  const rows = document.querySelectorAll('#probes-list .probe-row');
+  return Array.from(rows).map(row => ({
+    id: row.querySelector('[data-field="id"]').value,
+    type: row.querySelector('[data-field="type"]').value,
+    input: row.querySelector('[data-field="input"]').value,
+  }));
+}
+
+// --- Pumps ---
+function renderPumps(pumps) {
+  const list = document.getElementById('pumps-list');
+  list.innerHTML = '';
+  pumps.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'probe-row';
+    row.innerHTML = `
+      <span class="probe-num">${i+1}</span>
+      <label style="min-width:auto">Nozzle</label><select data-field="nozzle">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.nozzle?'selected':''}>${inp}</option>`).join('')}</select>
+      <label style="min-width:auto">Pulser</label><select data-field="pulser">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.pulser?'selected':''}>${inp}</option>`).join('')}</select>
+      <label style="min-width:auto">Relay</label><select data-field="relay"><option value="A" ${p.relay==='A'?'selected':''}>A</option><option value="B" ${p.relay==='B'?'selected':''}>B</option></select>
+      <label style="min-width:auto">P/L</label><input type="number" value="${p.pulses_per_liter||100}" data-field="ppl" style="width:60px" />
+    `;
+    list.appendChild(row);
+  });
+}
+
+function readPumps() {
+  const rows = document.querySelectorAll('#pumps-list .probe-row');
+  return Array.from(rows).map((row, i) => ({
+    id: 'pump_'+(i+1),
+    nozzle: row.querySelector('[data-field="nozzle"]').value,
+    pulser: row.querySelector('[data-field="pulser"]').value,
+    relay: row.querySelector('[data-field="relay"]').value,
+    debounce_ms: 20,
+    update_interval_s: 5,
+    pulses_per_liter: parseInt(row.querySelector('[data-field="ppl"]').value) || 100,
+  }));
+}
+
+// --- IO (Poseidon) ---
+function renderIO(ios) {
+  const list = document.getElementById('io-list');
+  list.innerHTML = '';
+  ios.forEach((io, i) => {
+    const row = document.createElement('div');
+    row.className = 'probe-row';
+    row.innerHTML = `
+      <span class="probe-num">${i+1}</span>
+      <select data-field="pin">${INPUTS.map(inp=>`<option value="${inp}" ${inp===io.pin?'selected':''}>${inp}</option>`).join('')}</select>
+      <input type="text" value="${io.name||''}" placeholder="Name" data-field="name" style="width:150px" />
+      <select data-field="mode">${IO_MODES.map(m=>`<option value="${m}" ${m===io.mode?'selected':''}>${m}</option>`).join('')}</select>
+      <button class="btn btn-danger btn-small" onclick="removeIO(${i})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addIO() {
+  const list = document.getElementById('io-list');
+  const i = list.children.length;
+  const row = document.createElement('div');
+  row.className = 'probe-row';
+  row.innerHTML = `
+    <span class="probe-num">${i+1}</span>
+    <select data-field="pin">${INPUTS.map(inp=>`<option value="${inp}">${inp}</option>`).join('')}</select>
+    <input type="text" value="" placeholder="Name" data-field="name" style="width:150px" />
+    <select data-field="mode">${IO_MODES.map(m=>`<option value="${m}">${m}</option>`).join('')}</select>
+    <button class="btn btn-danger btn-small" onclick="removeIO(${i})">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeIO(i) {
+  const ios = readIO();
+  ios.splice(i, 1);
+  renderIO(ios);
+}
+
+function readIO() {
+  const rows = document.querySelectorAll('#io-list .probe-row');
+  return Array.from(rows).map(row => ({
+    pin: row.querySelector('[data-field="pin"]').value,
+    name: row.querySelector('[data-field="name"]').value,
+    mode: row.querySelector('[data-field="mode"]').value,
+  }));
+}
+
+// --- Product change ---
+function onProductChange() {
+  const p = document.getElementById('product').value;
+  document.getElementById('badge').textContent = document.getElementById('product').selectedOptions[0].text;
+  document.getElementById('probes-section').style.display = (p==='cloudgauge2'||p==='micro_fms') ? '' : 'none';
+  document.getElementById('pumps-section').style.display = p==='micro_fms' ? '' : 'none';
+  document.getElementById('io-section').style.display = p==='poseidon' ? '' : 'none';
+}
+
+// --- Build config JSON ---
+function buildConfig() {
+  const product = document.getElementById('product').value;
+  const c = {
+    product,
+    version: config.version || 1,
+    name: document.getElementById('name').value,
+    channels: {
+      A: { voltage: parseInt(document.getElementById('volt_a').value) },
+      B: { voltage: parseInt(document.getElementById('volt_b').value) },
+    },
+    connection: config.connection || {
+      server: { local: {host:"",port:3000,path:"/ws"}, global: {host:"",port:443,path:"/ws"} },
+      internet_client: "ethernet",
+      settings: { ethernet: { dhcp: false } }
+    },
+  };
+  c.connection.settings = c.connection.settings || {ethernet:{}};
+  c.connection.settings.ethernet = c.connection.settings.ethernet || {};
+  c.connection.settings.ethernet.dhcp = document.getElementById('dhcp').value === 'true';
+
+  if (product === 'cloudgauge2') {
+    c.probes = readProbes();
+  } else if (product === 'micro_fms') {
+    c.pumps = readPumps();
+    c.probes = readProbes();
+  } else if (product === 'poseidon') {
+    c.io = readIO();
+  }
+  return c;
+}
+
+// --- Save ---
+async function saveConfig() {
+  const c = buildConfig();
+  setStatus('Saving...', 'warn');
+  const r = await api('config_upload', c);
+  if (r && r.result) {
+    setStatus('Saved! Rebooting...', 'ok');
+    setTimeout(() => { setStatus('Reloading...', 'warn'); setTimeout(() => location.reload(), 4000); }, 2000);
+  } else {
+    setStatus('Save failed', 'err');
+  }
+}
+
+// --- Raw JSON ---
+function toggleRaw() {
+  const el = document.getElementById('raw-editor');
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+  if (el.style.display !== 'none') updateRaw();
+}
+function updateRaw() {
+  document.getElementById('raw-json').value = JSON.stringify(buildConfig(), null, 2);
+}
+function applyRaw() {
+  try {
+    const c = JSON.parse(document.getElementById('raw-json').value);
+    config = c;
+    populateForm(c);
+    setStatus('Applied from JSON', 'ok');
+  } catch(e) { setStatus('Invalid JSON: '+e.message, 'err'); }
+}
+
+// --- Init ---
+window.onload = loadConfig;
+</script>
+</body>
+</html>

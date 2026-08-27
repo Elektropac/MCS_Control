@@ -354,6 +354,12 @@ void cloudgauge_start() {
 String cloudgauge_get_all() {
     JsonDocument doc;
     doc["product"] = "cloudgauge2";
+    
+    // Add site name from config
+    if (config::is_loaded && !config::config["name"].isNull()) {
+        doc["name"] = config::config["name"];
+    }
+    
     JsonArray probes = doc["probes"].to<JsonArray>();
 
     for (uint8_t i = 0; i < s_num_probes; i++) {

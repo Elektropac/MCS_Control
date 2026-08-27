@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MCS Control — Tanks</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    h1 { font-size: 22px; font-weight: 900; color: #173447; }
+    .nav { display: flex; gap: 8px; }
+    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
+    .nav a.active { background: #dcefeb; color: #184654; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.ok { background: #2ecc71; }
+    .dot.err { background: #e74c3c; }
+    .tank-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    @media (max-width: 900px) { .tank-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .tank-grid { grid-template-columns: 1fr; } }
+    .tank-card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .tank-card .name { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #617381; font-weight: 800; }
+    .tank-card .id { font-size: 15px; font-weight: 800; color: #173447; }
+    .tank-card .value { font-size: 28px; font-weight: 900; color: #173447; line-height: 1; }
+    .tank-card .value small { font-size: 14px; font-weight: 700; color: #476071; }
+    .tank-card .sub { font-size: 12px; color: #617381; margin-top: 2px; }
+    .tank-visual { position: relative; width: 100%; height: 80px; border: 3px solid #18394b; border-radius: 20px; background: linear-gradient(180deg, #fffefb 0%, #f3ead8 100%); box-shadow: 0 4px 0 rgba(198,186,166,.5); overflow: hidden; }
+    .tank-fill { position: absolute; left: 5px; right: 5px; bottom: 5px; border-radius: 14px; transition: height 0.4s ease; }
+    .tank-fill.low { background: linear-gradient(180deg, #ffd789 0%, #d6772c 100%); }
+    .tank-fill.mid { background: linear-gradient(180deg, #7fd8df 0%, #2b8ab0 100%); }
+    .tank-fill.high { background: linear-gradient(180deg, #ffe6a2 0%, #df9542 100%); }
+    .tank-card .type-badge { font-size: 10px; color: #fff; background: #2b8ab0; padding: 2px 8px; border-radius: 8px; display: inline-block; }
+    .no-probes { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>⛽ Tanks</h1>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/config.html">Config</a>
+      <a href="/tanks.html" class="active">Tanks</a>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="dot"></span>
+    <span id="status">Connecting...</span>
+    <span id="product-name" style="margin-left:auto;"></span>
+  </div>
+
+  <div id="site-header" style="font-size:24px;font-weight:900;color:#173447;margin-bottom:16px;display:none;"></div>
+
+  <div class="tank-grid" id="tanks"></div>
+  <div class="no-probes" id="no-probes" style="display:none;">No probes configured. <a href="/config.html">Open Config</a></div>
+
+  <script>
+    const API = '/api/';
+    const RANGE_CM = 300;
+    let probeCount = 0;
+
+    async function api(subject) {
+      try {
+        const r = await fetch(API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject})
+        });
+        return await r.json();
+      } catch(e) { return null; }
+    }
+
+    function buildCards(probes) {
+      const el = document.getElementById('tanks');
+      el.innerHTML = '';
+      if (!probes || probes.length === 0) {
+        document.getElementById('no-probes').style.display = '';
+        return;
+      }
+      document.getElementById('no-probes').style.display = 'none';
+      probes.forEach((p, i) => {
+        el.innerHTML += `
+          <div class="tank-card" id="card-${i}">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="name">${p.input}</div>
+              <span class="type-badge">${p.type}</span>
+            </div>
+            <div class="id">${p.id}</div>
+            <div class="value" id="val-${i}">—</div>
+            <div class="sub" id="sub-${i}">Waiting...</div>
+            <div class="tank-visual">
+              <div class="tank-fill mid" id="fill-${i}" style="height:0%"></div>
+            </div>
+          </div>`;
+      });
+      probeCount = probes.length;
+    }
+
+    function updateCards(probes) {
+      if (!probes) return;
+      probes.forEach((p, i) => {
+        const valEl = document.getElementById('val-' + i);
+        const subEl = document.getElementById('sub-' + i);
+        const fillEl = document.getElementById('fill-' + i);
+        if (!valEl) return;
+
+        const ma = parseFloat(p.ma);
+        const cm = parseFloat(p.cm);
+        const liters = parseInt(p.liters);
+
+        valEl.innerHTML = `${cm.toFixed(1)}<small> cm</small>`;
+        subEl.textContent = `${ma.toFixed(2)} mA` + (liters > 0 ? ` · ${liters} L` : '');
+
+        const pct = Math.max(0, Math.min(100, (cm / RANGE_CM) * 100));
+        fillEl.style.height = pct + '%';
+        fillEl.className = 'tank-fill ' + (pct < 20 ? 'low' : pct > 80 ? 'high' : 'mid');
+      });
+    }
+
+    async function poll() {
+      const data = await api('cloudgauge_get_all');
+      if (!data) {
+        document.getElementById('dot').className = 'dot err';
+        document.getElementById('status').textContent = 'Connection lost';
+        return;
+      }
+      document.getElementById('dot').className = 'dot ok';
+      document.getElementById('status').textContent = `Live · ${data.probes?.length || 0} probes`;
+      document.getElementById('product-name').textContent = data.product || '';
+
+      if (data.probes && data.probes.length !== probeCount) {
+        buildCards(data.probes);
+      }
+      updateCards(data.probes);
+    }
+
+    // Init
+    (async () => {
+      const data = await api('cloudgauge_get_all');
+      if (data && data.probes) {
+        if (data.name) {
+          document.getElementById('site-header').textContent = data.name;
+          document.getElementById('site-header').style.display = '';
+          document.title = data.name + ' — Tanks';
+        }
+        buildCards(data.probes);
+        updateCards(data.probes);
+        document.getElementById('dot').className = 'dot ok';
+        document.getElementById('status').textContent = `Live · ${data.probes.length} probes`;
+        document.getElementById('product-name').textContent = data.product || '';
+      }
+      setInterval(poll, 2000);
+    })();
+  </script>
+</body>
+</html>

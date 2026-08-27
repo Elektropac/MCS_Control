@@ -74,10 +74,15 @@ namespace function_silo
             
             // Reload config
             config::config.clear();
-            DeserializationError err = deserializeJson(config::config, "");
             config::init();
             
-            return "{\"result\":\"config saved, reboot to apply\"}";
+            // Delayed reboot — give time for HTTP response to be sent
+            xTaskCreate([](void*) {
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                ESP.restart();
+            }, "reboot", 2048, nullptr, 1, nullptr);
+            
+            return "{\"result\":\"config saved, rebooting\"}";
         }
 
         // -- cloudgauge --
