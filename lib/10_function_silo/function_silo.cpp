@@ -1,5 +1,7 @@
 #include "function_silo.h"
 
+#include <ArduinoJson.h>
+
 #include "rgb.h"
 #include "logging.h"
 
@@ -10,6 +12,10 @@ namespace function_silo
         if (json_packet["subject"].isNull())
         {
             log_error("[function_silo] Received message does not contain 'subject' field.");
+            String json_string;
+            serializeJsonPretty(json_packet, json_string);
+            log_error("[function_silo] Received message: %s", json_string.c_str());
+
             return "";
         }
 

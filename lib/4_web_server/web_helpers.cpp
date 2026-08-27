@@ -63,7 +63,12 @@ JsonDocument Request::get_body() const
 
 void handle_api_request(Client &client, Request &req)
 {
-    auto data = req.get_body();
+    JsonDocument data;
+
+    if (req.method == "POST") {
+        data = req.get_body();
+    }
+
     String result = function_silo::run_function_silo(data);
     if (result.length() == 0)
     {
