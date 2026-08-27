@@ -62,6 +62,9 @@ struct IoPin {
     uint32_t pulse_count;     // accumulated pulses
     uint32_t sampler_cursor;  // position in sampler ring buffer (for pulse counting)
     uint8_t prev_bit;         // previous bit state (for edge detection)
+    uint32_t last_pulse_count; // pulse count at last rate calc
+    uint32_t last_rate_ms;    // timestamp of last rate calc
+    float pulse_hz;           // pulses per second
     bool valid;
 };
 
@@ -158,6 +161,15 @@ static void read_pin(IoPin& p) {
                 }
                 p.prev_bit = bit;
             }
+            // Calculate Hz
+            uint32_t now = millis();
+            uint32_t dt = now - p.last_rate_ms;
+            if (dt >= 1000) {
+                uint32_t dp = p.pulse_count - p.last_pulse_count;
+                p.pulse_hz = (float)dp / ((float)dt / 1000.0f);
+                p.last_pulse_count = p.pulse_count;
+                p.last_rate_ms = now;
+            }
             uint8_t state = sampler_current_state();
             bool raw = (state >> p.channel) & 0x01;
             p.last_digital = p.inverted ? !raw : raw;
@@ -197,6 +209,7 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
         case IO_PULSE:
             obj["state"] = p.last_digital ? "HIGH" : "LOW";
             obj["pulses"] = p.pulse_count;
+            obj["hz"] = serialized(String(p.pulse_hz, 1));
             if (p.inverted) obj["inverted"] = true;
             break;
         case IO_RELAY:
@@ -309,6 +322,9 @@ void poseidon_init() {
             p.pulse_count = 0;
             p.sampler_cursor = sampler_write_position();
             p.prev_bit = (sampler_current_state() >> ((ch >= 0) ? ch : 0)) & 0x01;
+            p.last_pulse_count = 0;
+            p.last_rate_ms = millis();
+            p.pulse_hz = 0.0f;
             p.valid = true;
 
             // Configure hardware based on mode

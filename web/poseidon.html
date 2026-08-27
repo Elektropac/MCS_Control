@@ -155,7 +155,7 @@ function updateCards(pins) {
         break;
       case 'pulse':
         valEl.innerHTML = `${p.pulses || 0}<small> pulses</small>`;
-        subEl.textContent = `${p.pin} · ${p.state}${p.inverted?' (inv)':''}`;
+        subEl.textContent = `${p.pin} · ${parseFloat(p.hz||0).toFixed(1)} Hz · ${p.state}${p.inverted?' (inv)':''}`;
         break;
       default:
         valEl.innerHTML = '—';
