@@ -398,6 +398,7 @@ function addIO() {
     <select data-field="pin">${INPUTS.map(inp=>`<option value="${inp}">${inp}</option>`).join('')}</select>
     <input type="text" value="" placeholder="Name" data-field="name" style="width:150px" />
     <select data-field="mode">${IO_MODES.map(m=>`<option value="${m}">${m}</option>`).join('')}</select>
+    <select data-field="inverted"><option value="false" selected>Normal</option><option value="true">Inverted</option></select>
     <button class="btn btn-danger btn-small" onclick="removeIO(${i})">✕</button>
   `;
   list.appendChild(row);
