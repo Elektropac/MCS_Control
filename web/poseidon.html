@@ -42,6 +42,13 @@
     .state-high { background: #2ecc71; }
     .state-low { background: #e74c3c; }
     .no-pins { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
+    .rule-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 2px solid #cad6dc; border-radius: 12px; background: #fffefb; margin-bottom: 8px; }
+    .rule-row .rule-name { font-weight: 800; font-size: 14px; color: #173447; min-width: 140px; }
+    .rule-row .rule-desc { font-size: 13px; color: #617381; flex: 1; }
+    .rule-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #0c1b24; }
+    .rule-dot.active { background: #2ecc71; }
+    .rule-dot.inactive { background: #cad6dc; }
+    .rule-dot.disabled { background: #95a5a6; }
   </style>
 </head>
 <body>
@@ -68,6 +75,9 @@
 
 <h2 style="font-size:16px;font-weight:800;color:#173447;margin:20px 0 12px;">Relays</h2>
 <div class="io-grid" id="relay-grid"></div>
+
+<h2 style="font-size:16px;font-weight:800;color:#173447;margin:20px 0 12px;" id="rules-heading" style="display:none;">Rules</h2>
+<div id="rules-list" style="display:none;"></div>
 
 <script>
 const API = '/api/';
@@ -166,6 +176,39 @@ function updateCards(pins) {
   });
 }
 
+function buildRules(rules) {
+  const heading = document.getElementById('rules-heading');
+  const list = document.getElementById('rules-list');
+  if (!rules || rules.length === 0) {
+    heading.style.display = 'none';
+    list.style.display = 'none';
+    return;
+  }
+  heading.style.display = '';
+  list.style.display = '';
+  list.innerHTML = '';
+  rules.forEach((r, i) => {
+    list.innerHTML += `
+      <div class="rule-row" id="rule-${i}">
+        <span class="rule-dot ${!r.enabled?'disabled':r.active?'active':'inactive'}" id="rdot-${i}"></span>
+        <span class="rule-name">${r.name}</span>
+        <span class="rule-desc">${r.enabled ? (r.active ? '⚡ Triggered' : 'Watching...') : 'Disabled'}</span>
+      </div>`;
+  });
+}
+
+function updateRules(rules) {
+  if (!rules) return;
+  rules.forEach((r, i) => {
+    const dot = document.getElementById('rdot-' + i);
+    const row = document.getElementById('rule-' + i);
+    if (!dot || !row) return;
+    dot.className = 'rule-dot ' + (!r.enabled?'disabled':r.active?'active':'inactive');
+    const desc = row.querySelector('.rule-desc');
+    if (desc) desc.textContent = !r.enabled ? 'Disabled' : r.active ? '⚡ Triggered' : 'Watching...';
+  });
+}
+
 function buildRelays(relays) {
   const el = document.getElementById('relay-grid');
   el.innerHTML = '';
@@ -243,6 +286,10 @@ async function poll() {
     if (!document.getElementById('rval-0') && data.relays.length > 0) buildRelays(data.relays);
     updateRelays(data.relays);
   }
+  if (data.rules) {
+    if (!document.getElementById('rdot-0') && data.rules.length > 0) buildRules(data.rules);
+    updateRules(data.rules);
+  }
 }
 
 // Init
@@ -263,6 +310,7 @@ async function poll() {
       updateCards(data.io);
     }
     if (data.relays) buildRelays(data.relays);
+    if (data.rules) buildRules(data.rules);
     document.getElementById('dot').className = 'dot ok';
     document.getElementById('status').textContent = `Live · ${(data.io||[]).length} pins`;
   }
