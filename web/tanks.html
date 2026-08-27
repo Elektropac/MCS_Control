@@ -82,15 +82,15 @@
         el.innerHTML += `
           <div class="tank-card" id="card-${i}">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="name">${p.input}</div>
+              <div class="id">${p.id}</div>
               <span class="type-badge">${p.type}</span>
             </div>
-            <div class="id">${p.id}</div>
             <div class="value" id="val-${i}">—</div>
             <div class="sub" id="sub-${i}">Waiting...</div>
             <div class="tank-visual">
               <div class="tank-fill mid" id="fill-${i}" style="height:0%"></div>
             </div>
+            <div class="name">${p.input}</div>
           </div>`;
       });
       probeCount = probes.length;
