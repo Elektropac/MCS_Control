@@ -134,6 +134,16 @@
 <script>
 const API = '/api/';
 const INPUTS = ['A1','A2','A3','A4','B1','B2','B3','B4'];
+const MEDIA = [
+  { name: 'Water', density: 1.0 },
+  { name: 'Diesel', density: 0.84 },
+  { name: 'Petrol', density: 0.75 },
+  { name: 'AdBlue', density: 1.09 },
+  { name: 'Heating Oil', density: 0.85 },
+  { name: 'Jet A-1', density: 0.81 },
+  { name: 'LPG', density: 0.55 },
+  { name: 'Custom', density: 0 },
+];
 const PROBE_TYPES = ['mcs_level','mcs_level_temp','mcs_serial_probe'];
 const IO_MODES = ['output','digital','analog_current','analog_voltage','pulse','disabled'];
 
@@ -195,7 +205,13 @@ function renderProbes(probes) {
       <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.input?'selected':''}>${inp}</option>`).join('')}</select>
       <input type="number" value="${p.range_cm||300}" data-field="range_cm" style="width:60px" title="Range (cm)" />
       <span style="font-size:11px;color:#888">cm</span>
-      <input type="number" value="${p.density||1.0}" data-field="density" style="width:60px" step="0.01" title="Density (1.0=water, 0.84=diesel)" />
+      <select data-field="media" onchange="onMediaChange(${i},this)">${MEDIA.map(m=>{
+        const d = p.density||1.0;
+        const isMatch = m.density > 0 && Math.abs(d - m.density) < 0.005;
+        const isCustom = m.name === 'Custom' && !MEDIA.some(mm=>mm.density>0 && Math.abs(d-mm.density)<0.005);
+        return `<option value="${m.density}" ${(isMatch||isCustom)?'selected':''}>${m.name}${m.density>0?' ('+m.density+')':''}</option>`;
+      }).join('')}</select>
+      <input type="number" value="${p.density||1.0}" data-field="density" style="width:55px;display:${MEDIA.some(m=>m.density>0&&Math.abs((p.density||1.0)-m.density)<0.005)?'none':''}" step="0.01" title="Custom density" />
       <span style="font-size:11px;color:#888">ρ</span>
       <span class="lut-toggle" onclick="toggleLut(${i})">${hasLut ? '📊 LUT ('+p.lut.length+')' : '+ LUT'}</span>
       <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
@@ -231,6 +247,20 @@ function lutRowHtml(probeIdx, rowIdx, cm, liters) {
     <label>liter</label><input type="number" value="${liters}" data-lut-liter step="1" />
     <button class="btn btn-danger btn-small" onclick="removeLutRow(${probeIdx}, this)" style="padding:2px 6px;">✕</button>
   </div>`;
+}
+
+function onMediaChange(probeIdx, sel) {
+  const wrapper = sel.closest('.probe-row');
+  const densityInput = wrapper.querySelector('[data-field="density"]');
+  const val = parseFloat(sel.value);
+  if (val === 0) {
+    // Custom — show input
+    densityInput.style.display = '';
+    densityInput.focus();
+  } else {
+    densityInput.style.display = 'none';
+    densityInput.value = val;
+  }
 }
 
 function toggleLut(i) {
