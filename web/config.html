@@ -156,7 +156,7 @@ const MEDIA = [
   { name: 'Custom', density: 0 },
 ];
 const PROBE_TYPES = ['mcs_level','mcs_level_temp','mcs_serial_probe'];
-const IO_MODES = ['output','digital','analog_current','analog_voltage','pulse','disabled'];
+const IO_MODES = ['output','digital','digital_pullup','analog_current','analog_voltage','pulse','disabled'];
 
 let config = {};
 
@@ -381,6 +381,7 @@ function renderIO(ios) {
       <select data-field="pin">${INPUTS.map(inp=>`<option value="${inp}" ${inp===io.pin?'selected':''}>${inp}</option>`).join('')}</select>
       <input type="text" value="${io.name||''}" placeholder="Name" data-field="name" style="width:150px" />
       <select data-field="mode">${IO_MODES.map(m=>`<option value="${m}" ${m===io.mode?'selected':''}>${m}</option>`).join('')}</select>
+      <label style="min-width:auto;font-size:11px;"><input type="checkbox" data-field="inverted" ${io.inverted?'checked':''} /> inv</label>
       <button class="btn btn-danger btn-small" onclick="removeIO(${i})">✕</button>
     `;
     list.appendChild(row);
@@ -410,11 +411,15 @@ function removeIO(i) {
 
 function readIO() {
   const rows = document.querySelectorAll('#io-list .probe-row');
-  return Array.from(rows).map(row => ({
-    pin: row.querySelector('[data-field="pin"]').value,
-    name: row.querySelector('[data-field="name"]').value,
-    mode: row.querySelector('[data-field="mode"]').value,
-  }));
+  return Array.from(rows).map(row => {
+    const io = {
+      pin: row.querySelector('[data-field="pin"]').value,
+      name: row.querySelector('[data-field="name"]').value,
+      mode: row.querySelector('[data-field="mode"]').value,
+    };
+    if (row.querySelector('[data-field="inverted"]').checked) io.inverted = true;
+    return io;
+  });
 }
 
 // --- Product change ---

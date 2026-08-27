@@ -35,6 +35,7 @@ enum IoMode : uint8_t {
     IO_DISABLED,
     IO_OUTPUT,
     IO_DIGITAL,
+    IO_DIGITAL_PULLUP,    // digital with internal pullup
     IO_ANALOG_CURRENT,    // 4-20mA via shunt
     IO_ANALOG_VOLTAGE,    // 0-5V direct
     IO_PULSE,
@@ -49,6 +50,7 @@ struct IoPin {
     char name[32];            // human-readable name
     IoMode mode;
     bool pullup;              // for digital inputs
+    bool inverted;            // invert logic (opto-couplers: HIGH=off, LOW=on)
     uint16_t interval_s;      // reporting interval (0 = no periodic report)
     uint16_t debounce_ms;     // for pulse mode
     uint8_t channel;          // ADC/input channel index 0-7
@@ -82,6 +84,7 @@ static IoMode parse_mode(const char* mode_str) {
     if (!mode_str) return IO_DISABLED;
     if (strcmp(mode_str, "output") == 0) return IO_OUTPUT;
     if (strcmp(mode_str, "digital") == 0) return IO_DIGITAL;
+    if (strcmp(mode_str, "digital_pullup") == 0) return IO_DIGITAL_PULLUP;
     if (strcmp(mode_str, "analog_current") == 0) return IO_ANALOG_CURRENT;
     if (strcmp(mode_str, "analog_voltage") == 0) return IO_ANALOG_VOLTAGE;
     if (strcmp(mode_str, "pulse") == 0) return IO_PULSE;
@@ -93,6 +96,7 @@ static const char* mode_to_string(IoMode m) {
     switch (m) {
         case IO_OUTPUT:         return "output";
         case IO_DIGITAL:        return "digital";
+        case IO_DIGITAL_PULLUP: return "digital_pullup";
         case IO_ANALOG_CURRENT: return "analog_current";
         case IO_ANALOG_VOLTAGE: return "analog_voltage";
         case IO_PULSE:          return "pulse";
@@ -134,17 +138,17 @@ static void read_pin(IoPin& p) {
             input_config_set((Input)p.channel, SW_ANALOG, false);
             break;
         }
-        case IO_DIGITAL: {
-            // Read via sampler (already running)
+        case IO_DIGITAL:
+        case IO_DIGITAL_PULLUP: {
             uint8_t state = sampler_current_state();
-            p.last_digital = (state >> p.channel) & 0x01;
+            bool raw = (state >> p.channel) & 0x01;
+            p.last_digital = p.inverted ? !raw : raw;
             break;
         }
         case IO_PULSE: {
-            // Pulse count from sampler — read edge count
-            // For now, just track digital state changes
             uint8_t state = sampler_current_state();
-            p.last_digital = (state >> p.channel) & 0x01;
+            bool raw = (state >> p.channel) & 0x01;
+            p.last_digital = p.inverted ? !raw : raw;
             break;
         }
         default:
@@ -174,7 +178,9 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
             obj["volt"] = serialized(String(p.last_analog, 3));
             break;
         case IO_DIGITAL:
+        case IO_DIGITAL_PULLUP:
             obj["state"] = p.last_digital ? "HIGH" : "LOW";
+            if (p.inverted) obj["inverted"] = true;
             break;
         case IO_PULSE:
             obj["state"] = p.last_digital ? "HIGH" : "LOW";
@@ -261,6 +267,7 @@ void poseidon_init() {
             const char* name = pin["name"] | "";
             const char* mode_str = pin["mode"] | "disabled";
             bool pullup = pin["pullup"] | false;
+            bool inverted = pin["inverted"] | false;
             int interval = pin["interval_s"] | 0;
             int debounce = pin["debounce_ms"] | 20;
 
@@ -278,6 +285,7 @@ void poseidon_init() {
             p.name[sizeof(p.name) - 1] = '\0';
             p.mode = mode;
             p.pullup = pullup;
+            p.inverted = inverted;
             p.interval_s = interval;
             p.debounce_ms = debounce;
             p.channel = (ch >= 0) ? (uint8_t)ch : 0;
@@ -303,6 +311,10 @@ void poseidon_init() {
                 case IO_DIGITAL:
                     input_config_set((Input)ch, SW_DIGITAL, true);
                     if (pullup) input_config_set((Input)ch, SW_PULLUP, true);
+                    break;
+                case IO_DIGITAL_PULLUP:
+                    input_config_set((Input)ch, SW_DIGITAL, true);
+                    input_config_set((Input)ch, SW_PULLUP, true);
                     break;
                 case IO_ANALOG_CURRENT:
                     // Analog+shunt toggled per read

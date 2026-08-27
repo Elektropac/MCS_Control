@@ -28,6 +28,7 @@
     .mode-badge { display: inline-block; font-size: 10px; color: #fff; padding: 2px 8px; border-radius: 8px; }
     .mode-output { background: #e67e22; }
     .mode-digital { background: #3498db; }
+    .mode-digital_pullup { background: #2980b9; }
     .mode-analog_current { background: #2b8ab0; }
     .mode-analog_voltage { background: #8e44ad; }
     .mode-pulse { background: #27ae60; }
@@ -146,7 +147,8 @@ function updateCards(pins) {
         valEl.innerHTML = `${parseFloat(p.volt).toFixed(3)}<small> V</small>`;
         break;
       case 'digital':
-        valEl.innerHTML = `<span class="state-indicator ${p.state==='HIGH'?'state-high':'state-low'}"></span> ${p.state}`;
+      case 'digital_pullup':
+        valEl.innerHTML = `<span class="state-indicator ${p.state==='HIGH'?'state-high':'state-low'}"></span> ${p.state}${p.inverted?' <small>(inv)</small>':''}`;
         break;
       case 'pulse':
         valEl.innerHTML = `${p.pulses || 0}<small> pulses</small>`;
