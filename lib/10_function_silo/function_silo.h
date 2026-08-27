@@ -53,6 +53,33 @@ namespace function_silo
             return "{\"result\": \"LED set\"}";
         }
         
+        // -- config --
+
+        else if (function_name == "config_get")
+        {
+            String result;
+            serializeJson(config::config, result);
+            return result;
+        }
+        else if (function_name == "config_upload")
+        {
+            JsonObject data = json_packet["data"].as<JsonObject>();
+            if (data.isNull()) return "{\"error\":\"no data\"}";
+            
+            // Save to LittleFS
+            File f = LittleFS.open("/config.json", "w");
+            if (!f) return "{\"error\":\"failed to open file\"}";
+            serializeJsonPretty(data, f);
+            f.close();
+            
+            // Reload config
+            config::config.clear();
+            DeserializationError err = deserializeJson(config::config, "");
+            config::init();
+            
+            return "{\"result\":\"config saved, reboot to apply\"}";
+        }
+
         // -- cloudgauge --
 
         else if (function_name == "cloudgauge_get_all")

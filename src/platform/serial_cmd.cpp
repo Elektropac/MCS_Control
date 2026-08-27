@@ -5,9 +5,11 @@
 #include "hardware/adc.h"
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
+#include "LittleFS.h"
+#include <ArduinoJson.h>
 
-static char s_cmd_buf[64];
-static uint8_t s_cmd_pos = 0;
+static char s_cmd_buf[2048];
+static uint16_t s_cmd_pos = 0;
 
 static void process_command(const char* cmd) {
     if (strlen(cmd) == 1) {
@@ -50,6 +52,43 @@ static void process_command(const char* cmd) {
 
     if (cmd[0] == 'p' && cmd[1] == 'j') {
         Serial.println(cloudgauge_get_all());
+        return;
+    }
+
+    // cfg {...} — save JSON config to LittleFS and reboot
+    if (strncmp(cmd, "cfg ", 4) == 0) {
+        const char* json = cmd + 4;
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(doc, json);
+        if (err) {
+            Serial.printf("[cfg] JSON parse error: %s\n", err.c_str());
+            return;
+        }
+        File f = LittleFS.open("/config.json", "w");
+        if (!f) {
+            Serial.println("[cfg] Failed to open /config.json for writing");
+            return;
+        }
+        serializeJsonPretty(doc, f);
+        f.close();
+        Serial.println("[cfg] Config saved to LittleFS. Rebooting...");
+        vTaskDelay(pdMS_TO_TICKS(500));
+        ESP.restart();
+        return;
+    }
+
+    // cfg? — print current config from LittleFS
+    if (strcmp(cmd, "cfg?") == 0) {
+        File f = LittleFS.open("/config.json", "r");
+        if (!f) {
+            Serial.println("[cfg] No config file found");
+            return;
+        }
+        while (f.available()) {
+            Serial.write(f.read());
+        }
+        f.close();
+        Serial.println();
         return;
     }
 

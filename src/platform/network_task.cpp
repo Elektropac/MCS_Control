@@ -1,6 +1,4 @@
 #include "network_task.h"
-#include "file_system.h"
-#include "config.h"
 #include "w5500.h"
 #include "my_wifi.h"
 #include "web_socket.h"
@@ -12,8 +10,7 @@ static void network_task(void* param) {
     (void)param;
 
     // Initialize network stack (runs once)
-    file_system::init();
-    config::init();
+    // file_system and config already init'd in setup()
     w5500::init();
     wifi::init();
     web_socket::init();

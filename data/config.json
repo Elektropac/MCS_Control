@@ -1,7 +1,11 @@
 {
-    "type": "control_config",
+    "product": "cloudgauge2",
     "version": 1,
-    "MAC_ID": "custom",
+    "name": "CloudGauge Dev",
+    "channels": {
+        "A": { "voltage": 24 },
+        "B": { "voltage": 24 }
+    },
     "connection": {
         "server": {
             "local": {
@@ -15,124 +19,21 @@
                 "path": "/ws"
             }
         },
-        "internet_client": "wifi",
+        "internet_client": "ethernet",
         "settings": {
-            // "wifi": {
-            //     "ssid": "MCS_Dev",
-            //     "password": "123456798"
-            // },
             "ethernet": {
                 "dhcp": false
-                // "ip": "192.168.1.167",
-                // "gateway": "192.168.1.1",
-                // "subnet": "255.255.255.0"
             }
         }
     },
-    "tank_read_interval": 60, // in sec
-    "groups": {
-        "pump_1": {
-            "type": "standard-pump-controller",
-            "name": "Pump 1",
-            "pulse_input": "A0",
-            "nozzle_input": "A1",
-            "relay_output": "AR",
-            "conversion": {
-                "type": "pulse",
-                "pulses_per_unit": 100.0,
-                "unit": "L"
-            }
-        },
-        "pump_2": {
-            "type": "slow-valve-pump-controller",
-            "name": "Pump 2",
-            "pulse_input": "B0",
-            "nozzle_input": "B1",
-            "relay_output": "BR",
-            "relay_output_valve": "BR2"
-        },
-        "probe_1": {
-            "type": "standard-probe",
-            "name": "Probe 1",
-            "level_input": "A2",
-            "conversion": {
-                "type": "linear",
-                "input_min": 4.0,
-                "input_max": 20.0,
-                "output_min": 0.0,
-                "output_max": 5000.0,
-                "unit": "L"
-            }
-        }
-    },
-    "channels": {
-        "A": {
-            "channel_voltage": 24,
-            "inputs": {
-                "A0": {
-                    "mode": "pulse"
-                },
-                "A1": {
-                    "mode": "digital"
-                },
-                "A2": {
-                    "mode": "analog_current"
-                },
-                "A3": {
-                    "mode": "disabled"
-                }
-            }
-        },
-        "B": {
-            "channel_voltage": 24,
-            "inputs": {
-                "B0": {
-                    "mode": "pulse"
-                },
-                "B1": {
-                    "mode": "digital"
-                },
-                "B2": {
-                    "mode": "analog_current"
-                },
-                "B3": {
-                    "mode": "disabled"
-                }
-            }
-        }
-    },
-    "menu": {
-        "items": [
-            {
-                "id": "tanks",
-                "name": "Tanks",
-                "enabled": true
-            },
-            {
-                "id": "pumps",
-                "name": "Pumps",
-                "enabled": true
-            },
-            {
-                "id": "config",
-                "name": "Config",
-                "enabled": true
-            },
-            {
-                "id": "network",
-                "name": "Network",
-                "enabled": true
-            },
-            {
-                "id": "diagnostics",
-                "name": "Diagnostics",
-                "enabled": true
-            },
-            {
-                "id": "reboot",
-                "name": "Reboot",
-                "enabled": true
-            }
-        ]
-    }
+    "probes": [
+        { "id": "tank_1", "type": "mcs_level", "input": "A1" },
+        { "id": "tank_2", "type": "mcs_level", "input": "A2" },
+        { "id": "tank_3", "type": "mcs_level", "input": "A3" },
+        { "id": "tank_4", "type": "mcs_level", "input": "A4" },
+        { "id": "tank_5", "type": "mcs_level", "input": "B1" },
+        { "id": "tank_6", "type": "mcs_level", "input": "B2" },
+        { "id": "tank_7", "type": "mcs_level", "input": "B3" },
+        { "id": "tank_8", "type": "mcs_level", "input": "B4" }
+    ]
 }
