@@ -313,13 +313,18 @@ static void evaluate_rules() {
         if (!get_pin_value(r.src_pin, r.src_field, val)) continue;
 
         bool triggered = eval_op(val, r.op, r.threshold);
-        if (triggered && !r.active) {
-            // Rising edge — execute action
+        if (triggered) {
+            // Execute action every cycle while condition is true
             execute_action(r.dst_pin, r.action);
-            r.active = true;
-            log_info("[poseidon] Rule '%s' triggered: %s.%s → %s", r.name, r.src_pin, r.src_field, r.dst_pin);
-        } else if (!triggered && r.active) {
-            r.active = false;
+            if (!r.active) {
+                r.active = true;
+                log_info("[poseidon] Rule '%s' triggered: %s.%s → %s", r.name, r.src_pin, r.src_field, r.dst_pin);
+            }
+        } else {
+            if (r.active) {
+                r.active = false;
+                log_info("[poseidon] Rule '%s' cleared", r.name);
+            }
         }
     }
 }
