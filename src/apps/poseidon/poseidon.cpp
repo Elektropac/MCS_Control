@@ -60,6 +60,8 @@ struct IoPin {
     bool last_digital;        // last digital reading
     uint32_t last_report_ms;  // timestamp of last report
     uint32_t pulse_count;     // accumulated pulses
+    uint32_t sampler_cursor;  // position in sampler ring buffer (for pulse counting)
+    uint8_t prev_bit;         // previous bit state (for edge detection)
     bool valid;
 };
 
@@ -146,6 +148,16 @@ static void read_pin(IoPin& p) {
             break;
         }
         case IO_PULSE: {
+            // Count edges from sampler ring buffer
+            SamplerEvent evt;
+            while (sampler_read_next(p.sampler_cursor, evt)) {
+                uint8_t bit = (evt.state >> p.channel) & 0x01;
+                // Count falling edges (HIGH→LOW) — typical for pulse sensors
+                if (p.prev_bit == 1 && bit == 0) {
+                    p.pulse_count++;
+                }
+                p.prev_bit = bit;
+            }
             uint8_t state = sampler_current_state();
             bool raw = (state >> p.channel) & 0x01;
             p.last_digital = p.inverted ? !raw : raw;
@@ -185,6 +197,7 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
         case IO_PULSE:
             obj["state"] = p.last_digital ? "HIGH" : "LOW";
             obj["pulses"] = p.pulse_count;
+            if (p.inverted) obj["inverted"] = true;
             break;
         case IO_RELAY:
             obj["state"] = p.output_state ? "ON" : "OFF";
@@ -294,6 +307,8 @@ void poseidon_init() {
             p.last_digital = false;
             p.last_report_ms = 0;
             p.pulse_count = 0;
+            p.sampler_cursor = sampler_write_position();
+            p.prev_bit = (sampler_current_state() >> ((ch >= 0) ? ch : 0)) & 0x01;
             p.valid = true;
 
             // Configure hardware based on mode
@@ -445,4 +460,23 @@ String poseidon_io_get_all() {
     String result;
     serializeJson(doc, result);
     return result;
+}
+
+String poseidon_io_reset_pulses(const char* pin_name) {
+    for (uint8_t i = 0; i < s_num_pins; i++) {
+        if (strcmp(s_pins[i].pin, pin_name) == 0) {
+            if (s_pins[i].mode != IO_PULSE) return "{\"error\":\"pin is not pulse mode\"}";
+            uint32_t old = s_pins[i].pulse_count;
+            s_pins[i].pulse_count = 0;
+            log_info("[poseidon] Reset pulses on %s (was %lu)", pin_name, old);
+            JsonDocument doc;
+            doc["pin"] = pin_name;
+            doc["reset"] = old;
+            doc["pulses"] = 0;
+            String result;
+            serializeJson(doc, result);
+            return result;
+        }
+    }
+    return "{\"error\":\"pin not found\"}";
 }

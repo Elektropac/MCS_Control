@@ -134,6 +134,12 @@ namespace function_silo
             }
             return poseidon_io_set(pin ? pin : "", state);
         }
+        else if (function_name == "io_reset_pulses")
+        {
+            JsonObject json_object = json_packet["data"].as<JsonObject>();
+            const char* pin = json_object["pin"];
+            return poseidon_io_reset_pulses(pin ? pin : "");
+        }
 
 
 

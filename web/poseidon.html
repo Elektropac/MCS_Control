@@ -101,6 +101,9 @@ function buildCards(pins) {
     if (isOutput) {
       controlHtml = `<button class="toggle-btn ${p.state==='HIGH'?'high':'low'}" id="btn-${i}" onclick="toggleOutput('${p.pin}',${i})">${p.state==='HIGH'?'ON':'OFF'}</button>`;
     }
+    if (p.mode === 'pulse') {
+      controlHtml = `<button class="toggle-btn low" style="font-size:12px;" onclick="resetPulses('${p.pin}')">Reset</button>`;
+    }
 
     el.innerHTML += `
       <div class="io-card" id="card-${i}">
@@ -152,7 +155,7 @@ function updateCards(pins) {
         break;
       case 'pulse':
         valEl.innerHTML = `${p.pulses || 0}<small> pulses</small>`;
-        subEl.textContent = `${p.pin} · ${p.state}`;
+        subEl.textContent = `${p.pin} · ${p.state}${p.inverted?' (inv)':''}`;
         break;
       default:
         valEl.innerHTML = '—';
@@ -191,6 +194,10 @@ function updateRelays(relays) {
       btn.textContent = r.state==='ON'?'ON':'OFF';
     }
   });
+}
+
+async function resetPulses(pin) {
+  await api('io_reset_pulses', {pin});
 }
 
 async function toggleRelay(id, idx) {

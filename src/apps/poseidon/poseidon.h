@@ -15,3 +15,6 @@ String poseidon_io_get(const char* pin);
 
 // Get all pins status
 String poseidon_io_get_all();
+
+// Reset pulse counter for a pin
+String poseidon_io_reset_pulses(const char* pin);
