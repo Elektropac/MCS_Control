@@ -2,6 +2,8 @@
 
 #include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
 #include "ssl_manager.h"
 #include "config.h"
@@ -13,6 +15,7 @@ namespace web_socket
 {
     bool is_connected = false;
     bool is_secure = false;
+    static SemaphoreHandle_t s_send_mutex = xSemaphoreCreateMutex();
     SSLManager ssl_manager;
     WebSocketClient *web_socket_client = nullptr;
 
@@ -107,9 +110,12 @@ namespace web_socket
     {
         if (is_connected && web_socket_client)
         {
-            web_socket_client->beginMessage(TYPE_TEXT);
-            web_socket_client->write((const uint8_t *)message.c_str(), message.length());
-            web_socket_client->endMessage();
+            if (xSemaphoreTake(s_send_mutex, pdMS_TO_TICKS(200))) {
+                web_socket_client->beginMessage(TYPE_TEXT);
+                web_socket_client->write((const uint8_t *)message.c_str(), message.length());
+                web_socket_client->endMessage();
+                xSemaphoreGive(s_send_mutex);
+            }
         }
         else
         {

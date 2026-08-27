@@ -42,6 +42,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  p         - probe readings (cloudgauge)");
                 Serial.println("  s <name>  - suspend task");
                 Serial.println("  g <name>  - resume (go) task");
+                Serial.println("  pr        - power reset (5 min off, then restart)");
                 Serial.println("  ?         - this help");
                 return;
         }
@@ -106,6 +107,42 @@ static void process_command(const char* cmd) {
 
         // Resume cloudgauge
         cloudgauge_start();
+        return;
+    }
+
+    if (cmd[0] == 'p' && cmd[1] == 'r') {
+        Serial.print("\r\n=== PROBE POWER RESET ===\r\n");
+        cloudgauge_stop();
+        Serial.println("CloudGauge stopped");
+
+        // All inputs off
+        for (uint8_t i = 0; i < 8; i++) {
+            input_config_set((Input)i, SW_ANALOG, false);
+            input_config_set((Input)i, SW_PULLUP, false);
+            input_config_set((Input)i, SW_SHUNT, false);
+        }
+
+        voltage_select_set_a(VOLTAGE_OFF);
+        voltage_select_set_b(VOLTAGE_OFF);
+        Serial.println("Both channels OFF — probes unpowered");
+        Serial.println("Waiting 5 minutes...");
+
+        for (int i = 300; i > 0; i--) {
+            if (i % 60 == 0) {
+                Serial.printf("  %d min remaining...\r\n", i / 60);
+            }
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+
+        voltage_select_set_a(VOLTAGE_24V);
+        voltage_select_set_b(VOLTAGE_24V);
+        Serial.println("Power restored (24V)");
+        Serial.println("Waiting 10s for probe startup...");
+        vTaskDelay(pdMS_TO_TICKS(10000));
+
+        cloudgauge_start();
+        Serial.println("CloudGauge restarted");
+        Serial.println("=== DONE — use 'p' to check readings ===\r\n");
         return;
     }
 

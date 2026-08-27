@@ -14,8 +14,15 @@
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
 #include "platform/task_registry.h"
+#include "logging.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+
+// Forward declaration — web_socket lives in a header-only namespace
+namespace web_socket {
+    extern bool is_connected;
+    void sendMessage(const String &message);
+}
 
 // --- Configuration (hardcoded for now) ---
 #define NUM_PROBES          8
@@ -25,6 +32,7 @@
 #define PROBE_RANGE_CM      300.0f
 #define MA_MIN              4.0f
 #define MA_MAX              20.0f
+#define PUSH_INTERVAL_S     60
 
 // --- Per-probe state ---
 struct ProbeState {
@@ -130,9 +138,23 @@ static void cloudgauge_task(void* param) {
     s_order_idx = 0;
     s_first_round = true;
 
+    uint32_t push_counter = 0;
+
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(SAMPLE_INTERVAL_MS));
         read_all_probes();
+
+        push_counter++;
+        if (push_counter >= PUSH_INTERVAL_S) {
+            push_counter = 0;
+            if (web_socket::is_connected) {
+                String json = cloudgauge_get_all();
+                web_socket::sendMessage(json);
+                log_info("[cloudgauge] Pushed to server");
+            } else {
+                log_error("[cloudgauge] Push failed — not connected");
+            }
+        }
     }
 }
 

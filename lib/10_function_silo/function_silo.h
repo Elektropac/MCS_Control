@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 
 #include "rgb.h"
+#include "apps/cloudgauge/cloudgauge.h"
 
 
 // the common incomeing data structure is
@@ -52,6 +53,19 @@ namespace function_silo
             return "{\"result\": \"LED set\"}";
         }
         
+        // -- cloudgauge --
+
+        else if (function_name == "cloudgauge_get_all")
+        {
+            return cloudgauge_get_all();
+        }
+        else if (function_name == "cloudgauge_get")
+        {
+            JsonObject json_object = json_packet["data"].as<JsonObject>();
+            const char* input = json_object["input"];
+            return cloudgauge_get(input ? input : "");
+        }
+
         // -- system --
 
         else if (function_name == "reboot")
