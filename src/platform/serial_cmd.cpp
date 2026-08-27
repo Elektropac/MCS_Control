@@ -15,6 +15,7 @@ static void process_command(const char* cmd) {
     if (strlen(cmd) == 1) {
         switch (cmd[0]) {
             case 'd': debug_all();           return;
+            case 'c': Serial.print("\033[2J\033[H"); return;
             case 't': debug_task_list();     return;
             case 'r': debug_runtime_stats(); return;
             case 'm': debug_memory();        return;
@@ -37,6 +38,7 @@ static void process_command(const char* cmd) {
                 return;
             case '?':
                 Serial.println("Commands:");
+                Serial.println("  c         - clear screen");
                 Serial.println("  d         - full debug dump");
                 Serial.println("  t         - task list");
                 Serial.println("  r         - runtime info");
