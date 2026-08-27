@@ -337,6 +337,18 @@ void poseidon_start_task() {
 }
 
 String poseidon_io_set(const char* pin_name, bool state) {
+    // Handle hardware relays directly
+    if (strcmp(pin_name, "RA") == 0) {
+        relay_set(RELAY_A, state);
+        log_info("[poseidon] Relay A → %s", state ? "ON" : "OFF");
+        return state ? "{\"id\":\"RA\",\"state\":\"ON\"}" : "{\"id\":\"RA\",\"state\":\"OFF\"}";
+    }
+    if (strcmp(pin_name, "RB") == 0) {
+        relay_set(RELAY_B, state);
+        log_info("[poseidon] Relay B → %s", state ? "ON" : "OFF");
+        return state ? "{\"id\":\"RB\",\"state\":\"ON\"}" : "{\"id\":\"RB\",\"state\":\"OFF\"}";
+    }
+
     for (uint8_t i = 0; i < s_num_pins; i++) {
         if (strcmp(s_pins[i].pin, pin_name) == 0) {
             if (s_pins[i].mode == IO_RELAY) {
@@ -393,12 +405,23 @@ String poseidon_io_get_all() {
     JsonArray pins = doc["io"].to<JsonArray>();
     for (uint8_t i = 0; i < s_num_pins; i++) {
         // Fresh read for inputs
-        if (s_pins[i].mode != IO_OUTPUT && s_pins[i].mode != IO_DISABLED) {
+        if (s_pins[i].mode != IO_OUTPUT && s_pins[i].mode != IO_DISABLED && s_pins[i].mode != IO_RELAY) {
             read_pin(s_pins[i]);
         }
         JsonObject obj = pins.add<JsonObject>();
         pin_to_json(obj, s_pins[i]);
     }
+
+    // Always include hardware relays
+    JsonArray relays = doc["relays"].to<JsonArray>();
+    JsonObject ra = relays.add<JsonObject>();
+    ra["id"] = "RA";
+    ra["name"] = "Relay A";
+    ra["state"] = relay_get(RELAY_A) ? "ON" : "OFF";
+    JsonObject rb = relays.add<JsonObject>();
+    rb["id"] = "RB";
+    rb["name"] = "Relay B";
+    rb["state"] = relay_get(RELAY_B) ? "ON" : "OFF";
 
     String result;
     serializeJson(doc, result);

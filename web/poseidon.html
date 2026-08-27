@@ -64,6 +64,9 @@
 <div class="io-grid" id="io-grid"></div>
 <div class="no-pins" id="no-pins" style="display:none;">No I/O configured. <a href="/config.html">Open Config</a></div>
 
+<h2 style="font-size:16px;font-weight:800;color:#173447;margin:20px 0 12px;">Relays</h2>
+<div class="io-grid" id="relay-grid"></div>
+
 <script>
 const API = '/api/';
 let pinCount = 0;
@@ -157,6 +160,48 @@ function updateCards(pins) {
   });
 }
 
+function buildRelays(relays) {
+  const el = document.getElementById('relay-grid');
+  el.innerHTML = '';
+  if (!relays) return;
+  relays.forEach((r, i) => {
+    el.innerHTML += `
+      <div class="io-card" id="relay-card-${i}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="name">${r.name}</div>
+          <span class="mode-badge mode-relay">relay</span>
+        </div>
+        <div class="value" id="rval-${i}"><span class="state-indicator ${r.state==='ON'?'state-high':'state-low'}"></span> ${r.state}</div>
+        <div><button class="toggle-btn ${r.state==='ON'?'high':'low'}" id="rbtn-${i}" onclick="toggleRelay('${r.id}',${i})">${r.state==='ON'?'ON':'OFF'}</button></div>
+      </div>`;
+  });
+}
+
+function updateRelays(relays) {
+  if (!relays) return;
+  relays.forEach((r, i) => {
+    const valEl = document.getElementById('rval-' + i);
+    const btn = document.getElementById('rbtn-' + i);
+    if (valEl) valEl.innerHTML = `<span class="state-indicator ${r.state==='ON'?'state-high':'state-low'}"></span> ${r.state}`;
+    if (btn) {
+      btn.className = 'toggle-btn ' + (r.state==='ON'?'high':'low');
+      btn.textContent = r.state==='ON'?'ON':'OFF';
+    }
+  });
+}
+
+async function toggleRelay(id, idx) {
+  const btn = document.getElementById('rbtn-' + idx);
+  const isOn = btn.classList.contains('high');
+  btn.textContent = '...';
+  btn.className = 'toggle-btn';
+  btn.disabled = true;
+  await api('io_set', {pin: id, state: !isOn});
+  btn.disabled = false;
+  btn.className = 'toggle-btn ' + (!isOn ? 'high' : 'low');
+  btn.textContent = !isOn ? 'ON' : 'OFF';
+}
+
 async function toggleOutput(pin, idx) {
   const btn = document.getElementById('btn-' + idx);
   const isOn = btn.classList.contains('high');
@@ -184,6 +229,7 @@ async function poll() {
     buildCards(data.io);
   }
   updateCards(data.io);
+  updateRelays(data.relays);
 }
 
 // Init
@@ -198,6 +244,7 @@ async function poll() {
     if (data.io) {
       buildCards(data.io);
       updateCards(data.io);
+      buildRelays(data.relays);
       document.getElementById('dot').className = 'dot ok';
       document.getElementById('status').textContent = `Live · ${data.io.length} pins`;
     }
