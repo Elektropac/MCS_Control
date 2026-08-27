@@ -220,6 +220,143 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
     }
 }
 
+// --- IFTTT Rules ---
+#define MAX_RULES 10
+
+enum RuleOp : uint8_t { OP_GT, OP_LT, OP_EQ, OP_NEQ, OP_GTE, OP_LTE };
+enum RuleAction : uint8_t { ACT_SET_HIGH, ACT_SET_LOW, ACT_RELAY_ON, ACT_RELAY_OFF };
+
+struct Rule {
+    char name[32];
+    char src_pin[4];        // source pin ("A2", "B1")
+    char src_field[8];      // "ma", "volt", "state", "hz", "pulses"
+    RuleOp op;
+    float threshold;        // numeric threshold (or 1.0=HIGH, 0.0=LOW for state)
+    char dst_pin[4];        // target pin or "RA"/"RB"
+    RuleAction action;
+    bool active;            // currently triggered
+    bool enabled;
+};
+
+static Rule s_rules[MAX_RULES];
+static uint8_t s_num_rules = 0;
+
+static RuleOp parse_op(const char* s) {
+    if (!s) return OP_EQ;
+    if (strcmp(s, ">") == 0) return OP_GT;
+    if (strcmp(s, "<") == 0) return OP_LT;
+    if (strcmp(s, "==") == 0) return OP_EQ;
+    if (strcmp(s, "!=") == 0) return OP_NEQ;
+    if (strcmp(s, ">=") == 0) return OP_GTE;
+    if (strcmp(s, "<=") == 0) return OP_LTE;
+    return OP_EQ;
+}
+
+static RuleAction parse_action(const char* s) {
+    if (!s) return ACT_SET_HIGH;
+    if (strcmp(s, "high") == 0 || strcmp(s, "HIGH") == 0) return ACT_SET_HIGH;
+    if (strcmp(s, "low") == 0 || strcmp(s, "LOW") == 0) return ACT_SET_LOW;
+    if (strcmp(s, "on") == 0 || strcmp(s, "ON") == 0) return ACT_RELAY_ON;
+    if (strcmp(s, "off") == 0 || strcmp(s, "OFF") == 0) return ACT_RELAY_OFF;
+    return ACT_SET_HIGH;
+}
+
+static bool eval_op(float val, RuleOp op, float threshold) {
+    switch (op) {
+        case OP_GT:  return val > threshold;
+        case OP_LT:  return val < threshold;
+        case OP_EQ:  return fabsf(val - threshold) < 0.01f;
+        case OP_NEQ: return fabsf(val - threshold) >= 0.01f;
+        case OP_GTE: return val >= threshold;
+        case OP_LTE: return val <= threshold;
+    }
+    return false;
+}
+
+// Find pin value by name and field
+static bool get_pin_value(const char* pin_name, const char* field, float &out) {
+    for (uint8_t i = 0; i < s_num_pins; i++) {
+        if (strcmp(s_pins[i].pin, pin_name) != 0) continue;
+        if (strcmp(field, "ma") == 0) { out = s_pins[i].last_analog; return true; }
+        if (strcmp(field, "volt") == 0) { out = s_pins[i].last_analog; return true; }
+        if (strcmp(field, "state") == 0) { out = s_pins[i].last_digital ? 1.0f : 0.0f; return true; }
+        if (strcmp(field, "hz") == 0) { out = s_pins[i].pulse_hz; return true; }
+        if (strcmp(field, "pulses") == 0) { out = (float)s_pins[i].pulse_count; return true; }
+    }
+    return false;
+}
+
+static void execute_action(const char* pin, RuleAction action) {
+    if (strcmp(pin, "RA") == 0) {
+        relay_set(RELAY_A, action == ACT_RELAY_ON || action == ACT_SET_HIGH);
+    } else if (strcmp(pin, "RB") == 0) {
+        relay_set(RELAY_B, action == ACT_RELAY_ON || action == ACT_SET_HIGH);
+    } else {
+        // Find output pin
+        for (uint8_t i = 0; i < s_num_pins; i++) {
+            if (strcmp(s_pins[i].pin, pin) == 0 && s_pins[i].mode == IO_OUTPUT) {
+                bool state = (action == ACT_SET_HIGH);
+                s_pins[i].output_state = state;
+                input_config_set((Input)s_pins[i].channel, SW_PULLUP, state);
+                break;
+            }
+        }
+    }
+}
+
+static void evaluate_rules() {
+    for (uint8_t i = 0; i < s_num_rules; i++) {
+        Rule& r = s_rules[i];
+        if (!r.enabled) continue;
+
+        float val = 0.0f;
+        if (!get_pin_value(r.src_pin, r.src_field, val)) continue;
+
+        bool triggered = eval_op(val, r.op, r.threshold);
+        if (triggered && !r.active) {
+            // Rising edge — execute action
+            execute_action(r.dst_pin, r.action);
+            r.active = true;
+            log_info("[poseidon] Rule '%s' triggered: %s.%s → %s", r.name, r.src_pin, r.src_field, r.dst_pin);
+        } else if (!triggered && r.active) {
+            r.active = false;
+        }
+    }
+}
+
+static void parse_rules() {
+    s_num_rules = 0;
+    if (!config::is_loaded || config::config["rules"].isNull()) return;
+
+    JsonArray rules = config::config["rules"].as<JsonArray>();
+    for (JsonObject rule : rules) {
+        if (s_num_rules >= MAX_RULES) break;
+
+        Rule& r = s_rules[s_num_rules];
+        const char* name = rule["name"] | "";
+        const char* src = rule["if_pin"] | "";
+        const char* field = rule["if_field"] | "state";
+        const char* op = rule["if_op"] | "==";
+        float threshold = rule["if_value"] | 0.0f;
+        const char* dst = rule["then_pin"] | "";
+        const char* action = rule["then_action"] | "high";
+        bool enabled = rule["enabled"] | true;
+
+        strncpy(r.name, name, sizeof(r.name) - 1); r.name[sizeof(r.name) - 1] = '\0';
+        strncpy(r.src_pin, src, sizeof(r.src_pin) - 1); r.src_pin[sizeof(r.src_pin) - 1] = '\0';
+        strncpy(r.src_field, field, sizeof(r.src_field) - 1); r.src_field[sizeof(r.src_field) - 1] = '\0';
+        r.op = parse_op(op);
+        r.threshold = threshold;
+        strncpy(r.dst_pin, dst, sizeof(r.dst_pin) - 1); r.dst_pin[sizeof(r.dst_pin) - 1] = '\0';
+        r.action = parse_action(action);
+        r.active = false;
+        r.enabled = enabled;
+
+        s_num_rules++;
+        log_info("[poseidon] Rule '%s': %s.%s %s %.1f → %s %s", r.name, r.src_pin, r.src_field, op, r.threshold, r.dst_pin, action);
+    }
+}
+
 // --- Background task: periodic reads and reporting ---
 static void poseidon_task(void* param) {
     (void)param;
@@ -248,6 +385,9 @@ static void poseidon_task(void* param) {
             String json = poseidon_io_get_all();
             web_socket::sendMessage(json);
         }
+
+        // Evaluate IFTTT rules
+        evaluate_rules();
     }
 }
 
@@ -372,6 +512,12 @@ void poseidon_init() {
         s_num_pins,
         (volt_a == VOLTAGE_5V) ? 5 : (volt_a == VOLTAGE_12V) ? 12 : 24,
         (volt_b == VOLTAGE_5V) ? 5 : (volt_b == VOLTAGE_12V) ? 12 : 24);
+
+    // Parse IFTTT rules
+    parse_rules();
+    if (s_num_rules > 0) {
+        Serial.printf("[poseidon] %d rules loaded\r\n", s_num_rules);
+    }
 }
 
 void poseidon_start_task() {
@@ -470,6 +616,17 @@ String poseidon_io_get_all() {
             rb["id"] = "RB";
             rb["name"] = rcfg["B"]["name"] | "Relay B";
             rb["state"] = relay_get(RELAY_B) ? "ON" : "OFF";
+        }
+    }
+
+    // Rules status
+    if (s_num_rules > 0) {
+        JsonArray rules = doc["rules"].to<JsonArray>();
+        for (uint8_t i = 0; i < s_num_rules; i++) {
+            JsonObject r = rules.add<JsonObject>();
+            r["name"] = s_rules[i].name;
+            r["active"] = s_rules[i].active;
+            r["enabled"] = s_rules[i].enabled;
         }
     }
 

@@ -98,5 +98,15 @@
     //     { "pin": "B2", "name": "Pump Enable",    "mode": "output" },
     //     { "pin": "B3", "name": "Temp Sensor",    "mode": "analog_voltage", "interval_s": 60 },
     //     { "pin": "B4", "name": "Unused",         "mode": "disabled" }
+    // ],
+    // "relays": {
+    //     "A": { "enabled": true, "name": "Main Pump" },
+    //     "B": { "enabled": true, "name": "Backup Valve" }
+    // },
+    // // IFTTT rules — if condition met, execute action (evaluated every second)
+    // "rules": [
+    //     { "name": "Overfill stop",  "if_pin": "A4", "if_field": "ma", "if_op": ">",  "if_value": 18, "then_pin": "RA", "then_action": "off" },
+    //     { "name": "Door alarm",     "if_pin": "B1", "if_field": "state", "if_op": "==", "if_value": 0, "then_pin": "A1", "then_action": "high" },
+    //     { "name": "Low level stop", "if_pin": "A4", "if_field": "ma", "if_op": "<",  "if_value": 5,  "then_pin": "RB", "then_action": "off" }
     // ]
 }
