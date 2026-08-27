@@ -90,6 +90,7 @@ struct ProbeState {
     uint8_t channel;            // ADC/input channel index 0-7
     const ProbeTypeDef* type_def; // pointer to type definition
     float range_cm;             // measurement range (from config or type default)
+    float density;              // liquid density (1.0=water, 0.84=diesel, 0.75=petrol)
     LutPoint lut[MAX_LUT_POINTS]; // cm → liter lookup table
     uint8_t lut_count;          // number of valid LUT entries
     float samples[AVG_WINDOW];  // ring buffer of mA readings
@@ -145,7 +146,11 @@ static float input_to_cm(const ProbeState& p) {
     float max = p.type_def->input_max;
     if (val <= min) return 0.0f;
     if (val >= max) return p.range_cm;
-    return ((val - min) / (max - min)) * p.range_cm;
+    float raw_cm = ((val - min) / (max - min)) * p.range_cm;
+    // Compensate for liquid density: probe measures pressure (water-calibrated)
+    // Lighter liquid (diesel 0.84) produces less pressure → probe reads low
+    // Actual cm = raw_cm / density
+    return raw_cm / p.density;
 }
 
 // Linear interpolation in LUT (cm → liters)
@@ -362,6 +367,8 @@ void cloudgauge_init() {
             p.channel = (uint8_t)ch;
             p.type_def = typeDef;
             p.range_cm = probe["range_cm"] | typeDef->default_range_cm;
+            float d = probe["density"] | 1.0f;
+            p.density = (d > 0.1f && d <= 2.0f) ? d : 1.0f;  // sanity check
             p.sample_idx = 0;
             p.sample_count = 0;
             p.avg_ma = 0.0f;

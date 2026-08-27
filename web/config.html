@@ -195,6 +195,8 @@ function renderProbes(probes) {
       <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.input?'selected':''}>${inp}</option>`).join('')}</select>
       <input type="number" value="${p.range_cm||300}" data-field="range_cm" style="width:60px" title="Range (cm)" />
       <span style="font-size:11px;color:#888">cm</span>
+      <input type="number" value="${p.density||1.0}" data-field="density" style="width:60px" step="0.01" title="Density (1.0=water, 0.84=diesel)" />
+      <span style="font-size:11px;color:#888">ρ</span>
       <span class="lut-toggle" onclick="toggleLut(${i})">${hasLut ? '📊 LUT ('+p.lut.length+')' : '+ LUT'}</span>
       <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
     `;
@@ -250,7 +252,7 @@ function removeLutRow(probeIdx, btn) {
 
 function addProbe() {
   const probes = readProbes();
-  probes.push({ id: 'tank_'+(probes.length+1), type: 'mcs_level', input: INPUTS[0], range_cm: 300 });
+  probes.push({ id: 'tank_'+(probes.length+1), type: 'mcs_level', input: INPUTS[0], range_cm: 300, density: 1.0 });
   renderProbes(probes);
 }
 
@@ -270,6 +272,7 @@ function readProbes() {
       type: row.querySelector('[data-field="type"]').value,
       input: row.querySelector('[data-field="input"]').value,
       range_cm: parseInt(row.querySelector('[data-field="range_cm"]').value) || 300,
+      density: parseFloat(row.querySelector('[data-field="density"]').value) || 1.0,
     };
     // Read LUT
     const lutRows = wrapper.querySelectorAll('.lut-row');
