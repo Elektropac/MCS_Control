@@ -118,6 +118,12 @@
   </div>
 </div>
 
+<!-- Rules (poseidon) -->
+<div class="section" id="rules-section" style="display:none">
+  <h2>Rules <button class="btn btn-secondary btn-small" onclick="addRule()">+ Add</button></h2>
+  <div id="rules-list-cfg"></div>
+</div>
+
 <!-- Connection -->
 <div class="section">
   <h2>Connection</h2>
@@ -203,6 +209,8 @@ function populateForm(c) {
   document.getElementById('relay_a_name').value = relays.A?.name || '';
   document.getElementById('relay_b_en').checked = relays.B?.enabled || false;
   document.getElementById('relay_b_name').value = relays.B?.name || '';
+  
+  renderRules(c.rules || []);
   
   onProductChange();
   updateRaw();
@@ -423,6 +431,60 @@ function readIO() {
   });
 }
 
+// --- Rules ---
+const RULE_FIELDS = ['state','ma','volt','hz','pulses'];
+const RULE_OPS = ['>','<','==','!=','>=','<='];
+const RULE_ACTIONS = ['high','low','on','off'];
+const RULE_TARGETS = ['A1','A2','A3','A4','B1','B2','B3','B4','RA','RB'];
+
+function renderRules(rules) {
+  const list = document.getElementById('rules-list-cfg');
+  list.innerHTML = '';
+  (rules||[]).forEach((r, i) => {
+    const row = document.createElement('div');
+    row.className = 'probe-row';
+    row.style.flexWrap = 'wrap';
+    row.innerHTML = `
+      <input type="text" value="${r.name||''}" data-field="rname" placeholder="Name" style="width:120px" />
+      <span style="font-size:11px;color:#888">IF</span>
+      <select data-field="if_pin">${INPUTS.map(p=>`<option value="${p}" ${p===r.if_pin?'selected':''}>${p}</option>`).join('')}</select>
+      <select data-field="if_field">${RULE_FIELDS.map(f=>`<option value="${f}" ${f===r.if_field?'selected':''}>${f}</option>`).join('')}</select>
+      <select data-field="if_op">${RULE_OPS.map(o=>`<option value="${o}" ${o===r.if_op?'selected':''}>${o}</option>`).join('')}</select>
+      <input type="number" value="${r.if_value||0}" data-field="if_value" style="width:70px" step="0.1" />
+      <span style="font-size:11px;color:#888">THEN</span>
+      <select data-field="then_pin">${RULE_TARGETS.map(p=>`<option value="${p}" ${p===r.then_pin?'selected':''}>${p}</option>`).join('')}</select>
+      <select data-field="then_action">${RULE_ACTIONS.map(a=>`<option value="${a}" ${a===r.then_action?'selected':''}>${a}</option>`).join('')}</select>
+      <button class="btn btn-danger btn-small" onclick="removeRule(${i})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addRule() {
+  const rules = readRules();
+  rules.push({name:'New rule', if_pin:'A1', if_field:'state', if_op:'==', if_value:1, then_pin:'RA', then_action:'on'});
+  renderRules(rules);
+}
+
+function removeRule(i) {
+  const rules = readRules();
+  rules.splice(i, 1);
+  renderRules(rules);
+}
+
+function readRules() {
+  const rows = document.querySelectorAll('#rules-list-cfg .probe-row');
+  return Array.from(rows).map(row => ({
+    name: row.querySelector('[data-field="rname"]').value,
+    if_pin: row.querySelector('[data-field="if_pin"]').value,
+    if_field: row.querySelector('[data-field="if_field"]').value,
+    if_op: row.querySelector('[data-field="if_op"]').value,
+    if_value: parseFloat(row.querySelector('[data-field="if_value"]').value) || 0,
+    then_pin: row.querySelector('[data-field="then_pin"]').value,
+    then_action: row.querySelector('[data-field="then_action"]').value,
+  }));
+}
+
 // --- Product change ---
 function onProductChange() {
   const p = document.getElementById('product').value;
@@ -431,6 +493,7 @@ function onProductChange() {
   document.getElementById('pumps-section').style.display = p==='micro_fms' ? '' : 'none';
   document.getElementById('io-section').style.display = p==='poseidon' ? '' : 'none';
   document.getElementById('relays-section').style.display = (p==='poseidon'||p==='micro_fms') ? '' : 'none';
+  document.getElementById('rules-section').style.display = p==='poseidon' ? '' : 'none';
 }
 
 // --- Build config JSON ---
@@ -461,6 +524,8 @@ function buildConfig() {
     c.probes = readProbes();
   } else if (product === 'poseidon') {
     c.io = readIO();
+    const rules = readRules();
+    if (rules.length > 0) c.rules = rules;
   }
 
   // Relays (poseidon + micro_fms)
