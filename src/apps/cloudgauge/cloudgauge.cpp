@@ -35,26 +35,33 @@ namespace web_socket {
 #define MAX_PROBES          8
 #define SAMPLE_INTERVAL_MS  1000
 #define AVG_WINDOW          10
-#define PROBE_RANGE_CM      300.0f
-#define MA_MIN              4.0f
-#define MA_MAX              20.0f
 #define PUSH_INTERVAL_S     60
 
 // --- Probe type definitions ---
-// Maps MCS type names to hardware requirements
+// Maps MCS type names to hardware requirements and conversion
 
 struct ProbeTypeDef {
     const char* type_name;
     uint8_t input_count;        // how many inputs this type uses
     Voltage required_voltage;
+    float default_range_cm;     // default measurement range
+    float input_min;            // signal floor (e.g. 4.0 mA or 0.0 V)
+    float input_max;            // signal ceiling (e.g. 20.0 mA or 5.0 V)
+    const char* input_unit;     // "mA" or "V"
     // Hardware setup function called at init
     void (*setup)(uint8_t channel);
 };
 
 // mcs_level: 4-20mA, 1 input, needs 24V, analog+shunt
 static void setup_mcs_level(uint8_t channel) {
-    // analog+shunt toggled per read cycle, not at init
-    // just ensure everything is OFF
+    input_config_set((Input)channel, SW_ANALOG, false);
+    input_config_set((Input)channel, SW_SHUNT, false);
+    input_config_set((Input)channel, SW_PULLUP, false);
+    input_config_set((Input)channel, SW_DIGITAL, false);
+}
+
+// mcs_level_temp: 0-5V, 2 inputs, needs 5V, analog only (no shunt)
+static void setup_mcs_level_temp(uint8_t channel) {
     input_config_set((Input)channel, SW_ANALOG, false);
     input_config_set((Input)channel, SW_SHUNT, false);
     input_config_set((Input)channel, SW_PULLUP, false);
@@ -62,8 +69,9 @@ static void setup_mcs_level(uint8_t channel) {
 }
 
 static const ProbeTypeDef PROBE_TYPES[] = {
-    { "mcs_level", 1, VOLTAGE_24V, setup_mcs_level },
-    // Future: { "mcs_level_temp", 2, VOLTAGE_5V, setup_mcs_level_temp },
+    //  type_name          inputs  voltage       range   min    max    unit   setup
+    { "mcs_level",           1,   VOLTAGE_24V,  300.0f, 4.0f,  20.0f, "mA",  setup_mcs_level },
+    { "mcs_level_temp",      2,   VOLTAGE_5V,   300.0f, 0.0f,   5.0f, "V",   setup_mcs_level_temp },
 };
 static const uint8_t NUM_PROBE_TYPES = sizeof(PROBE_TYPES) / sizeof(PROBE_TYPES[0]);
 
@@ -73,6 +81,8 @@ struct ProbeState {
     char input[4];              // physical input name ("A1", "B3")
     char type[20];              // MCS type name
     uint8_t channel;            // ADC/input channel index 0-7
+    const ProbeTypeDef* type_def; // pointer to type definition
+    float range_cm;             // measurement range (from config or type default)
     float samples[AVG_WINDOW];  // ring buffer of mA readings
     uint8_t sample_idx;
     uint8_t sample_count;
@@ -119,10 +129,14 @@ static Voltage voltage_from_config(int v) {
 
 // --- Helpers ---
 
-static float ma_to_cm(float ma) {
-    if (ma <= MA_MIN) return 0.0f;
-    if (ma >= MA_MAX) return PROBE_RANGE_CM;
-    return ((ma - MA_MIN) / (MA_MAX - MA_MIN)) * PROBE_RANGE_CM;
+static float input_to_cm(const ProbeState& p) {
+    if (!p.type_def) return 0.0f;
+    float val = p.avg_ma;
+    float min = p.type_def->input_min;
+    float max = p.type_def->input_max;
+    if (val <= min) return 0.0f;
+    if (val >= max) return p.range_cm;
+    return ((val - min) / (max - min)) * p.range_cm;
 }
 
 static float compute_average(ProbeState& p) {
@@ -244,7 +258,8 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["input"] = p.input;
     obj["type"] = p.type;
     obj["ma"] = serialized(String(p.avg_ma, 2));
-    obj["cm"] = serialized(String(ma_to_cm(p.avg_ma), 1));
+    obj["cm"] = serialized(String(input_to_cm(p), 1));
+    obj["range_cm"] = (int)p.range_cm;
     obj["liters"] = 0;  // TODO: LUT from config
 }
 
@@ -314,6 +329,8 @@ void cloudgauge_init() {
             strncpy(p.type, type, sizeof(p.type) - 1);
             p.type[sizeof(p.type) - 1] = '\0';
             p.channel = (uint8_t)ch;
+            p.type_def = typeDef;
+            p.range_cm = probe["range_cm"] | typeDef->default_range_cm;
             p.sample_idx = 0;
             p.sample_count = 0;
             p.avg_ma = 0.0f;
