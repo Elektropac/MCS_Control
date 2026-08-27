@@ -232,12 +232,19 @@ async function poll() {
     buildCards(data.io);
   }
   updateCards(data.io);
-  updateRelays(data.relays);
+  if (data.relays) {
+    if (!document.getElementById('rval-0') && data.relays.length > 0) buildRelays(data.relays);
+    updateRelays(data.relays);
+  }
 }
 
 // Init
 (async () => {
-  const data = await api('io_get_all');
+  let data = null;
+  for (let retry = 0; retry < 5 && !data; retry++) {
+    data = await api('io_get_all');
+    if (!data) await new Promise(r => setTimeout(r, 2000));
+  }
   if (data) {
     if (data.name) {
       document.getElementById('site-header').textContent = data.name;
@@ -247,10 +254,10 @@ async function poll() {
     if (data.io) {
       buildCards(data.io);
       updateCards(data.io);
-      buildRelays(data.relays);
-      document.getElementById('dot').className = 'dot ok';
-      document.getElementById('status').textContent = `Live · ${data.io.length} pins`;
     }
+    if (data.relays) buildRelays(data.relays);
+    document.getElementById('dot').className = 'dot ok';
+    document.getElementById('status').textContent = `Live · ${(data.io||[]).length} pins`;
   }
   setInterval(poll, 2000);
 })();
