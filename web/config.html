@@ -103,6 +103,21 @@
   <div id="io-list"></div>
 </div>
 
+<!-- Relays (poseidon + micro_fms) -->
+<div class="section" id="relays-section" style="display:none">
+  <h2>Relays</h2>
+  <div class="row">
+    <label style="min-width:30px;"><input type="checkbox" id="relay_a_en" /></label>
+    <label style="min-width:60px;">Relay A</label>
+    <input type="text" id="relay_a_name" placeholder="Name (e.g. Pump 1)" />
+  </div>
+  <div class="row">
+    <label style="min-width:30px;"><input type="checkbox" id="relay_b_en" /></label>
+    <label style="min-width:60px;">Relay B</label>
+    <input type="text" id="relay_b_name" placeholder="Name (e.g. Valve)" />
+  </div>
+</div>
+
 <!-- Connection -->
 <div class="section">
   <h2>Connection</h2>
@@ -181,6 +196,14 @@ function populateForm(c) {
   renderProbes(c.probes || []);
   renderPumps(c.pumps || []);
   renderIO(c.io || []);
+  
+  // Relays
+  const relays = c.relays || {};
+  document.getElementById('relay_a_en').checked = relays.A?.enabled || false;
+  document.getElementById('relay_a_name').value = relays.A?.name || '';
+  document.getElementById('relay_b_en').checked = relays.B?.enabled || false;
+  document.getElementById('relay_b_name').value = relays.B?.name || '';
+  
   onProductChange();
   updateRaw();
 }
@@ -401,6 +424,7 @@ function onProductChange() {
   document.getElementById('probes-section').style.display = (p==='cloudgauge2'||p==='micro_fms') ? '' : 'none';
   document.getElementById('pumps-section').style.display = p==='micro_fms' ? '' : 'none';
   document.getElementById('io-section').style.display = p==='poseidon' ? '' : 'none';
+  document.getElementById('relays-section').style.display = (p==='poseidon'||p==='micro_fms') ? '' : 'none';
 }
 
 // --- Build config JSON ---
@@ -432,6 +456,15 @@ function buildConfig() {
   } else if (product === 'poseidon') {
     c.io = readIO();
   }
+
+  // Relays (poseidon + micro_fms)
+  if (product === 'poseidon' || product === 'micro_fms') {
+    c.relays = {
+      A: { enabled: document.getElementById('relay_a_en').checked, name: document.getElementById('relay_a_name').value },
+      B: { enabled: document.getElementById('relay_b_en').checked, name: document.getElementById('relay_b_name').value },
+    };
+  }
+
   return c;
 }
 

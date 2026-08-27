@@ -412,16 +412,23 @@ String poseidon_io_get_all() {
         pin_to_json(obj, s_pins[i]);
     }
 
-    // Always include hardware relays
+    // Include hardware relays (from config)
     JsonArray relays = doc["relays"].to<JsonArray>();
-    JsonObject ra = relays.add<JsonObject>();
-    ra["id"] = "RA";
-    ra["name"] = "Relay A";
-    ra["state"] = relay_get(RELAY_A) ? "ON" : "OFF";
-    JsonObject rb = relays.add<JsonObject>();
-    rb["id"] = "RB";
-    rb["name"] = "Relay B";
-    rb["state"] = relay_get(RELAY_B) ? "ON" : "OFF";
+    if (config::is_loaded && !config::config["relays"].isNull()) {
+        JsonObject rcfg = config::config["relays"].as<JsonObject>();
+        if (!rcfg["A"].isNull() && (rcfg["A"]["enabled"] | false)) {
+            JsonObject ra = relays.add<JsonObject>();
+            ra["id"] = "RA";
+            ra["name"] = rcfg["A"]["name"] | "Relay A";
+            ra["state"] = relay_get(RELAY_A) ? "ON" : "OFF";
+        }
+        if (!rcfg["B"].isNull() && (rcfg["B"]["enabled"] | false)) {
+            JsonObject rb = relays.add<JsonObject>();
+            rb["id"] = "RB";
+            rb["name"] = rcfg["B"]["name"] | "Relay B";
+            rb["state"] = relay_get(RELAY_B) ? "ON" : "OFF";
+        }
+    }
 
     String result;
     serializeJson(doc, result);
