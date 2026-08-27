@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MCS Control — Poseidon</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    h1 { font-size: 22px; font-weight: 900; color: #173447; }
+    .nav { display: flex; gap: 8px; }
+    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
+    .nav a.active { background: #dcefeb; color: #184654; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.ok { background: #2ecc71; }
+    .dot.err { background: #e74c3c; }
+    #site-header { font-size: 24px; font-weight: 900; color: #173447; margin-bottom: 16px; display: none; }
+    .io-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    @media (max-width: 900px) { .io-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .io-grid { grid-template-columns: 1fr; } }
+    .io-card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .io-card .name { font-size: 15px; font-weight: 800; color: #173447; }
+    .io-card .value { font-size: 28px; font-weight: 900; color: #173447; line-height: 1; }
+    .io-card .value small { font-size: 14px; font-weight: 700; color: #476071; }
+    .io-card .sub { font-size: 12px; color: #617381; }
+    .mode-badge { display: inline-block; font-size: 10px; color: #fff; padding: 2px 8px; border-radius: 8px; }
+    .mode-output { background: #e67e22; }
+    .mode-digital { background: #3498db; }
+    .mode-analog_current { background: #2b8ab0; }
+    .mode-analog_voltage { background: #8e44ad; }
+    .mode-pulse { background: #27ae60; }
+    .mode-disabled { background: #95a5a6; }
+    .toggle-btn { padding: 10px 20px; border: 3px solid #0c1b24; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 3px 3px 0 #cfc7ba; transition: all 0.15s; }
+    .toggle-btn:active { box-shadow: 1px 1px 0 #cfc7ba; transform: translate(2px, 2px); }
+    .toggle-btn.high { background: #2ecc71; color: #fff; }
+    .toggle-btn.low { background: #e74c3c; color: #fff; }
+    .state-indicator { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #0c1b24; }
+    .state-high { background: #2ecc71; }
+    .state-low { background: #e74c3c; }
+    .no-pins { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔌 Poseidon</h1>
+  <div class="nav">
+    <a href="/">Home</a>
+    <a href="/config.html">Config</a>
+    <a href="/poseidon.html" class="active">I/O</a>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span class="dot" id="dot"></span>
+  <span id="status">Connecting...</span>
+</div>
+
+<div id="site-header"></div>
+
+<div class="io-grid" id="io-grid"></div>
+<div class="no-pins" id="no-pins" style="display:none;">No I/O configured. <a href="/config.html">Open Config</a></div>
+
+<script>
+const API = '/api/';
+let pinCount = 0;
+
+async function api(subject, data) {
+  try {
+    const body = data ? {subject, data} : {subject};
+    const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+function buildCards(pins) {
+  const el = document.getElementById('io-grid');
+  el.innerHTML = '';
+  if (!pins || pins.length === 0) {
+    document.getElementById('no-pins').style.display = '';
+    return;
+  }
+  document.getElementById('no-pins').style.display = 'none';
+
+  pins.forEach((p, i) => {
+    const isOutput = p.mode === 'output';
+    const isDigital = p.mode === 'digital' || p.mode === 'pulse';
+    const isAnalog = p.mode === 'analog_current' || p.mode === 'analog_voltage';
+
+    let valueHtml = '—';
+    let controlHtml = '';
+
+    if (isOutput) {
+      controlHtml = `<button class="toggle-btn ${p.state==='HIGH'?'high':'low'}" id="btn-${i}" onclick="toggleOutput('${p.pin}',${i})">${p.state==='HIGH'?'ON':'OFF'}</button>`;
+    }
+
+    el.innerHTML += `
+      <div class="io-card" id="card-${i}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="name">${p.name || p.pin}</div>
+          <span class="mode-badge mode-${p.mode}">${p.mode}</span>
+        </div>
+        <div class="value" id="val-${i}">${valueHtml}</div>
+        <div class="sub" id="sub-${i}">${p.pin}</div>
+        ${controlHtml ? `<div>${controlHtml}</div>` : ''}
+      </div>`;
+  });
+  pinCount = pins.length;
+}
+
+function updateCards(pins) {
+  if (!pins) return;
+  pins.forEach((p, i) => {
+    const valEl = document.getElementById('val-' + i);
+    const subEl = document.getElementById('sub-' + i);
+    if (!valEl) return;
+
+    switch (p.mode) {
+      case 'output':
+        valEl.innerHTML = `<span class="state-indicator ${p.state==='HIGH'?'state-high':'state-low'}"></span> ${p.state}`;
+        const btn = document.getElementById('btn-' + i);
+        if (btn) {
+          btn.className = 'toggle-btn ' + (p.state==='HIGH'?'high':'low');
+          btn.textContent = p.state==='HIGH'?'ON':'OFF';
+        }
+        break;
+      case 'analog_current':
+        valEl.innerHTML = `${parseFloat(p.ma).toFixed(2)}<small> mA</small>`;
+        break;
+      case 'analog_voltage':
+        valEl.innerHTML = `${parseFloat(p.volt).toFixed(3)}<small> V</small>`;
+        break;
+      case 'digital':
+        valEl.innerHTML = `<span class="state-indicator ${p.state==='HIGH'?'state-high':'state-low'}"></span> ${p.state}`;
+        break;
+      case 'pulse':
+        valEl.innerHTML = `${p.pulses || 0}<small> pulses</small>`;
+        subEl.textContent = `${p.pin} · ${p.state}`;
+        break;
+      default:
+        valEl.innerHTML = '—';
+    }
+    if (p.mode !== 'pulse') {
+      subEl.textContent = p.pin;
+    }
+  });
+}
+
+async function toggleOutput(pin, idx) {
+  const btn = document.getElementById('btn-' + idx);
+  const newState = btn.classList.contains('high') ? 'LOW' : 'HIGH';
+  btn.textContent = '...';
+  await api('io_set', {pin, state: newState});
+}
+
+async function poll() {
+  const data = await api('io_get_all');
+  if (!data) {
+    document.getElementById('dot').className = 'dot err';
+    document.getElementById('status').textContent = 'Connection lost';
+    return;
+  }
+  document.getElementById('dot').className = 'dot ok';
+  document.getElementById('status').textContent = `Live · ${data.io?.length || 0} pins`;
+
+  if (data.io && data.io.length !== pinCount) {
+    buildCards(data.io);
+  }
+  updateCards(data.io);
+}
+
+// Init
+(async () => {
+  const data = await api('io_get_all');
+  if (data) {
+    if (data.name) {
+      document.getElementById('site-header').textContent = data.name;
+      document.getElementById('site-header').style.display = '';
+      document.title = data.name + ' — Poseidon';
+    }
+    if (data.io) {
+      buildCards(data.io);
+      updateCards(data.io);
+      document.getElementById('dot').className = 'dot ok';
+      document.getElementById('status').textContent = `Live · ${data.io.length} pins`;
+    }
+  }
+  setInterval(poll, 2000);
+})();
+</script>
+</body>
+</html>
