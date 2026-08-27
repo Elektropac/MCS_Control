@@ -30,7 +30,10 @@
         }
     },
     "probes": [
-        { "id": "tank_1", "type": "mcs_level", "input": "A1" },
+        { "id": "tank_1", "type": "mcs_level", "input": "A1",
+          // "lut": cm vs liter — målt med pejlestang, max 10 punkter
+          "lut": [[0, 0], [30, 1500], [60, 3200], [90, 5000], [120, 7000], [150, 9200], [180, 11500], [210, 14000], [240, 16500], [270, 19000]]
+        },
         { "id": "tank_2", "type": "mcs_level", "input": "A2" },
         { "id": "tank_3", "type": "mcs_level", "input": "A3" },
         { "id": "tank_4", "type": "mcs_level", "input": "A4" },

@@ -76,6 +76,13 @@ static const ProbeTypeDef PROBE_TYPES[] = {
 static const uint8_t NUM_PROBE_TYPES = sizeof(PROBE_TYPES) / sizeof(PROBE_TYPES[0]);
 
 // --- Per-probe state ---
+#define MAX_LUT_POINTS 10
+
+struct LutPoint {
+    float cm;
+    float liters;
+};
+
 struct ProbeState {
     char id[16];                // from config (e.g. "tank_1")
     char input[4];              // physical input name ("A1", "B3")
@@ -83,6 +90,8 @@ struct ProbeState {
     uint8_t channel;            // ADC/input channel index 0-7
     const ProbeTypeDef* type_def; // pointer to type definition
     float range_cm;             // measurement range (from config or type default)
+    LutPoint lut[MAX_LUT_POINTS]; // cm → liter lookup table
+    uint8_t lut_count;          // number of valid LUT entries
     float samples[AVG_WINDOW];  // ring buffer of mA readings
     uint8_t sample_idx;
     uint8_t sample_count;
@@ -137,6 +146,26 @@ static float input_to_cm(const ProbeState& p) {
     if (val <= min) return 0.0f;
     if (val >= max) return p.range_cm;
     return ((val - min) / (max - min)) * p.range_cm;
+}
+
+// Linear interpolation in LUT (cm → liters)
+static float cm_to_liters(const ProbeState& p, float cm) {
+    if (p.lut_count == 0) return 0.0f;
+    if (p.lut_count == 1) return p.lut[0].liters;
+    
+    // Below first point
+    if (cm <= p.lut[0].cm) return p.lut[0].liters;
+    // Above last point
+    if (cm >= p.lut[p.lut_count - 1].cm) return p.lut[p.lut_count - 1].liters;
+    
+    // Find the two surrounding points and interpolate
+    for (uint8_t i = 0; i < p.lut_count - 1; i++) {
+        if (cm >= p.lut[i].cm && cm <= p.lut[i + 1].cm) {
+            float t = (cm - p.lut[i].cm) / (p.lut[i + 1].cm - p.lut[i].cm);
+            return p.lut[i].liters + t * (p.lut[i + 1].liters - p.lut[i].liters);
+        }
+    }
+    return 0.0f;
 }
 
 static float compute_average(ProbeState& p) {
@@ -254,13 +283,15 @@ static void cloudgauge_task(void* param) {
 // --- Build JSON for a single probe ---
 
 static void probe_to_json(JsonObject obj, const ProbeState& p) {
+    float cm = input_to_cm(p);
     obj["id"] = p.id;
     obj["input"] = p.input;
     obj["type"] = p.type;
     obj["ma"] = serialized(String(p.avg_ma, 2));
-    obj["cm"] = serialized(String(input_to_cm(p), 1));
+    obj["cm"] = serialized(String(cm, 1));
     obj["range_cm"] = (int)p.range_cm;
-    obj["liters"] = 0;  // TODO: LUT from config
+    obj["liters"] = (int)cm_to_liters(p, cm);
+    obj["has_lut"] = p.lut_count > 0;
 }
 
 // --- Public API ---
@@ -335,6 +366,19 @@ void cloudgauge_init() {
             p.sample_count = 0;
             p.avg_ma = 0.0f;
             p.valid = true;
+            
+            // Parse LUT (cm vs liter) if present
+            p.lut_count = 0;
+            if (!probe["lut"].isNull()) {
+                JsonArray lut = probe["lut"].as<JsonArray>();
+                for (JsonArray point : lut) {
+                    if (p.lut_count >= MAX_LUT_POINTS) break;
+                    p.lut[p.lut_count].cm = point[0].as<float>();
+                    p.lut[p.lut_count].liters = point[1].as<float>();
+                    p.lut_count++;
+                }
+                log_info("[cloudgauge] Probe '%s' LUT: %d points", p.id, p.lut_count);
+            }
 
             // Run type-specific hardware setup
             typeDef->setup(p.channel);
