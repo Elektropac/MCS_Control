@@ -454,6 +454,8 @@ function renderRules(rules) {
       <span style="font-size:11px;color:#888">THEN</span>
       <select data-field="then_pin">${RULE_TARGETS.map(p=>`<option value="${p}" ${p===r.then_pin?'selected':''}>${p}</option>`).join('')}</select>
       <select data-field="then_action">${RULE_ACTIONS.map(a=>`<option value="${a}" ${a===r.then_action?'selected':''}>${a}</option>`).join('')}</select>
+      <span style="font-size:11px;color:#888">ELSE</span>
+      <select data-field="else_action"><option value=""${!r.else_action?' selected':''}>—</option>${RULE_ACTIONS.map(a=>`<option value="${a}" ${a===r.else_action?'selected':''}>${a}</option>`).join('')}</select>
       <button class="btn btn-danger btn-small" onclick="removeRule(${i})">✕</button>
     `;
     list.appendChild(row);
@@ -482,7 +484,8 @@ function readRules() {
     if_value: parseFloat(row.querySelector('[data-field="if_value"]').value) || 0,
     then_pin: row.querySelector('[data-field="then_pin"]').value,
     then_action: row.querySelector('[data-field="then_action"]').value,
-  }));
+    else_action: row.querySelector('[data-field="else_action"]').value || undefined,
+  })).map(r => { if (!r.else_action) delete r.else_action; return r; });
 }
 
 // --- Product change ---

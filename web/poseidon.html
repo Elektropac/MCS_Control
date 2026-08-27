@@ -194,7 +194,7 @@ function buildRules(rules) {
       <div class="rule-row ${r.active?'triggered':''}" id="rule-${i}">
         <span class="rule-dot ${!r.enabled?'disabled':r.active?'active':'inactive'}" id="rdot-${i}"></span>
         <span class="rule-name">${r.name}</span>
-        <span class="rule-condition">IF ${r.if_pin}.${r.if_field} ${r.if_op} ${r.if_value} → ${r.then_pin} ${r.then_action.toUpperCase()}</span>
+        <span class="rule-condition">IF ${r.if_pin}.${r.if_field} ${r.if_op} ${r.if_value} → ${r.then_pin} ${r.then_action.toUpperCase()}${r.else_action?' · ELSE '+r.else_action.toUpperCase():''}</span>
         <span class="rule-status" id="rstatus-${i}">${!r.enabled?'Disabled':r.active?'⚡ Active':'Watching'}</span>
       </div>`;
   });

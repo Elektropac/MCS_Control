@@ -234,6 +234,8 @@ struct Rule {
     float threshold;        // numeric threshold (or 1.0=HIGH, 0.0=LOW for state)
     char dst_pin[4];        // target pin or "RA"/"RB"
     RuleAction action;
+    RuleAction else_action;
+    bool has_else;
     bool active;            // currently triggered
     bool enabled;
 };
@@ -321,6 +323,9 @@ static void evaluate_rules() {
                 log_info("[poseidon] Rule '%s' triggered: %s.%s → %s", r.name, r.src_pin, r.src_field, r.dst_pin);
             }
         } else {
+            if (r.has_else) {
+                execute_action(r.dst_pin, r.else_action);
+            }
             if (r.active) {
                 r.active = false;
                 log_info("[poseidon] Rule '%s' cleared", r.name);
@@ -345,6 +350,7 @@ static void parse_rules() {
         float threshold = rule["if_value"] | 0.0f;
         const char* dst = rule["then_pin"] | "";
         const char* action = rule["then_action"] | "high";
+        const char* else_act = rule["else_action"] | "";
         bool enabled = rule["enabled"] | true;
 
         strncpy(r.name, name, sizeof(r.name) - 1); r.name[sizeof(r.name) - 1] = '\0';
@@ -354,6 +360,8 @@ static void parse_rules() {
         r.threshold = threshold;
         strncpy(r.dst_pin, dst, sizeof(r.dst_pin) - 1); r.dst_pin[sizeof(r.dst_pin) - 1] = '\0';
         r.action = parse_action(action);
+        r.has_else = (strlen(else_act) > 0);
+        r.else_action = r.has_else ? parse_action(else_act) : ACT_SET_LOW;
         r.active = false;
         r.enabled = enabled;
 
@@ -638,6 +646,7 @@ String poseidon_io_get_all() {
             r["then_pin"] = s_rules[i].dst_pin;
             const char* acts[] = {"high","low","on","off"};
             r["then_action"] = acts[s_rules[i].action];
+            if (s_rules[i].has_else) r["else_action"] = acts[s_rules[i].else_action];
             r["active"] = s_rules[i].active;
             r["enabled"] = s_rules[i].enabled;
         }
