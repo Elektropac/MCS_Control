@@ -44,7 +44,7 @@ struct ProbeTypeDef {
     const char* type_name;
     uint8_t input_count;        // how many inputs this type uses
     Voltage required_voltage;
-    float default_range_cm;     // default measurement range
+    float default_range_mm;     // default measurement range in mm
     float input_min;            // signal floor (e.g. 4.0 mA or 0.0 V)
     float input_max;            // signal ceiling (e.g. 20.0 mA or 5.0 V)
     const char* input_unit;     // "mA" or "V"
@@ -69,9 +69,9 @@ static void setup_mcs_level_temp(uint8_t channel) {
 }
 
 static const ProbeTypeDef PROBE_TYPES[] = {
-    //  type_name          inputs  voltage       range   min    max    unit   setup
-    { "mcs_level",           1,   VOLTAGE_24V,  300.0f, 4.0f,  20.0f, "mA",  setup_mcs_level },
-    { "mcs_level_temp",      2,   VOLTAGE_5V,   300.0f, 0.0f,   5.0f, "V",   setup_mcs_level_temp },
+    //  type_name          inputs  voltage       range    min    max    unit   setup
+    { "mcs_level",           1,   VOLTAGE_24V,  3000.0f, 4.0f,  20.0f, "mA",  setup_mcs_level },
+    { "mcs_level_temp",      2,   VOLTAGE_5V,   3000.0f, 0.0f,   5.0f, "V",   setup_mcs_level_temp },
 };
 static const uint8_t NUM_PROBE_TYPES = sizeof(PROBE_TYPES) / sizeof(PROBE_TYPES[0]);
 
@@ -79,7 +79,7 @@ static const uint8_t NUM_PROBE_TYPES = sizeof(PROBE_TYPES) / sizeof(PROBE_TYPES[
 #define MAX_LUT_POINTS 10
 
 struct LutPoint {
-    float cm;
+    float mm;
     float liters;
 };
 
@@ -89,7 +89,7 @@ struct ProbeState {
     char type[20];              // MCS type name
     uint8_t channel;            // ADC/input channel index 0-7
     const ProbeTypeDef* type_def; // pointer to type definition
-    float range_cm;             // measurement range (from config or type default)
+    float range_mm;             // measurement range in mm (from config or type default)
     float density;              // liquid density (1.0=water, 0.84=diesel, 0.75=petrol)
     float min_level;            // alarm threshold in liters (0 = no alarm)
     LutPoint lut[MAX_LUT_POINTS]; // cm → liter lookup table
@@ -140,34 +140,34 @@ static Voltage voltage_from_config(int v) {
 
 // --- Helpers ---
 
-static float input_to_cm(const ProbeState& p) {
+static float input_to_mm(const ProbeState& p) {
     if (!p.type_def) return 0.0f;
     float val = p.avg_ma;
     float min = p.type_def->input_min;
     float max = p.type_def->input_max;
     if (val <= min) return 0.0f;
-    if (val >= max) return p.range_cm;
-    float raw_cm = ((val - min) / (max - min)) * p.range_cm;
+    if (val >= max) return p.range_mm;
+    float raw_mm = ((val - min) / (max - min)) * p.range_mm;
     // Compensate for liquid density: probe measures pressure (water-calibrated)
     // Lighter liquid (diesel 0.84) produces less pressure → probe reads low
-    // Actual cm = raw_cm / density
-    return raw_cm / p.density;
+    // Actual mm = raw_mm / density
+    return raw_mm / p.density;
 }
 
-// Linear interpolation in LUT (cm → liters)
-static float cm_to_liters(const ProbeState& p, float cm) {
+// Linear interpolation in LUT (mm → liters)
+static float mm_to_liters(const ProbeState& p, float mm) {
     if (p.lut_count == 0) return 0.0f;
     if (p.lut_count == 1) return p.lut[0].liters;
     
     // Below first point
-    if (cm <= p.lut[0].cm) return p.lut[0].liters;
+    if (mm <= p.lut[0].mm) return p.lut[0].liters;
     // Above last point
-    if (cm >= p.lut[p.lut_count - 1].cm) return p.lut[p.lut_count - 1].liters;
+    if (mm >= p.lut[p.lut_count - 1].mm) return p.lut[p.lut_count - 1].liters;
     
     // Find the two surrounding points and interpolate
     for (uint8_t i = 0; i < p.lut_count - 1; i++) {
-        if (cm >= p.lut[i].cm && cm <= p.lut[i + 1].cm) {
-            float t = (cm - p.lut[i].cm) / (p.lut[i + 1].cm - p.lut[i].cm);
+        if (mm >= p.lut[i].mm && mm <= p.lut[i + 1].mm) {
+            float t = (mm - p.lut[i].mm) / (p.lut[i + 1].mm - p.lut[i].mm);
             return p.lut[i].liters + t * (p.lut[i + 1].liters - p.lut[i].liters);
         }
     }
@@ -289,15 +289,15 @@ static void cloudgauge_task(void* param) {
 // --- Build JSON for a single probe ---
 
 static void probe_to_json(JsonObject obj, const ProbeState& p) {
-    float cm = input_to_cm(p);
-    float liters = cm_to_liters(p, cm);
+    float mm = input_to_mm(p);
+    float liters = mm_to_liters(p, mm);
     float capacity = (p.lut_count > 0) ? p.lut[p.lut_count - 1].liters : 0.0f;
     obj["id"] = p.id;
     obj["input"] = p.input;
     obj["type"] = p.type;
     obj["ma"] = serialized(String(p.avg_ma, 2));
-    obj["cm"] = serialized(String(cm, 1));
-    obj["range_cm"] = (int)p.range_cm;
+    obj["mm"] = (int)mm;
+    obj["range_mm"] = (int)p.range_mm;
     obj["liters"] = (int)liters;
     obj["capacity"] = (int)capacity;
     obj["min_level"] = (int)p.min_level;
@@ -374,7 +374,7 @@ void cloudgauge_init() {
             p.type[sizeof(p.type) - 1] = '\0';
             p.channel = (uint8_t)ch;
             p.type_def = typeDef;
-            p.range_cm = probe["range_cm"] | typeDef->default_range_cm;
+            p.range_mm = probe["range_mm"] | typeDef->default_range_mm;
             float d = probe["density"] | 1.0f;
             p.density = (d > 0.1f && d <= 2.0f) ? d : 1.0f;  // sanity check
             p.min_level = probe["min_level"] | 0.0f;
@@ -389,7 +389,7 @@ void cloudgauge_init() {
                 JsonArray lut = probe["lut"].as<JsonArray>();
                 for (JsonArray point : lut) {
                     if (p.lut_count >= MAX_LUT_POINTS) break;
-                    p.lut[p.lut_count].cm = point[0].as<float>();
+                    p.lut[p.lut_count].mm = point[0].as<float>();
                     p.lut[p.lut_count].liters = point[1].as<float>();
                     p.lut_count++;
                 }

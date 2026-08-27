@@ -112,22 +112,22 @@
         if (!valEl) return;
 
         const ma = parseFloat(p.ma);
-        const cm = parseFloat(p.cm);
+        const mm = parseInt(p.mm) || 0;
         const liters = parseInt(p.liters);
         const hasLut = p.has_lut;
-        const rangeCm = p.range_cm || 300;
+        const rangeMm = p.range_mm || 3000;
 
         if (hasLut && liters > 0) {
           const pct = p.pct ? parseFloat(p.pct) : 0;
           const cap = p.capacity || 0;
           valEl.innerHTML = `${liters.toLocaleString()}<small> L</small>` + (cap > 0 ? `<small style="color:#617381;font-weight:600;"> / ${cap.toLocaleString()}</small>` : '');
-          subEl.textContent = `${p.input} · ${pct.toFixed(1)}% · ${cm.toFixed(1)} cm · ${ma.toFixed(2)} mA`;
+          subEl.textContent = `${p.input} · ${pct.toFixed(1)}% · ${mm} mm · ${ma.toFixed(2)} mA`;
         } else {
-          valEl.innerHTML = `${cm.toFixed(1)}<small> cm</small>`;
+          valEl.innerHTML = `${mm}<small> mm</small>`;
           subEl.textContent = `${p.input} · ${ma.toFixed(2)} mA` + (liters > 0 ? ` · ${liters} L` : '');
         }
 
-        const pct = hasLut && p.pct ? parseFloat(p.pct) : Math.max(0, Math.min(100, (cm / rangeCm) * 100));
+        const pct = hasLut && p.pct ? parseFloat(p.pct) : Math.max(0, Math.min(100, (mm / rangeMm) * 100));
         fillEl.style.height = Math.min(100, pct) + '%';
         const isLow = p.low === true;
         fillEl.className = 'tank-fill ' + (isLow ? 'low' : pct > 80 ? 'high' : 'mid');

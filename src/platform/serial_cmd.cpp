@@ -22,7 +22,7 @@ static void process_command(const char* cmd) {
             case 'p':
                 {
                     Serial.print("\r\n=== CloudGauge Probes ===\r\n");
-                    Serial.print("Input     mA       cm\r\n");
+                    Serial.print("Input     mA       mm\r\n");
                     Serial.print("-----   ------   ------\r\n");
                     for (uint8_t i = 0; i < 8; i++) {
                         const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
@@ -30,8 +30,8 @@ static void process_command(const char* cmd) {
                         JsonDocument doc;
                         deserializeJson(doc, json);
                         float ma = doc["ma"];
-                        float cm = doc["cm"];
-                        Serial.printf("  %s     %5.2f    %5.1f\r\n", names[i], ma, cm);
+                        int mm = doc["mm"];
+                        Serial.printf("  %s     %5.2f    %5d\r\n", names[i], ma, mm);
                     }
                     Serial.print("\r\n");
                 }

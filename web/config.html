@@ -219,7 +219,7 @@ function renderProbes(probes) {
     panel.className = 'lut-panel';
     panel.id = 'lut-panel-'+i;
     if (hasLut) panel.style.display = 'block';
-    let lutHtml = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:#00d4ff;font-weight:bold;">cm → liter (pejlestang)</span><button class="btn btn-secondary btn-small" onclick="addLutRow('+i+')">+ Punkt</button></div>';
+    let lutHtml = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:#00d4ff;font-weight:bold;">mm → liter (pejlestang)</span><button class="btn btn-secondary btn-small" onclick="addLutRow('+i+')">+ Punkt</button></div>';
     lutHtml += '<div id="lut-rows-'+i+'">';
     const lut = p.lut || [];
     for (let j = 0; j < lut.length; j++) {
@@ -238,7 +238,7 @@ function renderProbes(probes) {
 
 function lutRowHtml(probeIdx, rowIdx, cm, liters) {
   return `<div class="lut-row">
-    <label>cm</label><input type="number" value="${cm}" data-lut-cm step="1" />
+    <label>mm</label><input type="number" value="${cm}" data-lut-cm step="1" />
     <label>=</label>
     <label>liter</label><input type="number" value="${liters}" data-lut-liter step="1" />
     <button class="btn btn-danger btn-small" onclick="removeLutRow(${probeIdx}, this)" style="padding:2px 6px;">✕</button>
@@ -269,7 +269,7 @@ function addLutRow(probeIdx) {
   const rows = container.querySelectorAll('.lut-row');
   const lastCm = rows.length > 0 ? parseInt(rows[rows.length-1].querySelector('[data-lut-cm]').value) || 0 : 0;
   if (rows.length >= 10) { alert('Max 10 punkter'); return; }
-  container.insertAdjacentHTML('beforeend', lutRowHtml(probeIdx, rows.length, lastCm + 30, 0));
+  container.insertAdjacentHTML('beforeend', lutRowHtml(probeIdx, rows.length, lastCm + 300, 0));
 }
 
 function removeLutRow(probeIdx, btn) {
