@@ -31,6 +31,7 @@
     .mode-analog_current { background: #2b8ab0; }
     .mode-analog_voltage { background: #8e44ad; }
     .mode-pulse { background: #27ae60; }
+    .mode-relay { background: #d35400; }
     .mode-disabled { background: #95a5a6; }
     .toggle-btn { padding: 10px 20px; border: 3px solid #0c1b24; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 3px 3px 0 #cfc7ba; transition: all 0.15s; }
     .toggle-btn:active { box-shadow: 1px 1px 0 #cfc7ba; transform: translate(2px, 2px); }
@@ -85,7 +86,7 @@ function buildCards(pins) {
   document.getElementById('no-pins').style.display = 'none';
 
   pins.forEach((p, i) => {
-    const isOutput = p.mode === 'output';
+    const isOutput = p.mode === 'output' || p.mode === 'relay';
     const isDigital = p.mode === 'digital' || p.mode === 'pulse';
     const isAnalog = p.mode === 'analog_current' || p.mode === 'analog_voltage';
 
@@ -126,6 +127,14 @@ function updateCards(pins) {
           btn.textContent = p.state==='HIGH'?'ON':'OFF';
         }
         break;
+      case 'relay':
+        valEl.innerHTML = `<span class="state-indicator ${p.state==='ON'?'state-high':'state-low'}"></span> ${p.state}`;
+        const rbtn = document.getElementById('btn-' + i);
+        if (rbtn) {
+          rbtn.className = 'toggle-btn ' + (p.state==='ON'?'high':'low');
+          rbtn.textContent = p.state==='ON'?'ON':'OFF';
+        }
+        break;
       case 'analog_current':
         valEl.innerHTML = `${parseFloat(p.ma).toFixed(2)}<small> mA</small>`;
         break;
@@ -150,14 +159,15 @@ function updateCards(pins) {
 
 async function toggleOutput(pin, idx) {
   const btn = document.getElementById('btn-' + idx);
-  const newState = btn.classList.contains('high') ? 'LOW' : 'HIGH';
+  const isOn = btn.classList.contains('high');
+  const newState = isOn ? false : true;
   btn.textContent = '...';
   btn.className = 'toggle-btn';
   btn.disabled = true;
   await api('io_set', {pin, state: newState});
   btn.disabled = false;
-  btn.className = 'toggle-btn ' + (newState === 'HIGH' ? 'high' : 'low');
-  btn.textContent = newState === 'HIGH' ? 'ON' : 'OFF';
+  btn.className = 'toggle-btn ' + (newState ? 'high' : 'low');
+  btn.textContent = newState ? 'ON' : 'OFF';
 }
 
 async function poll() {

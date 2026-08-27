@@ -38,6 +38,7 @@ enum IoMode : uint8_t {
     IO_ANALOG_CURRENT,    // 4-20mA via shunt
     IO_ANALOG_VOLTAGE,    // 0-5V direct
     IO_PULSE,
+    IO_RELAY,             // mechanical relay (A or B)
 };
 
 // --- Per-pin state ---
@@ -84,6 +85,7 @@ static IoMode parse_mode(const char* mode_str) {
     if (strcmp(mode_str, "analog_current") == 0) return IO_ANALOG_CURRENT;
     if (strcmp(mode_str, "analog_voltage") == 0) return IO_ANALOG_VOLTAGE;
     if (strcmp(mode_str, "pulse") == 0) return IO_PULSE;
+    if (strcmp(mode_str, "relay") == 0) return IO_RELAY;
     return IO_DISABLED;
 }
 
@@ -94,6 +96,7 @@ static const char* mode_to_string(IoMode m) {
         case IO_ANALOG_CURRENT: return "analog_current";
         case IO_ANALOG_VOLTAGE: return "analog_voltage";
         case IO_PULSE:          return "pulse";
+        case IO_RELAY:          return "relay";
         default:                return "disabled";
     }
 }
@@ -177,6 +180,9 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
             obj["state"] = p.last_digital ? "HIGH" : "LOW";
             obj["pulses"] = p.pulse_count;
             break;
+        case IO_RELAY:
+            obj["state"] = p.output_state ? "ON" : "OFF";
+            break;
         default:
             break;
     }
@@ -259,12 +265,11 @@ void poseidon_init() {
             int debounce = pin["debounce_ms"] | 20;
 
             int8_t ch = pin_name_to_channel(pin_name);
-            if (ch < 0) {
+            IoMode mode = parse_mode(mode_str);
+            if (ch < 0 && mode != IO_RELAY) {
                 log_error("[poseidon] Invalid pin '%s', skipping", pin_name);
                 continue;
             }
-
-            IoMode mode = parse_mode(mode_str);
 
             IoPin& p = s_pins[s_num_pins];
             strncpy(p.pin, pin_name, sizeof(p.pin) - 1);
@@ -275,7 +280,7 @@ void poseidon_init() {
             p.pullup = pullup;
             p.interval_s = interval;
             p.debounce_ms = debounce;
-            p.channel = (uint8_t)ch;
+            p.channel = (ch >= 0) ? (uint8_t)ch : 0;
             p.output_state = false;
             p.last_analog = 0.0f;
             p.last_digital = false;
@@ -285,6 +290,12 @@ void poseidon_init() {
 
             // Configure hardware based on mode
             switch (mode) {
+                case IO_RELAY: {
+                    // "RA" or "RB" — determine which relay
+                    Relay r = (pin_name[1] == 'B' || pin_name[1] == 'b') ? RELAY_B : RELAY_A;
+                    relay_set(r, false);
+                    break;
+                }
                 case IO_OUTPUT:
                     // Output uses pullup to drive the line
                     input_config_set((Input)ch, SW_PULLUP, false);
@@ -328,13 +339,18 @@ void poseidon_start_task() {
 String poseidon_io_set(const char* pin_name, bool state) {
     for (uint8_t i = 0; i < s_num_pins; i++) {
         if (strcmp(s_pins[i].pin, pin_name) == 0) {
-            if (s_pins[i].mode != IO_OUTPUT) {
-                return "{\"error\":\"pin is not output\"}";
+            if (s_pins[i].mode == IO_RELAY) {
+                s_pins[i].output_state = state;
+                Relay r = (s_pins[i].pin[1] == 'B' || s_pins[i].pin[1] == 'b') ? RELAY_B : RELAY_A;
+                relay_set(r, state);
+                log_info("[poseidon] Relay %s → %s", pin_name, state ? "ON" : "OFF");
+            } else if (s_pins[i].mode == IO_OUTPUT) {
+                s_pins[i].output_state = state;
+                input_config_set((Input)s_pins[i].channel, SW_PULLUP, state);
+                log_info("[poseidon] %s → %s", pin_name, state ? "HIGH" : "LOW");
+            } else {
+                return "{\"error\":\"pin is not output or relay\"}";
             }
-            s_pins[i].output_state = state;
-            // Drive via pullup switch (HIGH = pullup on, LOW = pullup off)
-            input_config_set((Input)s_pins[i].channel, SW_PULLUP, state);
-            log_info("[poseidon] %s → %s", pin_name, state ? "HIGH" : "LOW");
 
             JsonDocument doc;
             doc["pin"] = pin_name;
