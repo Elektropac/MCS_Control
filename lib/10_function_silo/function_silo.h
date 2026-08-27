@@ -5,6 +5,7 @@
 
 #include "rgb.h"
 #include "apps/cloudgauge/cloudgauge.h"
+#include "apps/poseidon/poseidon.h"
 
 
 // the common incomeing data structure is
@@ -104,6 +105,34 @@ namespace function_silo
         {
             ESP.restart();
             return "{\"result\": \"Rebooting...\"}";
+        }
+
+        // -- poseidon io --
+
+        else if (function_name == "io_get_all")
+        {
+            return poseidon_io_get_all();
+        }
+        else if (function_name == "io_get")
+        {
+            JsonObject json_object = json_packet["data"].as<JsonObject>();
+            const char* pin = json_object["pin"];
+            return poseidon_io_get(pin ? pin : "");
+        }
+        else if (function_name == "io_set")
+        {
+            JsonObject json_object = json_packet["data"].as<JsonObject>();
+            const char* pin = json_object["pin"];
+            bool state = false;
+            if (!json_object["state"].isNull()) {
+                if (json_object["state"].is<bool>()) {
+                    state = json_object["state"].as<bool>();
+                } else {
+                    String s = json_object["state"].as<String>();
+                    state = (s == "HIGH" || s == "high" || s == "1" || s == "true");
+                }
+            }
+            return poseidon_io_set(pin ? pin : "", state);
         }
 
 
