@@ -91,6 +91,7 @@ struct ProbeState {
     const ProbeTypeDef* type_def; // pointer to type definition
     float range_cm;             // measurement range (from config or type default)
     float density;              // liquid density (1.0=water, 0.84=diesel, 0.75=petrol)
+    float min_level;            // alarm threshold in liters (0 = no alarm)
     LutPoint lut[MAX_LUT_POINTS]; // cm → liter lookup table
     uint8_t lut_count;          // number of valid LUT entries
     float samples[AVG_WINDOW];  // ring buffer of mA readings
@@ -289,14 +290,20 @@ static void cloudgauge_task(void* param) {
 
 static void probe_to_json(JsonObject obj, const ProbeState& p) {
     float cm = input_to_cm(p);
+    float liters = cm_to_liters(p, cm);
+    float capacity = (p.lut_count > 0) ? p.lut[p.lut_count - 1].liters : 0.0f;
     obj["id"] = p.id;
     obj["input"] = p.input;
     obj["type"] = p.type;
     obj["ma"] = serialized(String(p.avg_ma, 2));
     obj["cm"] = serialized(String(cm, 1));
     obj["range_cm"] = (int)p.range_cm;
-    obj["liters"] = (int)cm_to_liters(p, cm);
+    obj["liters"] = (int)liters;
+    obj["capacity"] = (int)capacity;
+    obj["min_level"] = (int)p.min_level;
     obj["has_lut"] = p.lut_count > 0;
+    if (capacity > 0) obj["pct"] = serialized(String((liters / capacity) * 100.0f, 1));
+    if (p.min_level > 0) obj["low"] = liters < p.min_level;
 }
 
 // --- Public API ---
@@ -369,6 +376,7 @@ void cloudgauge_init() {
             p.range_cm = probe["range_cm"] | typeDef->default_range_cm;
             float d = probe["density"] | 1.0f;
             p.density = (d > 0.1f && d <= 2.0f) ? d : 1.0f;  // sanity check
+            p.min_level = probe["min_level"] | 0.0f;
             p.sample_idx = 0;
             p.sample_count = 0;
             p.avg_ma = 0.0f;

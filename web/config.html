@@ -214,6 +214,8 @@ function renderProbes(probes) {
       <input type="number" value="${p.density||1.0}" data-field="density" style="width:55px;display:${MEDIA.some(m=>m.density>0&&Math.abs((p.density||1.0)-m.density)<0.005)?'none':''}" step="0.01" title="Custom density" />
       <span style="font-size:11px;color:#888">ρ</span>
       <span class="lut-toggle" onclick="toggleLut(${i})">${hasLut ? '📊 LUT ('+p.lut.length+')' : '+ LUT'}</span>
+      <input type="number" value="${p.min_level||0}" data-field="min_level" style="width:70px" step="100" title="Min level alarm (liters, 0=off)" />
+      <span style="font-size:11px;color:#888">min L</span>
       <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
     `;
     wrapper.appendChild(row);
@@ -303,6 +305,7 @@ function readProbes() {
       input: row.querySelector('[data-field="input"]').value,
       range_cm: parseInt(row.querySelector('[data-field="range_cm"]').value) || 300,
       density: parseFloat(row.querySelector('[data-field="density"]').value) || 1.0,
+      min_level: parseInt(row.querySelector('[data-field="min_level"]').value) || 0,
     };
     // Read LUT
     const lutRows = wrapper.querySelectorAll('.lut-row');
