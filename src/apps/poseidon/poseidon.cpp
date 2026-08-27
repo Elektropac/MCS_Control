@@ -625,6 +625,14 @@ String poseidon_io_get_all() {
         for (uint8_t i = 0; i < s_num_rules; i++) {
             JsonObject r = rules.add<JsonObject>();
             r["name"] = s_rules[i].name;
+            r["if_pin"] = s_rules[i].src_pin;
+            r["if_field"] = s_rules[i].src_field;
+            const char* ops[] = {">","<","==","!=",">=","<="};
+            r["if_op"] = ops[s_rules[i].op];
+            r["if_value"] = serialized(String(s_rules[i].threshold, 1));
+            r["then_pin"] = s_rules[i].dst_pin;
+            const char* acts[] = {"high","low","on","off"};
+            r["then_action"] = acts[s_rules[i].action];
             r["active"] = s_rules[i].active;
             r["enabled"] = s_rules[i].enabled;
         }

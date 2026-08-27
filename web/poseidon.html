@@ -43,9 +43,11 @@
     .state-low { background: #e74c3c; }
     .no-pins { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
     .rule-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 2px solid #cad6dc; border-radius: 12px; background: #fffefb; margin-bottom: 8px; }
-    .rule-row .rule-name { font-weight: 800; font-size: 14px; color: #173447; min-width: 140px; }
-    .rule-row .rule-desc { font-size: 13px; color: #617381; flex: 1; }
-    .rule-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #0c1b24; }
+    .rule-row.triggered { border-color: #2ecc71; background: #f0fdf4; }
+    .rule-row .rule-name { font-weight: 800; font-size: 14px; color: #173447; min-width: 120px; }
+    .rule-row .rule-condition { font-size: 13px; color: #617381; font-family: monospace; flex: 1; }
+    .rule-row .rule-status { font-size: 12px; font-weight: 700; min-width: 80px; text-align: right; }
+    .rule-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #0c1b24; flex-shrink: 0; }
     .rule-dot.active { background: #2ecc71; }
     .rule-dot.inactive { background: #cad6dc; }
     .rule-dot.disabled { background: #95a5a6; }
@@ -189,10 +191,11 @@ function buildRules(rules) {
   list.innerHTML = '';
   rules.forEach((r, i) => {
     list.innerHTML += `
-      <div class="rule-row" id="rule-${i}">
+      <div class="rule-row ${r.active?'triggered':''}" id="rule-${i}">
         <span class="rule-dot ${!r.enabled?'disabled':r.active?'active':'inactive'}" id="rdot-${i}"></span>
         <span class="rule-name">${r.name}</span>
-        <span class="rule-desc">${r.enabled ? (r.active ? '⚡ Triggered' : 'Watching...') : 'Disabled'}</span>
+        <span class="rule-condition">IF ${r.if_pin}.${r.if_field} ${r.if_op} ${r.if_value} → ${r.then_pin} ${r.then_action.toUpperCase()}</span>
+        <span class="rule-status" id="rstatus-${i}">${!r.enabled?'Disabled':r.active?'⚡ Active':'Watching'}</span>
       </div>`;
   });
 }
@@ -202,10 +205,11 @@ function updateRules(rules) {
   rules.forEach((r, i) => {
     const dot = document.getElementById('rdot-' + i);
     const row = document.getElementById('rule-' + i);
+    const status = document.getElementById('rstatus-' + i);
     if (!dot || !row) return;
     dot.className = 'rule-dot ' + (!r.enabled?'disabled':r.active?'active':'inactive');
-    const desc = row.querySelector('.rule-desc');
-    if (desc) desc.textContent = !r.enabled ? 'Disabled' : r.active ? '⚡ Triggered' : 'Watching...';
+    row.className = 'rule-row ' + (r.active?'triggered':'');
+    if (status) status.textContent = !r.enabled ? 'Disabled' : r.active ? '⚡ Active' : 'Watching';
   });
 }
 
