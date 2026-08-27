@@ -119,7 +119,7 @@ function updateCards(pins) {
 
     switch (p.mode) {
       case 'output':
-        valEl.innerHTML = `<span class="state-indicator ${p.state==='HIGH'?'state-high':'state-low'}"></span> ${p.state}`;
+        valEl.innerHTML = `<span class="state-indicator ${p.state==='HIGH'?'state-high':'state-low'}"></span> ${p.state} <small>${p.voltage}V</small>`;
         const btn = document.getElementById('btn-' + i);
         if (btn) {
           btn.className = 'toggle-btn ' + (p.state==='HIGH'?'high':'low');

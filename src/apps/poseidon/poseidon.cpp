@@ -154,6 +154,11 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
     obj["pin"] = p.pin;
     obj["name"] = p.name;
     obj["mode"] = mode_to_string(p.mode);
+    // Include channel voltage
+    int ch_volt = (p.channel < 4) ? 
+        (config::config["channels"]["A"]["voltage"] | 24) :
+        (config::config["channels"]["B"]["voltage"] | 24);
+    obj["voltage"] = ch_volt;
 
     switch (p.mode) {
         case IO_OUTPUT:
