@@ -381,7 +381,7 @@ function renderIO(ios) {
       <select data-field="pin">${INPUTS.map(inp=>`<option value="${inp}" ${inp===io.pin?'selected':''}>${inp}</option>`).join('')}</select>
       <input type="text" value="${io.name||''}" placeholder="Name" data-field="name" style="width:150px" />
       <select data-field="mode">${IO_MODES.map(m=>`<option value="${m}" ${m===io.mode?'selected':''}>${m}</option>`).join('')}</select>
-      <label style="min-width:auto;font-size:11px;"><input type="checkbox" data-field="inverted" ${io.inverted?'checked':''} /> inv</label>
+      <select data-field="inverted"><option value="false" ${!io.inverted?'selected':''}>Normal</option><option value="true" ${io.inverted?'selected':''}>Inverted</option></select>
       <button class="btn btn-danger btn-small" onclick="removeIO(${i})">✕</button>
     `;
     list.appendChild(row);
@@ -417,7 +417,7 @@ function readIO() {
       name: row.querySelector('[data-field="name"]').value,
       mode: row.querySelector('[data-field="mode"]').value,
     };
-    if (row.querySelector('[data-field="inverted"]').checked) io.inverted = true;
+    if (row.querySelector('[data-field="inverted"]').value === 'true') io.inverted = true;
     return io;
   });
 }
