@@ -57,7 +57,6 @@
 
   <script>
     const API = '/api/';
-    const RANGE_CM = 300;
     let probeCount = 0;
 
     async function api(subject) {
@@ -108,11 +107,18 @@
         const ma = parseFloat(p.ma);
         const cm = parseFloat(p.cm);
         const liters = parseInt(p.liters);
+        const hasLut = p.has_lut;
+        const rangeCm = p.range_cm || 300;
 
-        valEl.innerHTML = `${cm.toFixed(1)}<small> cm</small>`;
-        subEl.textContent = `${ma.toFixed(2)} mA` + (liters > 0 ? ` · ${liters} L` : '');
+        if (hasLut && liters > 0) {
+          valEl.innerHTML = `${liters.toLocaleString()}<small> L</small>`;
+          subEl.textContent = `${cm.toFixed(1)} cm · ${ma.toFixed(2)} mA`;
+        } else {
+          valEl.innerHTML = `${cm.toFixed(1)}<small> cm</small>`;
+          subEl.textContent = `${ma.toFixed(2)} mA` + (liters > 0 ? ` · ${liters} L` : '');
+        }
 
-        const pct = Math.max(0, Math.min(100, (cm / RANGE_CM) * 100));
+        const pct = Math.max(0, Math.min(100, (cm / rangeCm) * 100));
         fillEl.style.height = pct + '%';
         fillEl.className = 'tank-fill ' + (pct < 20 ? 'low' : pct > 80 ? 'high' : 'mid');
       });
