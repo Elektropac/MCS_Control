@@ -40,10 +40,11 @@ static void log_write(LogLevel level, const char* fmt, va_list args) {
 
     int msg_len = vsnprintf(line + prefix_len, LOG_LINE_MAX - prefix_len - 1, fmt, args);
     int total_len = prefix_len + msg_len;
-    if (total_len >= LOG_LINE_MAX - 1) total_len = LOG_LINE_MAX - 2;
-    line[total_len] = '\n';
-    line[total_len + 1] = '\0';
-    total_len++;
+    if (total_len >= LOG_LINE_MAX - 2) total_len = LOG_LINE_MAX - 3;
+    line[total_len] = '\r';
+    line[total_len + 1] = '\n';
+    line[total_len + 2] = '\0';
+    total_len += 2;
 
     // Output to Serial
     Serial.print(line);

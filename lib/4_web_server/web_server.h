@@ -41,7 +41,7 @@ namespace web_server
         if (!req.path.startsWith("/")) return;
         // Handle the Ethernet client request here
         // log request details for debugging
-        Serial.printf("[web_server] Request: %s %s\n", req.method.c_str(), req.path.c_str());
+        Serial.printf("[web_server] Request: %s %s\r\n", req.method.c_str(), req.path.c_str());
         bool is_api_request = req.path.startsWith("/api/") || req.path == "/api";
 
         if (is_api_request)
