@@ -26,6 +26,11 @@
     .probe-row input { width: 120px; }
     .probe-row select { width: 120px; }
     .probe-num { color: #00d4ff; font-weight: bold; min-width: 24px; text-align: center; }
+    .lut-toggle { font-size: 11px; color: #00d4ff; cursor: pointer; text-decoration: underline; margin-left: 4px; }
+    .lut-panel { background: #0a0a1a; border: 1px solid #1a5276; border-radius: 4px; padding: 10px; margin: 8px 0 4px 32px; display: none; }
+    .lut-panel .lut-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+    .lut-panel input { width: 80px; font-size: 12px; }
+    .lut-panel label { font-size: 11px; color: #888; min-width: auto; }
     .btn { padding: 8px 20px; font-size: 14px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
     .btn-primary { background: #00d4ff; color: #1a1a2e; }
     .btn-primary:hover { background: #00b8d4; }
@@ -179,32 +184,74 @@ function renderProbes(probes) {
   const list = document.getElementById('probes-list');
   list.innerHTML = '';
   probes.forEach((p, i) => {
+    const wrapper = document.createElement('div');
     const row = document.createElement('div');
     row.className = 'probe-row';
+    const hasLut = p.lut && p.lut.length > 0;
     row.innerHTML = `
       <span class="probe-num">${i+1}</span>
       <input type="text" value="${p.id||''}" placeholder="ID" data-field="id" />
       <select data-field="type">${PROBE_TYPES.map(t=>`<option value="${t}" ${t===p.type?'selected':''}>${t}</option>`).join('')}</select>
       <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}" ${inp===p.input?'selected':''}>${inp}</option>`).join('')}</select>
+      <input type="number" value="${p.range_cm||300}" data-field="range_cm" style="width:60px" title="Range (cm)" />
+      <span style="font-size:11px;color:#888">cm</span>
+      <span class="lut-toggle" onclick="toggleLut(${i})">${hasLut ? '📊 LUT ('+p.lut.length+')' : '+ LUT'}</span>
       <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
     `;
-    list.appendChild(row);
+    wrapper.appendChild(row);
+
+    // LUT panel
+    const panel = document.createElement('div');
+    panel.className = 'lut-panel';
+    panel.id = 'lut-panel-'+i;
+    if (hasLut) panel.style.display = '';
+    let lutHtml = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:12px;color:#00d4ff;font-weight:bold;">cm → liter (pejlestang)</span><button class="btn btn-secondary btn-small" onclick="addLutRow('+i+')">+ Punkt</button></div>';
+    lutHtml += '<div id="lut-rows-'+i+'">';
+    const lut = p.lut || [];
+    for (let j = 0; j < lut.length; j++) {
+      lutHtml += lutRowHtml(i, j, lut[j][0], lut[j][1]);
+    }
+    if (lut.length === 0) {
+      lutHtml += lutRowHtml(i, 0, 0, 0);
+    }
+    lutHtml += '</div>';
+    panel.innerHTML = lutHtml;
+    wrapper.appendChild(panel);
+
+    list.appendChild(wrapper);
   });
 }
 
+function lutRowHtml(probeIdx, rowIdx, cm, liters) {
+  return `<div class="lut-row">
+    <label>cm</label><input type="number" value="${cm}" data-lut-cm step="1" />
+    <label>=</label>
+    <label>liter</label><input type="number" value="${liters}" data-lut-liter step="1" />
+    <button class="btn btn-danger btn-small" onclick="removeLutRow(${probeIdx}, this)" style="padding:2px 6px;">✕</button>
+  </div>`;
+}
+
+function toggleLut(i) {
+  const panel = document.getElementById('lut-panel-'+i);
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+function addLutRow(probeIdx) {
+  const container = document.getElementById('lut-rows-'+probeIdx);
+  const rows = container.querySelectorAll('.lut-row');
+  const lastCm = rows.length > 0 ? parseInt(rows[rows.length-1].querySelector('[data-lut-cm]').value) || 0 : 0;
+  if (rows.length >= 10) { alert('Max 10 punkter'); return; }
+  container.insertAdjacentHTML('beforeend', lutRowHtml(probeIdx, rows.length, lastCm + 30, 0));
+}
+
+function removeLutRow(probeIdx, btn) {
+  btn.closest('.lut-row').remove();
+}
+
 function addProbe() {
-  const list = document.getElementById('probes-list');
-  const i = list.children.length;
-  const row = document.createElement('div');
-  row.className = 'probe-row';
-  row.innerHTML = `
-    <span class="probe-num">${i+1}</span>
-    <input type="text" value="tank_${i+1}" placeholder="ID" data-field="id" />
-    <select data-field="type">${PROBE_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')}</select>
-    <select data-field="input">${INPUTS.map(inp=>`<option value="${inp}">${inp}</option>`).join('')}</select>
-    <button class="btn btn-danger btn-small" onclick="removeProbe(${i})">✕</button>
-  `;
-  list.appendChild(row);
+  const probes = readProbes();
+  probes.push({ id: 'tank_'+(probes.length+1), type: 'mcs_level', input: INPUTS[0], range_cm: 300 });
+  renderProbes(probes);
 }
 
 function removeProbe(i) {
@@ -214,12 +261,29 @@ function removeProbe(i) {
 }
 
 function readProbes() {
-  const rows = document.querySelectorAll('#probes-list .probe-row');
-  return Array.from(rows).map(row => ({
-    id: row.querySelector('[data-field="id"]').value,
-    type: row.querySelector('[data-field="type"]').value,
-    input: row.querySelector('[data-field="input"]').value,
-  }));
+  const list = document.getElementById('probes-list');
+  const wrappers = list.children;
+  return Array.from(wrappers).map((wrapper, i) => {
+    const row = wrapper.querySelector('.probe-row');
+    const probe = {
+      id: row.querySelector('[data-field="id"]').value,
+      type: row.querySelector('[data-field="type"]').value,
+      input: row.querySelector('[data-field="input"]').value,
+      range_cm: parseInt(row.querySelector('[data-field="range_cm"]').value) || 300,
+    };
+    // Read LUT
+    const lutRows = wrapper.querySelectorAll('.lut-row');
+    if (lutRows.length > 0) {
+      const lut = [];
+      lutRows.forEach(lr => {
+        const cm = parseFloat(lr.querySelector('[data-lut-cm]').value) || 0;
+        const liters = parseFloat(lr.querySelector('[data-lut-liter]').value) || 0;
+        if (cm > 0 || liters > 0) lut.push([cm, liters]);
+      });
+      if (lut.length > 0) probe.lut = lut;
+    }
+    return probe;
+  });
 }
 
 // --- Pumps ---
