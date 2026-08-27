@@ -152,10 +152,12 @@ async function toggleOutput(pin, idx) {
   const btn = document.getElementById('btn-' + idx);
   const newState = btn.classList.contains('high') ? 'LOW' : 'HIGH';
   btn.textContent = '...';
-  btn.style.background = '#95a5a6';
+  btn.className = 'toggle-btn';
   btn.disabled = true;
   await api('io_set', {pin, state: newState});
   btn.disabled = false;
+  btn.className = 'toggle-btn ' + (newState === 'HIGH' ? 'high' : 'low');
+  btn.textContent = newState === 'HIGH' ? 'ON' : 'OFF';
 }
 
 async function poll() {
