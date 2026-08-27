@@ -1,4 +1,7 @@
 {
+    // ============================================================
+    // ACTIVE CONFIG — CloudGauge 2
+    // ============================================================
     "product": "cloudgauge2",
     "version": 1,
     "name": "CloudGauge Dev",
@@ -36,4 +39,61 @@
         { "id": "tank_7", "type": "mcs_level", "input": "B3" },
         { "id": "tank_8", "type": "mcs_level", "input": "B4" }
     ]
+
+    // ============================================================
+    // EXAMPLE: Micro FMS — pump controller with optional probes
+    // To use: change "product" to "micro_fms", remove cloudgauge
+    // probes above, uncomment pumps below
+    // ============================================================
+    //
+    // "product": "micro_fms",
+    // "channels": {
+    //     "A": { "voltage": 12 },
+    //     "B": { "voltage": 12 }
+    // },
+    // "pumps": [
+    //     {
+    //         "id": "pump_1",
+    //         "nozzle": "A1",
+    //         "pulser": "A2",
+    //         "relay": "A",
+    //         "debounce_ms": 20,
+    //         "update_interval_s": 5,
+    //         "pulses_per_liter": 100
+    //     },
+    //     {
+    //         "id": "pump_2",
+    //         "nozzle": "B1",
+    //         "pulser": "B2",
+    //         "relay": "B",
+    //         "debounce_ms": 20,
+    //         "update_interval_s": 5,
+    //         "pulses_per_liter": 100
+    //     }
+    // ],
+    // "probes": [
+    //     { "id": "tank_1", "type": "mcs_level", "input": "A3" },
+    //     { "id": "tank_2", "type": "mcs_level", "input": "B3" }
+    // ]
+
+    // ============================================================
+    // EXAMPLE: Poseidon — raw I/O gateway, no app logic
+    // Server controls inputs/outputs directly by name
+    // ============================================================
+    //
+    // "product": "poseidon",
+    // "channels": {
+    //     "A": { "voltage": 24 },
+    //     "B": { "voltage": 12 }
+    // },
+    // "io": [
+    //     { "pin": "A1", "name": "Valve Control",  "mode": "output" },
+    //     { "pin": "A2", "name": "Flow Sensor",    "mode": "analog_current", "interval_s": 10 },
+    //     { "pin": "A3", "name": "Door Switch",    "mode": "digital", "pullup": true },
+    //     { "pin": "A4", "name": "Tank Level",     "mode": "analog_current", "interval_s": 30 },
+    //     { "pin": "B1", "name": "Overfill Alarm", "mode": "digital", "pullup": true },
+    //     { "pin": "B2", "name": "Pump Enable",    "mode": "output" },
+    //     { "pin": "B3", "name": "Temp Sensor",    "mode": "analog_voltage", "interval_s": 60 },
+    //     { "pin": "B4", "name": "Unused",         "mode": "disabled" }
+    // ]
 }
