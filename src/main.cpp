@@ -9,9 +9,14 @@
 #include "tasks/network_task.h"
 #include "debug/serial_cmd.h"
 
+#include "file_system.h"
+#include "config.h"
+
 void setup() {
     Serial.begin(115200);
     log_init();                     // log system (serial + ring buffer)
+    file_system::init();
+    config::init();
 
     // Hardware
     i2c_init(I2C_SDA, I2C_SCL);    // I2C bus + mutex
