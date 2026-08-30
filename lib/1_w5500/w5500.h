@@ -29,5 +29,6 @@ namespace w5500
     int run_link_local();
     int run_static();
     void init();
+    void poll();
 
 }

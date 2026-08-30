@@ -113,4 +113,9 @@ namespace w5500
         log_info("[w5500] IP: %s, Gateway: %s, Subnet Mask: %s", local_ip.toString(), gateway_ip.toString(), subnet_mask.toString());
         connected = true;
     }
+
+    void poll()
+    {
+        // todo: implement any necessary polling for the W5500 if needed
+    }
 }

@@ -13,5 +13,6 @@ namespace wifi
 
     String make_mac();
     void init();
+    void poll();
 
 } // namespace wifi

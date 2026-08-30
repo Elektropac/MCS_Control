@@ -71,4 +71,9 @@ namespace wifi
             WiFi.disconnect(true, true);
         }
     }
+
+    void poll()
+    {
+        // todo: make sure to check if WiFi is still connected and reconnect if necessary
+    }
 }
