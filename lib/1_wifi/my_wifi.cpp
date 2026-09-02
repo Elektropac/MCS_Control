@@ -21,31 +21,18 @@ namespace wifi
 
     void init()
     {
-        auto is_wifi_config = config::config["connection"]["settings"]["wifi"].isNull();
-        if (is_wifi_config)
+        if (config::wifi_config.use_wifi == false)
         {
             return;
         }
 
         WiFi.disconnect(true, true);
-        log_info("[wifi] Initializing WiFi...");
         make_mac();
 
-        auto wifi_config = config::config["connection"]["settings"]["wifi"].as<JsonObject>();
-        auto is_ssid = wifi_config["ssid"].isNull();
-        auto is_password = wifi_config["password"].isNull();
-        if (is_ssid || is_password)
-        {
-            log_error("[wifi] WiFi SSID or password not found in config. WiFi will not be initialized.");
-            return;
-        }
-
-        auto ssid = wifi_config["ssid"].as<String>();
-        auto password = wifi_config["password"].as<String>();
-        log_info("[wifi] Connecting to WiFi SSID: %s", ssid);
+        log_info("[wifi] Connecting to WiFi SSID: %s", config::wifi_config.ssid);
 
         WiFi.setHostname(("ESP32-Niklas-" + mac).c_str());
-        WiFi.begin(ssid.c_str(), password.c_str());
+        WiFi.begin(config::wifi_config.ssid.c_str(), config::wifi_config.password.c_str());
 
         int attempts = 0;
         log_info("[wifi] now waiting for WiFi connection...");

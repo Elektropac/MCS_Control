@@ -16,7 +16,6 @@ namespace w5500
 {
 
     extern bool connected;
-    extern String mode;
     extern byte mac_byte[6];
     extern String mac;
     extern IPAddress local_ip;
@@ -24,7 +23,6 @@ namespace w5500
     extern IPAddress subnet_mask;
 
     String make_mac();
-    String find_mode();
     int run_dhcp();
     int run_link_local();
     int run_static();

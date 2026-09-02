@@ -134,7 +134,7 @@ namespace ntp_ethernet
             log_info("[ntp][ethernet] Attempt %u failed, retrying...\n", i + 1);
             delay(2000);
         }
-        log_info("[ntp][ethernet] Failed to sync time after retries.");
+        log_error("[ntp][ethernet] Failed to sync time after retries.");
         udp.stop();
     }
 }

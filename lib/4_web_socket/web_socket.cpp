@@ -3,30 +3,24 @@
 #include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
 
-#include "config.h"
-#include "function_silo.h"
 #include "logging.h"
+#include "config.h"
+
 #include "ssl_manager.h"
+
 #include "my_wifi.h"
+#include "w5500.h"
+
+#include "function_silo.h"
 
 namespace web_socket
 {
     bool is_connected = false;
+    bool has_run = false;
+
     bool is_secure = false;
     SSLManager ssl_manager;
     WebSocketClient *web_socket_client = nullptr;
-
-    String local_host = "";
-    int local_port = 0;
-    String local_path = "";
-
-    String global_host = "";
-    int global_port = 0;
-    String global_path = "";
-
-    bool is_loaded = false;
-    bool try_local = false;
-    bool try_global = false;
 
     bool run(String host, int port)
     {
@@ -61,86 +55,46 @@ namespace web_socket
         return false;
     }
 
-    void load_config()
-    {
-        auto is_server_config = config::config["connection"]["server"].isNull();
-        if (is_server_config)
-        {
-            log_error("[web_socket] WebSocket server configuration not found in config. WebSocket will not be initialized.");
-            return;
-        }
-
-        log_info("[web_socket] Setting up WebSocket client.");
-        auto server_config = config::config["connection"]["server"].as<JsonObject>();
-
-        auto is_local_host = server_config["local"]["host"].isNull();
-        auto is_local_port = server_config["local"]["port"].isNull();
-
-        if (!(is_local_host || is_local_port))
-        {
-            local_host = server_config["local"]["host"].as<String>();
-            local_port = server_config["local"]["port"].as<int>();
-
-            try_local = !local_host.isEmpty() && local_port > 0;
-        }
-
-        auto is_global_host = server_config["global"]["host"].isNull();
-        auto is_global_port = server_config["global"]["port"].isNull();
-
-        if (!(is_global_host || is_global_port))
-        {
-            global_host = server_config["global"]["host"].as<String>();
-            global_port = server_config["global"]["port"].as<int>();
-
-            try_global = !global_host.isEmpty() && global_port > 0;
-        }
-
-        if (!try_local && !try_global)
-        {
-            log_error("[web_socket] No complete WebSocket server configuration found. WebSocket will not be initialized.");
-            return;
-        }
-
-        is_loaded = true;
-    }
-
     void init()
     {
-        if (is_loaded == false)
-        {
-            load_config();
+        if (config::internet_client == "ethernet" && config::ethernet_config.mode == "local-link") {
+            return;
         }
-
-        if (!is_loaded)
-        {
+        if (config::internet_client == "ethernet" && config::ethernet_config.mode == "dhcp" && w5500::connected == false) {
+            return;
+        }
+        if (config::internet_client == "wifi" && wifi::connected == false) {
             return;
         }
 
-        if (try_local)
+        if (config::server_config.try_local)
         {
             log_info("[web_socket] Attempting to connect to local WebSocket");
-            is_connected = run(local_host, local_port);
+            is_connected = run(config::server_config.local_host, config::server_config.local_port);
 
-            if (!is_connected)
+            if (!is_connected && config::server_config.global_host.length() > 0)
             {
-                if (try_global)
-                {
-                    log_error("[web_socket] Failed to connect to local WebSocket server. Attempting to connect to global WebSocket server.");
-                    is_connected = run(global_host, global_port);
-                }
+                log_error("[web_socket] Failed to connect to local WebSocket server. Attempting to connect to global WebSocket server.");
+                is_connected = run(config::server_config.global_host, config::server_config.global_port);
             }
         }
-        else if (try_global)
+        else if (config::server_config.global_host.length() > 0)
         {
             log_info("[web_socket] Attempting to connect to global WebSocket server");
-            is_connected = run(global_host, global_port);
+            is_connected = run(config::server_config.global_host, config::server_config.global_port);
         }
+
+        has_run = true;
     }
+
+    int lastMessageMillis = 0;
 
     void sendMessage(const String &message)
     {
         if (is_connected && web_socket_client)
         {
+            lastMessageMillis = millis();
+
             web_socket_client->beginMessage(TYPE_TEXT);
             web_socket_client->write((const uint8_t *)message.c_str(), message.length());
             web_socket_client->endMessage();
@@ -149,15 +103,25 @@ namespace web_socket
             log_error("[web_socket] WebSocket is not connected. Cannot send message.");
     }
 
-    int lastMillis = 0;
-
     void poll()
     {
         if (web_socket_client && is_connected)
         {
+            if (millis() - lastMessageMillis > 1000 * 60) // Send a ping if no other messages have been sent for 1 minute
+            {
+                JsonDocument ping_doc;
+                ping_doc["subject"] = "ping";
+                ping_doc["data"]["timestamp"] = millis();
+                String ping_string;
+                serializeJson(ping_doc, ping_string);
+                sendMessage(ping_string);
+            }
+
             int message_size = web_socket_client->parseMessage();
             if (message_size > 0)
             {
+                lastMessageMillis = millis();
+                
                 String data_string = web_socket_client->readString();
                 JsonDocument data;
                 DeserializationError error = deserializeJson(data, data_string);
@@ -165,22 +129,26 @@ namespace web_socket
                 {
                     log_error("[web_socket] Failed to parse JSON: %s", error.c_str());
                     log_error("[web_socket] Received data: %s", data_string.c_str());
-                    return;
                 }
-                sendMessage(function_silo::run_function_silo(data));
+                else
+                {
+                    // handle valid JSON data
+                    String l;
+                    serializeJsonPretty(data, l);
+                    log_info("[web_socket] Received JSON data: \n%s", l.c_str());
+                }
+
+            }
+
+            // handle if gets disconnected
+            if (!web_socket_client->connected())
+            {
+                log_error("[web_socket] WebSocket disconnected.");
+                is_connected = false;
             }
         }
-
-        if (is_connected && (millis() - lastMillis > 5000))
-        {
-            lastMillis = millis();
-            JsonDocument ping_doc;
-            ping_doc["subject"] = "ping";
-            ping_doc["data"]["timestamp"] = lastMillis;
-            String ping_string;
-            serializeJson(ping_doc, ping_string);
-            sendMessage(ping_string);
+        else if (is_connected == false && has_run) {
+            init();
         }
     }
-
 }

@@ -6,39 +6,15 @@
 #include "w5500.h"
 #include "root_ca.h"
 
-String SSLManager::find_mode()
-{
-    auto is_connect_client = config::config["connection"]["internet_client"].isNull();
-    if (is_connect_client)
-    {
-        return "exit";
-    }
-
-    auto mode = config::config["connection"]["internet_client"].as<String>();
-    if (mode == "ethernet" && !w5500::connected)
-    {
-        return "exit";
-    }
-    if (mode == "wifi" && !wifi::connected)
-    {
-        return "exit";
-    }
-    return mode;
-}
 
 void SSLManager::configure(const char *host, uint16_t port, bool use_ssl)
 {
-    auto mode = find_mode();
-    if (mode == "exit")
-    {
-        return;
-    }
-    if (mode == "ethernet")
+    if (config::internet_client == "ethernet")
     {
         ssl_client_.setClient(&ethernet_client_, use_ssl);
         if (use_ssl) ntp_ethernet::sync();
     }
-    else if (mode == "wifi")
+    else if (config::internet_client == "wifi")
     {
         ssl_client_.setClient(&wifi_client_, use_ssl);
         if (use_ssl) ntp_wifi::sync();
