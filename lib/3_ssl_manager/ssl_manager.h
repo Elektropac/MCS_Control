@@ -7,7 +7,6 @@
 class SSLManager
 {
 private:
-    static const char k_default_root_ca[];
     EthernetClient ethernet_client_;
     WiFiClient wifi_client_;
     ESP_SSLClient ssl_client_;
