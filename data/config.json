@@ -2,14 +2,12 @@
     "connection": {
         "server": {
             "local": {
-                "host": "192.168.10.129",
-                "port": 3000,
-                "path": "/ws"
+                "host": "192.168.1.183",
+                "port": 3000
             },
             "global": {
                 "host": "echo.websocket.org",
-                "port": 443,
-                "path": "/ws"
+                "port": 443
             }
         },
 
@@ -18,10 +16,11 @@
         "settings": {
             "wifi": {
                 "ssid": "MCS_Dev",
-                "password": "48172095"
+                "password": ""
             },
             "ethernet": {
-                "dhcp": false
+                // modes: "dhcp" or "static" or "local-link"
+                "mode": "local-link"
                 // "ip": "192.168.1.167",
                 // "gateway": "192.168.1.1",
                 // "subnet": "255.255.255.0"
