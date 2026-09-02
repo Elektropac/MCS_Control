@@ -6,6 +6,8 @@
 #include "web_server.h"
 #include "debug/task_registry.h"
 
+bool network_initialized = false;
+
 static void network_task(void* param) {
     (void)param;
 
@@ -14,7 +16,7 @@ static void network_task(void* param) {
     w5500::init();
     wifi::init();
 
-    Serial.println("[network] Network stack initialized");
+    network_initialized = true;
 
     // Poll loop
     for (;;) {
@@ -27,6 +29,10 @@ static void network_task(void* param) {
 static void web_server_task(void* param) {
     (void)param;
 
+    while(!network_initialized) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
     web_server::init();
 
     // Poll loop
@@ -38,6 +44,10 @@ static void web_server_task(void* param) {
 
 static void web_socket_task(void* param) {
     (void)param;
+    
+    while(!network_initialized) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
 
     web_socket::init();
 
@@ -53,9 +63,9 @@ void network_start_task() {
     TaskHandle_t networkHandle = nullptr;
     TaskHandle_t webServerHandle = nullptr;
     TaskHandle_t webSocketHandle = nullptr;
-    int networkSize = 1024;
-    int webServerSize = 1024 * 4;
-    int webSocketSize = 1024 * 4;
+    int networkSize = 1024 * 8;
+    int webServerSize = 1024 * 8;
+    int webSocketSize = 1024 * 8;
 
     xTaskCreate(
         network_task,
