@@ -57,13 +57,16 @@ namespace web_socket
 
     void init()
     {
-        if (config::internet_client == "ethernet" && config::ethernet_config.mode == "local-link") {
+        if (config::internet_client == "ethernet" && config::ethernet_config.mode == "local-link")
+        {
             return;
         }
-        if (config::internet_client == "ethernet" && config::ethernet_config.mode == "dhcp" && w5500::connected == false) {
+        if (config::internet_client == "ethernet" && config::ethernet_config.mode == "dhcp" && w5500::connected == false)
+        {
             return;
         }
-        if (config::internet_client == "wifi" && wifi::connected == false) {
+        if (config::internet_client == "wifi" && wifi::connected == false)
+        {
             return;
         }
 
@@ -84,7 +87,10 @@ namespace web_socket
             is_connected = run(config::server_config.global_host, config::server_config.global_port);
         }
 
-        has_run = true;
+        if (is_connected)
+        {
+            has_run = true;
+        }
     }
 
     int lastMessageMillis = 0;
@@ -107,21 +113,20 @@ namespace web_socket
     {
         if (web_socket_client && is_connected)
         {
-            if (millis() - lastMessageMillis > 1000 * 60) // Send a ping if no other messages have been sent for 1 minute
+            // handle reconnection if the WebSocket gets disconnected
+            if (!web_socket_client->connected() && has_run)
             {
-                JsonDocument ping_doc;
-                ping_doc["subject"] = "ping";
-                ping_doc["data"]["timestamp"] = millis();
-                String ping_string;
-                serializeJson(ping_doc, ping_string);
-                sendMessage(ping_string);
+                log_error("[web_socket] WebSocket disconnected.");
+                is_connected = false;
+
+                init();
             }
 
             int message_size = web_socket_client->parseMessage();
             if (message_size > 0)
             {
                 lastMessageMillis = millis();
-                
+
                 String data_string = web_socket_client->readString();
                 JsonDocument data;
                 DeserializationError error = deserializeJson(data, data_string);
@@ -137,18 +142,17 @@ namespace web_socket
                     serializeJsonPretty(data, l);
                     log_info("[web_socket] Received JSON data: \n%s", l.c_str());
                 }
-
             }
 
-            // handle if gets disconnected
-            if (!web_socket_client->connected())
+            if (millis() - lastMessageMillis > 1000 * 60) // Send a ping if no other messages have been sent for 1 minute
             {
-                log_error("[web_socket] WebSocket disconnected.");
-                is_connected = false;
+                JsonDocument ping_doc;
+                ping_doc["subject"] = "ping";
+                ping_doc["data"]["timestamp"] = millis();
+                String ping_string;
+                serializeJson(ping_doc, ping_string);
+                sendMessage(ping_string);
             }
-        }
-        else if (is_connected == false && has_run) {
-            init();
         }
     }
 }
