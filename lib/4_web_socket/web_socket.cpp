@@ -138,9 +138,11 @@ namespace web_socket
                 else
                 {
                     // handle valid JSON data
-                    String l;
-                    serializeJsonPretty(data, l);
-                    log_info("[web_socket] Received JSON data: \n%s", l.c_str());
+                    String result = function_silo::run_function_silo(data);
+                    if (result.length() > 0)
+                    {
+                        sendMessage(result);
+                    }
                 }
             }
 
