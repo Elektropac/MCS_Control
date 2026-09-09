@@ -31,7 +31,7 @@ namespace wifi
 
         log_info("[wifi] Connecting to WiFi SSID: %s", config::wifi_config.ssid);
 
-        WiFi.setHostname(("ESP32-Niklas-" + mac).c_str());
+        WiFi.setHostname(("control-" + mac).c_str());
         WiFi.begin(config::wifi_config.ssid.c_str(), config::wifi_config.password.c_str());
 
         int attempts = 0;
