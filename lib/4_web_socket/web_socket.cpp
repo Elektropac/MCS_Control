@@ -2,6 +2,7 @@
 
 #include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
+#include <mbedtls/sha256.h>
 
 #include "logging.h"
 #include "config.h"
@@ -12,6 +13,27 @@
 #include "w5500.h"
 
 #include "function_silo.h"
+
+String make_key()
+{
+    String secret = "my_secret"; // Replace with your actual secret
+    String mac = wifi::make_mac();
+    String key = mac + secret;
+   
+    unsigned char hash[32];
+
+    mbedtls_sha256_ret((const unsigned char *)key.c_str(), key.length(), hash, 0);
+
+    String result = "";
+    for (int i = 0; i < 32; i++)
+    {
+        char buf[3];
+        sprintf(buf, "%02x", hash[i]);
+        result += buf;
+    }
+
+    return result;
+}
 
 namespace web_socket
 {
@@ -36,7 +58,8 @@ namespace web_socket
         web_socket_client = new WebSocketClient(ssl_manager.client(), host.c_str(), port);
         ssl_manager.configure(host.c_str(), port, use_ssl);
 
-        String path = "/ws/" + wifi::make_mac(); // Default path
+        // Default path + ?key=...
+        String path = "/ws/" + wifi::make_mac() + "?key=" + make_key();
 
         log_info("[web_socket] WebSocket connecting to %s:%d%s", host.c_str(), port, path.c_str());
 
