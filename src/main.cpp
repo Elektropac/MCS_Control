@@ -17,6 +17,7 @@ namespace config {
 
 #include "hardware/all_drivers_init.h"
 #include "platform/sampler.h"
+#include "platform/channels_setup.h"
 #include "apps/flow_guard/flow_guard.h"
 #include "apps/product_display/product_display.h"
 #include "apps/product_router/product_router.h"
@@ -40,7 +41,8 @@ void setup() {
 
     product_display_show_splash();  // show product image on OLED at boot
 
-    start_product_apps();           // start the apps for the configured product
+    channels_setup();               // device-level: set channel supply voltage
+    start_product_apps();           // start the apps for what the config contains
 
     // Platform tasks (always run regardless of product)
     buttons_start_task();           // polls button ADC every 50ms

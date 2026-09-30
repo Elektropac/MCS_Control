@@ -1,4 +1,14 @@
 {
+  // Top-level connection block in the shape the current firmware expects
+  // (connection.settings.ethernet.dhcp = true). The new-format "config"
+  // block below is the Setup Engine contract; this shim keeps networking
+  // working until the network code reads the new format.
+  "connection": {
+    "settings": {
+      "ethernet": { "dhcp": true }
+    }
+  },
+
   // ==== Device configuration ====
   "config": {
     // Which setup guide built this config ("custom" = no guide / manual setup).

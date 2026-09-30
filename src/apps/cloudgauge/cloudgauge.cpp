@@ -313,7 +313,8 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
 void cloudgauge_init() {
     s_num_probes = 0;
 
-    // Read channel voltages from config
+    // Channel voltages are set at device level by channels_setup() before we
+    // run. Here we only READ them (to validate each probe's requirement).
     Voltage volt_a = VOLTAGE_24V;  // default
     Voltage volt_b = VOLTAGE_24V;
 
@@ -326,10 +327,6 @@ void cloudgauge_init() {
         volt_a = voltage_from_config(va);
         volt_b = voltage_from_config(vb);
     }
-
-    voltage_select_set_a(volt_a);
-    voltage_select_set_b(volt_b);
-    vTaskDelay(pdMS_TO_TICKS(20));
 
     // Parse probes from the new grouped config format.
     // Each probe is a group { type:"probe", probe:{ input, probe_type,
