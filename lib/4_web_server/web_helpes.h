@@ -104,9 +104,26 @@ void handle_api_request(Client &client, Request &req)
 
     client.println("HTTP/1.1 200 OK");
     client.println("Content-Type: application/json");
+    client.print("Content-Length: ");
+    client.println(result.length());
     client.println("Connection: close");
     client.println();
-    client.print(result);
+
+    // Send the body in chunks and flush, so responses larger than the socket
+    // TX buffer (~2 KB on the W5500) are delivered fully instead of being cut
+    // off when the client is stopped right after.
+    const char* data = result.c_str();
+    size_t remaining = result.length();
+    const size_t CHUNK = 1024;
+    while (remaining > 0)
+    {
+        size_t n = (remaining < CHUNK) ? remaining : CHUNK;
+        size_t written = client.write((const uint8_t*)data, n);
+        if (written == 0) break;   // socket closed / error
+        data += written;
+        remaining -= written;
+        client.flush();
+    }
     return;
 }
 
