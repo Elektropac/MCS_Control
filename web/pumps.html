@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MCS Control — Pumps</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    h1 { font-size: 22px; font-weight: 900; color: #173447; }
+    .nav { display: flex; gap: 8px; }
+    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
+    .nav a.active { background: #dcefeb; color: #184654; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.ok { background: #2ecc71; }
+    .dot.err { background: #e74c3c; }
+    .pump-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    @media (max-width: 900px) { .pump-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .pump-grid { grid-template-columns: 1fr; } }
+    .pump-card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .pump-card .id { font-size: 15px; font-weight: 800; color: #173447; }
+    .pump-card .value { font-size: 28px; font-weight: 900; color: #173447; line-height: 1; }
+    .pump-card .value small { font-size: 14px; font-weight: 700; color: #476071; }
+    .pump-card .sub { font-size: 12px; color: #617381; }
+    .row { display: flex; align-items: center; justify-content: space-between; }
+    .badge { font-size: 10px; color: #fff; padding: 3px 9px; border-radius: 8px; font-weight: 700; }
+    .badge.on { background: #2ecc71; }
+    .badge.off { background: #9aa7b0; }
+    .badge.lifted { background: #df9542; }
+    .badge.returned { background: #7f97a5; }
+    .no-pumps { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>&#9981; Pumps</h1>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/tanks.html">Tanks</a>
+      <a href="/pumps.html" class="active">Pumps</a>
+      <a href="/setup.html">Setup</a>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="dot"></span>
+    <span id="status">Connecting...</span>
+  </div>
+
+  <div class="pump-grid" id="pumps"></div>
+  <div class="no-pumps" id="no-pumps" style="display:none;">No pumps configured. <a href="/setup.html">Open Setup</a></div>
+
+  <script>
+    const API = '/api/';
+    let pumpCount = -1;
+
+    async function api(subject) {
+      try {
+        const r = await fetch(API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject})
+        });
+        return await r.json();
+      } catch(e) { return null; }
+    }
+
+    function buildCards(pumps) {
+      const el = document.getElementById('pumps');
+      el.innerHTML = '';
+      if (!pumps || pumps.length === 0) {
+        document.getElementById('no-pumps').style.display = '';
+        return;
+      }
+      document.getElementById('no-pumps').style.display = 'none';
+      pumps.forEach((p, i) => {
+        el.innerHTML += `
+          <div class="pump-card" id="card-${i}">
+            <div class="row">
+              <div class="id">${p.name || p.id}</div>
+              <span class="badge off" id="relay-${i}">RELAY</span>
+            </div>
+            <div class="value" id="litres-${i}">—<small> L</small></div>
+            <div class="sub" id="sub-${i}">Waiting...</div>
+            <div class="row">
+              <span class="sub">Nozzle</span>
+              <span class="badge returned" id="nozzle-${i}">—</span>
+            </div>
+          </div>`;
+      });
+      pumpCount = pumps.length;
+    }
+
+    function updateCards(pumps) {
+      if (!pumps) return;
+      pumps.forEach((p, i) => {
+        const litresEl = document.getElementById('litres-' + i);
+        if (!litresEl) return;
+        const litres = parseFloat(p.litres) || 0;
+        const ppl = parseFloat(p.pulses_per_litre) || 0;
+        litresEl.innerHTML = `${litres.toFixed(2)}<small> L</small>`;
+
+        const subEl = document.getElementById('sub-' + i);
+        subEl.textContent = `${p.pulse_input} · ${p.pulses} pulses`
+          + (ppl ? ` · ${ppl}/L` : '')
+          + (parseFloat(p.preset_litres) > 0 ? ` · preset ${p.preset_litres} L` : '');
+
+        const relayEl = document.getElementById('relay-' + i);
+        relayEl.textContent = p.relay_on ? 'RELAY ON' : 'RELAY OFF';
+        relayEl.className = 'badge ' + (p.relay_on ? 'on' : 'off');
+
+        const nozEl = document.getElementById('nozzle-' + i);
+        nozEl.textContent = p.nozzle_lifted ? 'Lifted' : 'Returned';
+        nozEl.className = 'badge ' + (p.nozzle_lifted ? 'lifted' : 'returned');
+      });
+    }
+
+    async function poll() {
+      const data = await api('pump_get_all');
+      if (!data) {
+        document.getElementById('dot').className = 'dot err';
+        document.getElementById('status').textContent = 'Connection lost';
+        return;
+      }
+      document.getElementById('dot').className = 'dot ok';
+      document.getElementById('status').textContent = `Live · ${data.pumps ? data.pumps.length : 0} pump(s)`;
+      if (data.pumps && data.pumps.length !== pumpCount) buildCards(data.pumps);
+      updateCards(data.pumps);
+    }
+
+    (async () => {
+      const data = await api('pump_get_all');
+      if (data) {
+        buildCards(data.pumps || []);
+        updateCards(data.pumps);
+        document.getElementById('dot').className = 'dot ok';
+        document.getElementById('status').textContent = `Live · ${data.pumps ? data.pumps.length : 0} pump(s)`;
+      }
+      setInterval(poll, 1000);
+    })();
+  </script>
+</body>
+</html>
