@@ -86,4 +86,47 @@ namespace config
         return String(v.as<const char*>());
     }
 
+    // -----------------------------------------------------------------
+    // On-demand read of the groups[] array WITHOUT the heavy rules[].
+    //
+    // Loads only each group's metadata + its probe/pump block into `out`,
+    // filtering OUT the (potentially large) rules[] arrays. Peak RAM scales
+    // with the number of groups + their blocks, not the whole file.
+    //
+    //   JsonDocument groups;
+    //   config_read_groups(groups);
+    //   for (JsonObject g : groups["groups"].as<JsonArray>()) { ... }
+    //
+    // Returns true on success (out["groups"] is an array, possibly empty).
+    // -----------------------------------------------------------------
+    bool config_read_groups(JsonDocument& out)
+    {
+        out.clear();
+        if (file_system::is_mounted == false) return false;
+
+        File f = LittleFS.open(file_path, "r");
+        if (!f) return false;
+
+        // Filter: keep group id/type/channel + the probe/pump blocks, but
+        // NOT rules[] (skipped while streaming to keep RAM low).
+        JsonDocument filter;
+        JsonObject gf = filter["groups"].add<JsonObject>();
+        gf["id"] = true;
+        gf["type"] = true;
+        gf["channel"] = true;
+        gf["probe"] = true;
+        gf["pump"] = true;
+
+        DeserializationError err = deserializeJson(
+            out, f, DeserializationOption::Filter(filter));
+        f.close();
+
+        if (err) {
+            log_info("[config] read_groups parse error: %s", err.c_str());
+            out.clear();
+            return false;
+        }
+        return true;
+    }
+
 } // namespace config

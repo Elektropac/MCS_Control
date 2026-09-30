@@ -19,6 +19,7 @@
 namespace config {
     extern bool is_loaded;
     extern JsonDocument config;
+    bool config_read_groups(JsonDocument& out);
 }
 
 #include "logging.h"
@@ -317,8 +318,11 @@ void cloudgauge_init() {
     Voltage volt_b = VOLTAGE_24V;
 
     if (config::is_loaded) {
-        int va = config::config["channels"]["A"]["voltage"] | 24;
-        int vb = config::config["channels"]["B"]["voltage"] | 24;
+        // New format nests channels under "config"; fall back to top-level.
+        JsonVariant ch = config::config["config"]["channels"];
+        if (ch.isNull()) ch = config::config["channels"];
+        int va = ch["A"]["voltage"] | 24;
+        int vb = ch["B"]["voltage"] | 24;
         volt_a = voltage_from_config(va);
         volt_b = voltage_from_config(vb);
     }
@@ -327,18 +331,28 @@ void cloudgauge_init() {
     voltage_select_set_b(volt_b);
     vTaskDelay(pdMS_TO_TICKS(20));
 
-    // Parse probes from config
-    if (config::is_loaded && !config::config["probes"].isNull()) {
-        JsonArray probes = config::config["probes"].as<JsonArray>();
+    // Parse probes from the new grouped config format.
+    // Each probe is a group { type:"probe", probe:{ input, probe_type,
+    // media, density, low_level, overfill, [lut] } }. rules[] are ignored
+    // here (measurement only — alarms/rules handled separately).
+    JsonDocument groupsDoc;
+    if (config::config_read_groups(groupsDoc) && !groupsDoc["groups"].isNull()) {
+        JsonArray groups = groupsDoc["groups"].as<JsonArray>();
 
-        for (JsonObject probe : probes) {
+        for (JsonObject group : groups) {
+            const char* gtype = group["type"] | "";
+            if (strcmp(gtype, "probe") != 0) continue;      // skip non-probe groups
+            if (group["probe"].isNull()) continue;
+            JsonObject probe = group["probe"].as<JsonObject>();
+
             if (s_num_probes >= MAX_PROBES) {
                 log_error("[cloudgauge] Max %d probes, ignoring rest", MAX_PROBES);
                 break;
             }
 
-            const char* id = probe["id"] | "unknown";
-            const char* type = probe["type"] | "unknown";
+            // New field names: name, input, probe_type (was id, input, type).
+            const char* id = probe["name"] | (group["id"] | "unknown");
+            const char* type = probe["probe_type"] | "unknown";
             const char* input = probe["input"] | "";
 
             const ProbeTypeDef* typeDef = find_probe_type(type);
@@ -353,7 +367,7 @@ void cloudgauge_init() {
                 continue;
             }
 
-            // Validate voltage: check if channel voltage matches probe requirement
+            // Validate voltage: channel voltage must match the probe requirement
             Voltage chan_volt = (ch < 4) ? volt_a : volt_b;
             if (typeDef->required_voltage != VOLTAGE_OFF && chan_volt != typeDef->required_voltage) {
                 log_error("[cloudgauge] Probe '%s' needs %dV but channel %c is set to %dV, skipping",
@@ -377,13 +391,13 @@ void cloudgauge_init() {
             p.range_mm = probe["range_mm"] | typeDef->default_range_mm;
             float d = probe["density"] | 1.0f;
             p.density = (d > 0.1f && d <= 2.0f) ? d : 1.0f;  // sanity check
-            p.min_level = probe["min_level"] | 0.0f;
+            p.min_level = 0.0f;   // alarms come from low_level/overfill later
             p.sample_idx = 0;
             p.sample_count = 0;
             p.avg_ma = 0.0f;
             p.valid = true;
-            
-            // Parse LUT (cm vs liter) if present
+
+            // Parse LUT (mm vs liter) if present in the probe block
             p.lut_count = 0;
             if (!probe["lut"].isNull()) {
                 JsonArray lut = probe["lut"].as<JsonArray>();
@@ -403,7 +417,7 @@ void cloudgauge_init() {
             log_info("[cloudgauge] Probe '%s' (%s) on %s, channel %d", p.id, p.type, p.input, p.channel);
         }
     } else {
-        log_error("[cloudgauge] No config or no probes array — nothing to do");
+        log_error("[cloudgauge] No config or no probe groups — nothing to do");
     }
 
     // Build alternating read order

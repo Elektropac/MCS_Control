@@ -1,34 +1,46 @@
 #include "product_router.h"
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/flow_guard/flow_guard.h"
-#include "apps/poseidon/poseidon.h"
 #include "logging.h"
 #include <ArduinoJson.h>
+#include <string.h>
 
-// config is defined in config.h (header-only). We only read it here.
+// On-demand groups reader (config.h).
 namespace config {
-    extern bool is_loaded;
-    extern JsonDocument config;
+    bool config_read_groups(JsonDocument& out);
 }
 
+// Capability detection: look at what the config actually CONTAINS (probe
+// groups, pump groups) and start the matching apps. No "product" concept —
+// the config describes capabilities, the firmware reacts to them.
 void start_product_apps() {
-    String product = "cloudgauge2";  // default
-    if (config::is_loaded && !config::config["product"].isNull()) {
-        product = config::config["product"].as<String>();
-    }
-    log_info("[product_router] Product: %s", product.c_str());
+    JsonDocument groupsDoc;
+    uint8_t probe_groups = 0;
+    uint8_t pump_groups  = 0;
 
-    if (product == "poseidon") {
-        poseidon_init();
-        poseidon_start_task();
-        return;
+    if (config::config_read_groups(groupsDoc) && !groupsDoc["groups"].isNull()) {
+        for (JsonObject g : groupsDoc["groups"].as<JsonArray>()) {
+            const char* t = g["type"] | "";
+            if (strcmp(t, "probe") == 0) probe_groups++;
+            else if (strcmp(t, "pump") == 0) pump_groups++;
+        }
+    }
+    log_info("[capabilities] probe groups: %d, pump groups: %d", probe_groups, pump_groups);
+
+    // Probes → start the cloudgauge measurement task.
+    if (probe_groups > 0) {
+        cloudgauge_init();
+        flow_guard_start_task();
+        cloudgauge_start_task();
+        log_info("[capabilities] started probe measurement");
     }
 
-    // cloudgauge2 (and sapphire_lite_mini for now) run the probe reader.
-    if (product != "cloudgauge2" && product != "sapphire_lite_mini") {
-        log_error("[product_router] Unknown product '%s', defaulting to cloudgauge2", product.c_str());
+    // Pumps → TODO: start pump controller (next step).
+    if (pump_groups > 0) {
+        log_info("[capabilities] %d pump group(s) found — pump controller TBD", pump_groups);
     }
-    cloudgauge_init();
-    flow_guard_start_task();
-    cloudgauge_start_task();
+
+    if (probe_groups == 0 && pump_groups == 0) {
+        log_error("[capabilities] no probe or pump groups in config — nothing to start");
+    }
 }

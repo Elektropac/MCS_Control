@@ -1,44 +1,206 @@
 {
-    // ============================================================
-    // TRANSITION CONFIG — CloudGauge 2
-    // Holds BOTH the old shape (product + probes[], so the cloudgauge
-    // measurement keeps running) AND a "config" block with "guide"
-    // (read on-demand by product_display to show the OLED splash).
-    // ============================================================
-
-    // New-format block — read on-demand (config_read_string).
-    "config": {
-        "guide": "cloudgauge2"
-    },
-
-    // --- Old-format fields below keep the current firmware working ---
-    "product": "cloudgauge2",
-    "version": 1,
-    "name": "CloudGauge Dev",
-    "channels": {
-        "A": { "voltage": 24 },
-        "B": { "voltage": 24 }
-    },
+  // ==== Device configuration ====
+  "config": {
+    // Which setup guide built this config ("custom" = no guide / manual setup).
+    "guide": "cloudgauge2",
+    // Network & server settings for this device.
     "connection": {
-        "server": {
-            "local":  { "host": "192.168.10.129", "port": 3000, "path": "/ws" },
-            "global": { "host": "echo.websocket.org", "port": 443, "path": "/ws" }
+      "server": {
+        // On-site server the device talks to.
+        "local":  { "enabled": false, "host": "192.168.1.183", "port": 3000 },
+        // Cloud server template (not editable in the UI yet — leave host blank until used).
+        "global": { "host": "", "port": 443 }
+      },
+      // Which interface provides internet: "wifi" or "ethernet".
+      "internet_client": "ethernet",
+      "settings": {
+        // WiFi credentials. enabled=false leaves the radio off.
+        "wifi": { "enabled": false, "ssid": "", "password": "" },
+        "ethernet": {
+          // modes: "dhcp" (auto) | "static" (set ip/gateway/subnet) | "local-link"
+          "mode": "dhcp"
         },
-        "internet_client": "ethernet",
-        "settings": {
-            "ethernet": { "dhcp": false, "ip": "192.168.1.200", "gateway": "192.168.1.1", "subnet": "255.255.255.0" }
-        }
+        // Bluetooth Low Energy for the phone app / console.
+        "bluetooth": { "enabled": false },
+        // Serial modem — placeholder for future cellular hardware. Ignored by firmware until supported.
+        "modem": { "enabled": false, "apn": "", "port": "", "baud": 115200 }
+      }
     },
-    "probes": [
-        { "id": "tank_1", "type": "mcs_level", "input": "A1",
-          "lut": [[0, 0], [300, 1500], [600, 3200], [900, 5000], [1200, 7000], [1500, 9200], [1800, 11500], [2100, 14000], [2400, 16500], [2700, 19000]]
+    // Supply voltage per channel. Applies to every input on that channel.
+    "channels": {
+      "A": {
+        "voltage": 24
+      },
+      "B": {
+        "voltage": 24
+      }
+    }
+  },
+  // ==== Rules, grouped by the solution that created them ====
+  "groups": [
+    {
+      "id": "probe_1",
+      "type": "probe",
+      "probe": {
+        "name": "Probe 1",
+        "input": "A1",
+        "probe_type": "mcs_level",
+        "media": "Diesel",
+        "density": 0.84,
+        "alarm_unit": "%",
+        "low_level": 10,
+        "overfill": 95
+      },
+      "rules": [
+        {
+          "id": "low_level_alarm",
+          "name": "Low level alarm",
+          "enabled": true,
+          "trigger": {
+            "domain": "probe",
+            "input": "A1",
+            "type": "low_level"
+          },
+          "actions": [
+            {
+              "do": "notify",
+              "channel": "cloud/Nexus",
+              "message": "Probe 1: tank only 10% full",
+              "level": "alarm"
+            },
+            {
+              "do": "buzzer",
+              "sound": "warning"
+            }
+          ]
         },
-        { "id": "tank_2", "type": "mcs_level", "input": "A2" },
-        { "id": "tank_3", "type": "mcs_level", "input": "A3" },
-        { "id": "tank_4", "type": "mcs_level", "input": "A4" },
-        { "id": "tank_5", "type": "mcs_level", "input": "B1" },
-        { "id": "tank_6", "type": "mcs_level", "input": "B2" },
-        { "id": "tank_7", "type": "mcs_level", "input": "B3" },
-        { "id": "tank_8", "type": "mcs_level", "input": "B4" }
-    ]
+        {
+          "id": "overfill_alarm",
+          "name": "Overfill alarm",
+          "enabled": true,
+          "trigger": {
+            "domain": "probe",
+            "input": "A1",
+            "type": "overfill"
+          },
+          "actions": [
+            {
+              "do": "notify",
+              "channel": "cloud/Nexus",
+              "message": "Probe 1: tank above 95% — overfill",
+              "level": "alarm"
+            },
+            {
+              "do": "buzzer",
+              "sound": "warning"
+            }
+          ]
+        },
+        {
+          "id": "routine_update",
+          "name": "Routine update",
+          "enabled": true,
+          "trigger": {
+            "domain": "timer",
+            "type": "interval",
+            "value": 60
+          },
+          "actions": [
+            {
+              "do": "read",
+              "input": "A1"
+            },
+            {
+              "do": "notify",
+              "channel": "cloud/Nexus",
+              "message": "Probe 1 level update",
+              "level": "info"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "probe_2",
+      "type": "probe",
+      "probe": {
+        "name": "Probe 2",
+        "input": "B1",
+        "probe_type": "mcs_level",
+        "media": "Diesel",
+        "density": 0.84,
+        "alarm_unit": "%",
+        "low_level": 10,
+        "overfill": 95
+      },
+      "rules": [
+        {
+          "id": "low_level_alarm",
+          "name": "Low level alarm",
+          "enabled": true,
+          "trigger": {
+            "domain": "probe",
+            "input": "B1",
+            "type": "low_level"
+          },
+          "actions": [
+            {
+              "do": "notify",
+              "channel": "cloud/Nexus",
+              "message": "Probe 2: tank only 10% full",
+              "level": "alarm"
+            },
+            {
+              "do": "buzzer",
+              "sound": "warning"
+            }
+          ]
+        },
+        {
+          "id": "overfill_alarm",
+          "name": "Overfill alarm",
+          "enabled": true,
+          "trigger": {
+            "domain": "probe",
+            "input": "B1",
+            "type": "overfill"
+          },
+          "actions": [
+            {
+              "do": "notify",
+              "channel": "cloud/Nexus",
+              "message": "Probe 2: tank above 95% — overfill",
+              "level": "alarm"
+            },
+            {
+              "do": "buzzer",
+              "sound": "warning"
+            }
+          ]
+        },
+        {
+          "id": "routine_update",
+          "name": "Routine update",
+          "enabled": true,
+          "trigger": {
+            "domain": "timer",
+            "type": "interval",
+            "value": 60
+          },
+          "actions": [
+            {
+              "do": "read",
+              "input": "B1"
+            },
+            {
+              "do": "notify",
+              "channel": "cloud/Nexus",
+              "message": "Probe 2 level update",
+              "level": "info"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
