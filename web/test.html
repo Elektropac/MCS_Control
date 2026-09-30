@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MCS Control — Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    h1 { font-size: 22px; font-weight: 900; color: #173447; }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
+    .nav a.active { background: #dcefeb; color: #184654; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #617381; font-weight: 800; margin: 18px 0 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 8px; }
+    .btn { padding: 11px 10px; font-size: 14px; font-weight: 700; cursor: pointer; background: #f7f1e6; color: #173447; border: 2px solid #0c1b24; border-radius: 12px; box-shadow: 3px 3px 0 #cfc7ba; transition: transform .1s; }
+    .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #cfc7ba; }
+    select, input { padding: 8px 10px; background: #fffdf8; color: #173447; border: 2px solid #cad6dc; border-radius: 10px; font-size: 14px; }
+    label { color: #476071; font-weight: 700; font-size: 13px; }
+    #output { background: #10202b; color: #7fe0a0; border-radius: 12px; padding: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre-wrap; overflow-y: auto; line-height: 1.5; }
+    .pass { color: #3fb950; } .fail { color: #f85149; } .info { color: #79c0ff; } .warn { color: #d29922; }
+
+    /* Two-column layout: controls left, output pinned right */
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .right { position: sticky; top: 20px; }
+    .right #output { max-height: calc(100vh - 100px); min-height: 300px; }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      .right { position: static; }
+      .right #output { max-height: 40vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>&#9889; Test</h1>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/tanks.html">Tanks</a>
+      <a href="/pumps.html">Pumps</a>
+      <a href="/setup.html">Setup</a>
+      <a href="/test.html" class="active">Test</a>
+    </div>
+  </div>
+
+  <div class="layout">
+  <div class="left">
+
+  <h2>Quick</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_i2c_scan')">🔍 I2C Scan</button>
+    <button class="btn" onclick="run('test_adc_read')">📊 ADC Read</button>
+    <button class="btn" onclick="run('test_version')">📋 Version</button>
+  </div>
+
+  <h2>Self-Test</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_selftest')">🧪 Full (quick)</button>
+    <button class="btn" onclick="run('test_selftest',{section:'i2c',verbose:true})">🔌 I2C</button>
+    <button class="btn" onclick="run('test_selftest',{section:'analog',verbose:true})">📈 Analog</button>
+    <button class="btn" onclick="run('test_selftest',{section:'supply',verbose:true})">⚡ Supply</button>
+    <button class="btn" onclick="run('test_selftest',{section:'digital',verbose:true})">🔢 Digital</button>
+  </div>
+
+  <h2>I/O Control</h2>
+  <div style="margin-bottom:8px;">
+    <label style="color:#7ec8e3;">Port: </label>
+    <select id="port" style="padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+      <option value="0">A1</option><option value="1">A2</option><option value="2">A3</option><option value="3">A4</option>
+      <option value="4">B1</option><option value="5">B2</option><option value="6">B3</option><option value="7">B4</option>
+    </select>
+  </div>
+  <div class="grid">
+    <button class="btn" onclick="io('read_analog')">📖 Read Analog</button>
+    <button class="btn" onclick="io('read_pullup')">📖 Read w/Pullup</button>
+    <button class="btn" onclick="io('read_shunt')">📖 Read w/Shunt</button>
+    <button class="btn" onclick="io('read_digital')">📖 Read Digital</button>
+    <button class="btn" onclick="io('status')">📋 Status</button>
+    <button class="btn" onclick="io('off')">⭕ All OFF</button>
+  </div>
+  <div class="grid">
+    <button class="btn" onclick="io('set_pullup_on')">↑ Pullup ON</button>
+    <button class="btn" onclick="io('set_pullup_off')">↓ Pullup OFF</button>
+    <button class="btn" onclick="io('set_shunt_on')">↑ Shunt ON</button>
+    <button class="btn" onclick="io('set_shunt_off')">↓ Shunt OFF</button>
+    <button class="btn" onclick="io('set_analog_on')">↑ Analog ON</button>
+    <button class="btn" onclick="io('set_analog_off')">↓ Analog OFF</button>
+    <button class="btn" onclick="io('set_digital_on')">↑ Digital ON</button>
+    <button class="btn" onclick="io('set_digital_off')">↓ Digital OFF</button>
+  </div>
+
+  <h2>Probe Live (all 8 channels)</h2>
+  <div style="margin-bottom:8px;">
+    <label style="color:#7ec8e3;">Mode: </label>
+    <select id="probe-mode" style="padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+      <option value="ma">4-20 mA</option>
+      <option value="voltage">Voltage</option>
+    </select>
+  </div>
+  <div class="grid">
+    <button class="btn" onclick="probeStart()">▶ Start</button>
+    <button class="btn" onclick="probeStop()">⏹ Stop</button>
+  </div>
+
+  <h2>Fueling Simulation (A1=nozzle, A4=pulses, Relay A=pump)</h2>
+  <div style="margin-bottom:8px;">
+    <label style="color:#7ec8e3;">Pulses/liter: </label>
+    <input id="ppl" type="number" value="10" min="1" max="10000" style="width:80px;padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+  </div>
+  <div class="grid">
+    <button class="btn" onclick="fuelStart()">▶ Start Pump</button>
+    <button class="btn" onclick="fuelStop()">⏹ Stop</button>
+  </div>
+
+  <h2>Gain Calibrate (disconnect all inputs!)</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_calibrate_gain',{voltage:5})">🎯 Gain Calibrate</button>
+  </div>
+
+  <h2>Pulse Test (wire A1→B1, A2→B2, A3→B3, A4→B4)</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_pulse',{pulses:10})">⚡ 10 pulser</button>
+    <button class="btn" onclick="run('test_pulse',{pulses:50})">⚡ 50 pulser</button>
+    <button class="btn" onclick="run('test_pulse',{pulses:100})">⚡ 100 pulser</button>
+  </div>
+
+  <h2>UART Loopback</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_uart_loopback',{mode:'232'})">🔄 RS-232 Loopback</button>
+    <button class="btn" onclick="run('test_uart_loopback',{mode:'485'})">🔄 RS-485 Loopback</button>
+  </div>
+
+  <h2>Voltage Select</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_voltage',{channel:'A',voltage:5})">A → 5V</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'A',voltage:12})">A → 12V</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'A',voltage:24})">A → 24V</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'A',voltage:0})">A → OFF</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'B',voltage:5})">B → 5V</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'B',voltage:12})">B → 12V</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'B',voltage:24})">B → 24V</button>
+    <button class="btn" onclick="run('test_voltage',{channel:'B',voltage:0})">B → OFF</button>
+  </div>
+
+  <h2>Relays</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_relay',{relay:'A'})">⚡ Toggle Relay A</button>
+    <button class="btn" onclick="run('test_relay',{relay:'B'})">⚡ Toggle Relay B</button>
+  </div>
+
+  <h2>Buzzer</h2>
+  <div class="grid">
+    <button class="btn" onclick="run('test_buzzer',{sound:1})">✓ OK</button>
+    <button class="btn" onclick="run('test_buzzer',{sound:2})">✗ Error</button>
+    <button class="btn" onclick="run('test_buzzer',{sound:3})">🔊 Startup</button>
+    <button class="btn" onclick="run('test_buzzer',{sound:4})">🔘 Click</button>
+    <button class="btn" onclick="run('test_buzzer',{sound:5})">⚠ Warning</button>
+    <button class="btn" onclick="run('test_buzzer',{sound:6})">✔ Complete</button>
+  </div>
+
+  </div><!-- /.left -->
+
+  <div class="right">
+    <h2>Output</h2>
+    <div id="output"><span class="info">Ready. Click a test to begin.</span></div>
+  </div><!-- /.right -->
+  </div><!-- /.layout -->
+
+  <script>
+    const out = document.getElementById('output');
+
+    function log(msg, cls='') {
+      const span = document.createElement('span');
+      if (cls) span.className = cls;
+      span.textContent = msg + '\n';
+      out.appendChild(span);
+      out.scrollTop = out.scrollHeight;
+    }
+
+    function clear() { out.innerHTML = ''; }
+
+    function io(action) {
+      const port = parseInt(document.getElementById('port').value);
+      run('test_io', {port, action});
+    }
+
+    let fuelInterval = null;
+    let probeInterval = null;
+
+    async function probeStart() {
+      const mode = document.getElementById('probe-mode').value;
+      await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_probes', data: {action: 'start', mode}})
+      });
+      clear();
+      log('📊 Probes active — live view', 'pass');
+      if (probeInterval) clearInterval(probeInterval);
+      probeInterval = setInterval(probePoll, 500);
+    }
+
+    async function probeStop() {
+      if (probeInterval) { clearInterval(probeInterval); probeInterval = null; }
+      await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_probes', data: {action: 'stop'}})
+      });
+      clear();
+      log('📊 Probes stopped', 'info');
+    }
+
+    async function probePoll() {
+      try {
+        const r = await fetch('/api/function_silo', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject: 'test_probes', data: {action: 'status'}})
+        });
+        const json = await r.json();
+        if (json.channels) {
+          const names = ['A1','A2','A3','A4','B1','B2','B3','B4'];
+          let s = '📊 Probe Live\n\n';
+          for (let i = 0; i < 8; i++) {
+            const ch = json.channels[i];
+            const val = ch.ma !== undefined ? (ch.ma + ' mA') : (ch.volt + ' V');
+            s += '  ' + names[i] + ': ' + val + '\n';
+          }
+          out.textContent = s;
+        }
+      } catch(e) {}
+    }
+
+    async function fuelStart() {
+      const ppl = parseInt(document.getElementById('ppl').value);
+      await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_fueling', data: {action: 'start', ppl}})
+      });
+      clear();
+      log('⛽ Fueling started — live view active', 'pass');
+      if (fuelInterval) clearInterval(fuelInterval);
+      fuelInterval = setInterval(fuelPoll, 500);
+    }
+
+    async function fuelStop() {
+      if (fuelInterval) { clearInterval(fuelInterval); fuelInterval = null; }
+      const r = await fetch('/api/function_silo', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject: 'test_fueling', data: {action: 'stop'}})
+      });
+      const json = await r.json();
+      clear();
+      log(`⛽ Fueling COMPLETE`, 'pass');
+      log(`  Total: ${json.pulses} pulses = ${json.liters} L (${json.ppl} ppl)`, 'pass');
+      log(`  Duration: ${json.duration_sec} sec`, 'info');
+    }
+
+    async function fuelPoll() {
+      try {
+        const r = await fetch('/api/function_silo', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject: 'test_fueling', data: {action: 'status'}})
+        });
+        const json = await r.json();
+        let s = '⛽ Fueling Live\n\n';
+        s += '  State:    ' + (json.state ? json.state.toUpperCase() : '—') + '\n';
+        s += '  Nozzle:   ' + (json.nozzle || '—') + '\n';
+        s += '  Pump:     ' + (json.pump_relay || '—') + '\n';
+        s += '  Pulses:   ' + json.pulses + '\n';
+        s += '  Liters:   ' + json.liters + ' L\n';
+        s += '  Duration: ' + json.duration_sec + ' sec\n';
+        if (json.raw_state !== undefined) {
+          s += '  Raw:      0b' + json.raw_state.toString(2).padStart(8,'0') + '\n';
+        }
+        out.textContent = s;
+      } catch(e) {}
+    }
+
+    async function run(subject, data) {
+      clear();
+      log(`▶ Running: ${subject}` + (data && data.verbose ? ' (verbose)' : ''), 'info');
+      log('  ⏳ Working...', 'warn');
+      const body = { subject };
+      if (data) body.data = data;
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        const r = await fetch('/api/function_silo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const text = await r.text();
+        if (!text) { log('✗ Empty response', 'fail'); return; }
+        const json = JSON.parse(text);
+        clear();
+        formatResult(subject, json);
+      } catch (e) {
+        if (e.name === 'AbortError') {
+          log('✗ Timeout (test took >30s)', 'fail');
+        } else {
+          log(`✗ Error: ${e.message}`, 'fail');
+        }
+      }
+    }
+
+    function formatResult(subject, json) {
+      if (subject === 'test_i2c_scan') {
+        log(`\nI2C Devices (${json.found}/${json.total}):`);
+        for (const d of json.devices) {
+          const s = d.online ? '✓ OK' : '✗ --';
+          log(`  ${d.addr}  ${s.padEnd(6)} ${d.name}`, d.online ? 'pass' : 'fail');
+        }
+      } else if (subject === 'test_adc_read') {
+        log('\nADC Readings:');
+        for (const ch of json.channels) {
+          log(`  ${ch.name}: ${ch.volt} V  (${ch.mv} mV)`, 'info');
+        }
+      } else if (subject === 'test_selftest') {
+        const allPass = json.fail === 0;
+        log(`\n=== Self-Test: ${json.pass} PASS / ${json.fail} FAIL (${json.total} total) ===\n`,
+            allPass ? 'pass' : 'fail');
+        if (json.tests.length === 0) {
+          log('  All tests passed! ✓', 'pass');
+        } else {
+          for (const t of json.tests) {
+            const val = t.value !== undefined ? ` [${t.value}${t.unit||''}]` : '';
+            log(`  ${t.pass ? '✓' : '✗'} ${t.test}${val}`, t.pass ? 'pass' : 'fail');
+          }
+        }
+      } else if (subject === 'test_uart_loopback') {
+        log(`\nUART Loopback (${json.mode}):`);
+        const ab = json.a_to_b;
+        log(`  A→B: sent "${ab.sent}" received "${ab.received}" ${ab.pass?'✓':'✗'}`, ab.pass?'pass':'fail');
+        const ba = json.b_to_a;
+        log(`  B→A: sent "${ba.sent}" received "${ba.received}" ${ba.pass?'✓':'✗'}`, ba.pass?'pass':'fail');
+      } else if (subject === 'test_version') {
+        log(`\nHardware version: ${json.hardware}`, 'info');
+        log(`Module version:   ${json.module}`, 'info');
+      } else if (subject === 'test_pulse') {
+        log(`\n=== Pulse Test: ${json.pass} PASS / ${json.fail} FAIL (${json.pulses_per_channel} pulses/ch) ===\n`,
+            json.fail === 0 ? 'pass' : 'fail');
+        for (const r of json.results) {
+          log(`  ${r.pass ? '✓' : '✗'} ${r.test}: ↑${r.rising} ↓${r.falling} = ${r.edges} edges (expected ${r.expected})  ${r.period_ms}ms/edge  ${r.freq_hz} Hz`, r.pass ? 'pass' : 'fail');
+        }
+      } else if (subject === 'test_io') {
+        log(`\n${json.name} — ${json.action}:`, 'info');
+        if (json.error) { log(`  ✗ ${json.error}`, 'fail'); }
+        else if (json.volt !== undefined) log(`  ${json.volt} V  (${json.mv} mV)${json.ma ? '  = '+json.ma+' mA' : ''}`, 'pass');
+        else if (json.digital !== undefined) log(`  GPIO: ${json.digital} — ${json.state}`, 'pass');
+        else if (json.result) log(`  ${json.result}`, 'pass');
+        else log('  ' + JSON.stringify(json), 'info');
+      } else if (subject === 'test_fueling') {
+        if (json.state === 'running') {
+          log(`\n⛽ Fueling: ${json.state.toUpperCase()}`, 'info');
+          if (json.message) log(`  ${json.message}`, 'info');
+          if (json.nozzle !== undefined) {
+            log(`  Nozzle: ${json.nozzle}`, json.nozzle === 'lifted' ? 'pass' : 'warn');
+            log(`  Pump relay: ${json.pump_relay}`, json.pump_relay === 'ON' ? 'pass' : 'warn');
+            log(`  Pulses: ${json.pulses}  (${json.liters} L @ ${json.ppl} ppl)`, 'pass');
+            log(`  Duration: ${json.duration_sec} sec`, 'info');
+            if (json.raw_state !== undefined) log(`  Raw state: 0b${json.raw_state.toString(2).padStart(8,'0')} (A1=bit0, A4=bit3)`, 'info');
+          }
+        } else if (json.state === 'stopped') {
+          log(`\n⛽ Fueling COMPLETE`, 'pass');
+          log(`  Total pulses: ${json.pulses}`, 'pass');
+          log(`  Total liters: ${json.liters} L`, 'pass');
+          log(`  Pulses/liter: ${json.ppl}`, 'info');
+          log(`  Duration: ${json.duration_sec} sec`, 'info');
+        } else {
+          log(`\n⛽ Fueling: IDLE`, 'info');
+          if (json.nozzle !== undefined) {
+            log(`  Nozzle: ${json.nozzle}`, 'info');
+            log(`  Pump relay: ${json.pump_relay}`, 'info');
+          }
+        }
+      } else if (subject === 'test_calibrate_gain') {
+        log(`\n=== ADC Calibration (zero + gain + verify) ===\n`, 'info');
+
+        // Stub / not-supported response from this firmware build.
+        if (json.supported === false || !json.zero_offsets) {
+          log('  ⚠ ' + (json.message || 'ADC calibration not supported in this firmware'), 'warn');
+          log('  (requires the bringup ADC calibration driver)', 'info');
+        } else {
+        // Step 1: Zero offsets
+        log(`── Step 1: Zero Calibration ──`, 'info');
+        for (const o of json.zero_offsets) {
+          log(`  ${o.name}: offset ${o.offset_mv} mV`, Math.abs(o.offset_mv) < 10 ? 'pass' : 'warn');
+        }
+        
+        // Step 2: Gain factors
+        log(`\n── Step 2: Gain Calibration @ 5V ──`, 'info');
+        log(`  Mean: ${json.high_mean_mv} mV`);
+        log(`  Channel  Measured  Factor     Deviation`, 'info');
+        for (const ch of json.channels) {
+          const dev = parseFloat(ch.deviation_pct);
+          const cls = Math.abs(dev) < 0.2 ? 'pass' : Math.abs(dev) < 0.5 ? 'warn' : 'fail';
+          log(`  ${ch.name.padEnd(7)}  ${String(ch.high_mv).padStart(8)}  ${ch.factor}  ${ch.deviation_pct}%`, cls);
+        }
+        
+        // Step 3: Verification
+        log(`\n── Step 3: Verification (all should read the same) ──`, 'info');
+        log(`  Mean: ${json.verify_mean_mv} mV (${(json.verify_mean_mv/1000).toFixed(3)} V)`);
+        for (const v of json.verify) {
+          const err = parseFloat(v.error_pct);
+          const cls = Math.abs(err) < 0.1 ? 'pass' : Math.abs(err) < 0.5 ? 'warn' : 'fail';
+          log(`  ${v.name}: ${v.volt} V  (${v.error_pct}% from mean)`, cls);
+        }
+        }
+      } else {
+        log('\n' + JSON.stringify(json, null, 2), 'info');
+      }
+      log('\n✓ Done', 'pass');
+    }
+  </script>
+</body>
+</html>

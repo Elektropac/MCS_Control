@@ -25,6 +25,10 @@ extern const uint8_t web_tanks_html_start[] asm("_binary_web_tanks_html_start");
 extern const uint8_t web_tanks_html_end[] asm("_binary_web_tanks_html_end");
 extern const uint8_t web_tanks_html_size[] asm("_binary_web_tanks_html_size");
 
+extern const uint8_t web_test_html_start[] asm("_binary_web_test_html_start");
+extern const uint8_t web_test_html_end[] asm("_binary_web_test_html_end");
+extern const uint8_t web_test_html_size[] asm("_binary_web_test_html_size");
+
 struct EmbeddedWebFile
 {
 	const char *path;
@@ -42,6 +46,7 @@ static const EmbeddedWebFile WEB_FILES[] = {
 	{"/pumps.html", web_pumps_html_start, web_pumps_html_end, web_pumps_html_size, "text/html", false},
 	{"/setup.html", web_setup_html_start, web_setup_html_end, web_setup_html_size, "text/html", false},
 	{"/tanks.html", web_tanks_html_start, web_tanks_html_end, web_tanks_html_size, "text/html", false},
+	{"/test.html", web_test_html_start, web_test_html_end, web_test_html_size, "text/html", false},
 };
 
 static const int WEB_INDEX_PAGE_INDEX = 1;
