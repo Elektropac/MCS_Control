@@ -42,18 +42,21 @@ void voltage_select_set_b(Voltage v) {
     if (!hw_available(HW_VOLTAGE_SELECT)) return;
     if (!i2c_take(100)) return;
 
-    s_port0 |= 0xE0;  // disable
+    s_port0 |= 0xE0;  // disable (P05=1, P06=1, P07=1)
 
     if (v != VOLTAGE_OFF) {
-        uint8_t sel = 0;
+        // Channel B pin layout (differs from A!):
+        //   P05 = 2B (sel1), P06 = 2A (sel0), P07 = 2G# (enable, active low)
+        // 74HC139 decoder: 2B 2A -> output
+        //   0 1 -> 5V (2Y1),  1 0 -> 24V (2Y2),  1 1 -> 12V (2Y3)
+        uint8_t p05, p06;
         switch (v) {
-            case VOLTAGE_24V: sel = 0b01; break;
-            case VOLTAGE_12V: sel = 0b10; break;
-            case VOLTAGE_5V:  sel = 0b11; break;
-            default: break;
+            case VOLTAGE_5V:  p05 = 0; p06 = 1; break;
+            case VOLTAGE_24V: p05 = 1; p06 = 0; break;
+            case VOLTAGE_12V: p05 = 1; p06 = 1; break;
+            default:          p05 = 0; p06 = 0; break;
         }
-        s_port0 = (s_port0 & ~0xC0) | ((sel & 0x03) << 6);
-        s_port0 &= ~0x20;  // enable
+        s_port0 = (s_port0 & ~0xE0) | (p05 << 5) | (p06 << 6) | (0 << 7);  // P07=0 = enable
     }
 
     expander.write_port(0, s_port0);
