@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MCS Control — Setup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    h1 { font-size: 22px; font-weight: 900; color: #173447; }
+    .nav { display: flex; gap: 8px; }
+    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
+    .nav a.active { background: #dcefeb; color: #184654; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.ok { background: #2ecc71; }
+    .dot.err { background: #e74c3c; }
+
+    .section { margin-bottom: 22px; }
+    .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #617381; font-weight: 800; margin-bottom: 10px; }
+
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .cards { grid-template-columns: 1fr; } }
+
+    .card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .card .label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #617381; font-weight: 800; }
+    .card .big { font-size: 30px; font-weight: 900; color: #173447; line-height: 1; }
+    .card .big small { font-size: 15px; font-weight: 700; color: #476071; }
+    .card .sub { font-size: 12px; color: #617381; }
+
+    .list-card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #ece5d8; }
+    .row:last-child { border-bottom: none; }
+    .row .name { font-weight: 800; color: #173447; }
+    .row .meta { font-size: 12px; color: #617381; }
+    .badge { font-size: 10px; color: #fff; background: #2b8ab0; padding: 3px 9px; border-radius: 8px; }
+    .badge.pump { background: #df9542; }
+    .empty { color: #617381; font-size: 13px; padding: 8px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>&#9881;&#65039; Setup</h1>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/config.html">Config</a>
+      <a href="/tanks.html">Tanks</a>
+      <a href="/poseidon.html">I/O</a>
+      <a href="/setup.html" class="active">Setup</a>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="dot"></span>
+    <span id="status">Connecting...</span>
+  </div>
+
+  <!-- Overview cards -->
+  <div class="section">
+    <div class="section-title">Device configuration</div>
+    <div class="cards">
+      <div class="card">
+        <span class="label">Guide</span>
+        <span class="big" id="guide">&mdash;</span>
+        <span class="sub">Setup that built this config</span>
+      </div>
+      <div class="card">
+        <span class="label">Channel A</span>
+        <span class="big" id="chA">&mdash;</span>
+        <span class="sub">Supply voltage</span>
+      </div>
+      <div class="card">
+        <span class="label">Channel B</span>
+        <span class="big" id="chB">&mdash;</span>
+        <span class="sub">Supply voltage</span>
+      </div>
+      <div class="card">
+        <span class="label">Capabilities</span>
+        <span class="big"><span id="nProbes">0</span><small> probes</small> &middot; <span id="nPumps">0</span><small> pumps</small></span>
+        <span class="sub">Detected from config groups</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Probes -->
+  <div class="section">
+    <div class="section-title">Probes</div>
+    <div class="list-card" id="probes"><div class="empty">No probes configured.</div></div>
+  </div>
+
+  <!-- Pumps -->
+  <div class="section">
+    <div class="section-title">Pumps</div>
+    <div class="list-card" id="pumps"><div class="empty">No pumps configured.</div></div>
+  </div>
+
+  <script>
+    const API = '/api/';
+
+    function guideLabel(g) {
+      const map = {
+        cloudgauge2: 'CloudGauge2',
+        sapphire_lite_mini: 'Sapphire Lite Mini',
+        poseidon: 'Poseidon',
+        bridge: 'Bridge',
+        custom: 'Custom'
+      };
+      return map[g] || g;
+    }
+
+    function volt(v) {
+      return v && v > 0 ? v + '<small> V</small>' : 'Off';
+    }
+
+    async function api(subject) {
+      try {
+        const r = await fetch(API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject})
+        });
+        return await r.json();
+      } catch(e) { return null; }
+    }
+
+    function renderProbes(probes) {
+      const el = document.getElementById('probes');
+      if (!probes || probes.length === 0) {
+        el.innerHTML = '<div class="empty">No probes configured.</div>';
+        return;
+      }
+      el.innerHTML = probes.map(p => `
+        <div class="row">
+          <div>
+            <div class="name">${p.name || p.id || 'Probe'}</div>
+            <div class="meta">Input ${p.input || '—'}</div>
+          </div>
+          <span class="badge">${p.probe_type || 'probe'}</span>
+        </div>`).join('');
+    }
+
+    function renderPumps(pumps) {
+      const el = document.getElementById('pumps');
+      if (!pumps || pumps.length === 0) {
+        el.innerHTML = '<div class="empty">No pumps configured.</div>';
+        return;
+      }
+      el.innerHTML = pumps.map(p => `
+        <div class="row">
+          <div>
+            <div class="name">${p.name || p.id || 'Pump'}</div>
+            <div class="meta">Input ${p.input || '—'}</div>
+          </div>
+          <span class="badge pump">pump</span>
+        </div>`).join('');
+    }
+
+    async function load() {
+      const data = await api('setup_get');
+      if (!data) {
+        document.getElementById('dot').className = 'dot err';
+        document.getElementById('status').textContent = 'Connection lost';
+        return;
+      }
+      document.getElementById('dot').className = 'dot ok';
+      document.getElementById('status').textContent = 'Loaded';
+
+      document.getElementById('guide').textContent = guideLabel(data.guide);
+      document.getElementById('chA').innerHTML = volt(data.channels ? data.channels.A : 0);
+      document.getElementById('chB').innerHTML = volt(data.channels ? data.channels.B : 0);
+      document.getElementById('nProbes').textContent = data.probe_count || 0;
+      document.getElementById('nPumps').textContent = data.pump_count || 0;
+      document.title = guideLabel(data.guide) + ' — Setup';
+
+      renderProbes(data.probes);
+      renderPumps(data.pumps);
+    }
+
+    load();
+  </script>
+</body>
+</html>

@@ -9,6 +9,10 @@
     body { font-family: -apple-system, sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
     h1 { font-size: 18px; color: #00d4ff; margin-bottom: 4px; }
     .subtitle { font-size: 12px; color: #888; margin-bottom: 20px; }
+    .nav { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .nav a { padding: 8px 14px; border: 1px solid #1a5276; border-radius: 8px; background: #16213e; color: #cfe8f5; font-weight: 700; font-size: 13px; text-decoration: none; }
+    .nav a:hover { border-color: #00d4ff; }
+    .nav a.active { background: #0f3460; color: #00d4ff; border-color: #00d4ff; }
     .product-badge { display: inline-block; background: #00d4ff; color: #1a1a2e; padding: 2px 10px;
       border-radius: 12px; font-weight: bold; font-size: 13px; margin-left: 8px; }
     .section { background: #16213e; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
@@ -54,6 +58,14 @@
 
 <h1>MCS Control <span class="product-badge" id="badge">—</span></h1>
 <div class="subtitle">Configuration Editor</div>
+
+<div class="nav">
+  <a href="/">Home</a>
+  <a href="/config.html" class="active">Config</a>
+  <a href="/tanks.html">Tanks</a>
+  <a href="/poseidon.html">I/O</a>
+  <a href="/setup.html">Setup</a>
+</div>
 
 <!-- General -->
 <div class="section">

@@ -21,6 +21,10 @@ extern const uint8_t web_poseidon_html_start[] asm("_binary_web_poseidon_html_st
 extern const uint8_t web_poseidon_html_end[] asm("_binary_web_poseidon_html_end");
 extern const uint8_t web_poseidon_html_size[] asm("_binary_web_poseidon_html_size");
 
+extern const uint8_t web_setup_html_start[] asm("_binary_web_setup_html_start");
+extern const uint8_t web_setup_html_end[] asm("_binary_web_setup_html_end");
+extern const uint8_t web_setup_html_size[] asm("_binary_web_setup_html_size");
+
 extern const uint8_t web_tanks_html_start[] asm("_binary_web_tanks_html_start");
 extern const uint8_t web_tanks_html_end[] asm("_binary_web_tanks_html_end");
 extern const uint8_t web_tanks_html_size[] asm("_binary_web_tanks_html_size");
@@ -41,6 +45,7 @@ static const EmbeddedWebFile WEB_FILES[] = {
 	{"/", web_index_html_start, web_index_html_end, web_index_html_size, "text/html", false},
 	{"/index.html", web_index_html_start, web_index_html_end, web_index_html_size, "text/html", false},
 	{"/poseidon.html", web_poseidon_html_start, web_poseidon_html_end, web_poseidon_html_size, "text/html", false},
+	{"/setup.html", web_setup_html_start, web_setup_html_end, web_setup_html_size, "text/html", false},
 	{"/tanks.html", web_tanks_html_start, web_tanks_html_end, web_tanks_html_size, "text/html", false},
 };
 

@@ -6,6 +6,7 @@
 #include "rgb.h"
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/poseidon/poseidon.h"
+#include "apps/setup_info/setup_info.h"
 
 
 // the common incomeing data structure is
@@ -61,6 +62,10 @@ namespace function_silo
             String result;
             serializeJson(config::config, result);
             return result;
+        }
+        else if (function_name == "setup_get")
+        {
+            return setup_info_get();
         }
         else if (function_name == "config_upload")
         {
