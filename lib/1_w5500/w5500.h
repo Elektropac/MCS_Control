@@ -49,35 +49,38 @@ namespace w5500
     }
 
     // modes: dhcp, static, link-local
+    // Reads BOTH config formats and defaults to DHCP:
+    //   new: config.connection.settings.ethernet.mode = "dhcp"|"static"|"local-link"
+    //   old: connection.settings.ethernet.dhcp = true|false
+    // If nothing is specified, default to "dhcp" (was previously link-local).
     String find_mode()
     {
-        auto is_eth_config = config::config["connection"]["settings"]["ethernet"].isNull();
-
-        if (is_eth_config)
+        // --- New nested format: config.connection...ethernet.mode (string) ---
+        JsonVariant new_mode =
+            config::config["config"]["connection"]["settings"]["ethernet"]["mode"];
+        if (!new_mode.isNull() && new_mode.is<const char*>())
         {
-            return "link-local";
-        }
-
-        auto eth_config = config::config["connection"]["settings"]["ethernet"].as<JsonObject>();
-        auto is_dhcp = eth_config["dhcp"].isNull();
-
-        if (is_dhcp)
-        {
-            return "link-local";
-        }
-
-        auto dhcp = eth_config["dhcp"].as<bool>();
-
-        if (dhcp == true)
-        {
+            String m = new_mode.as<const char*>();
+            if (m == "dhcp")   return "dhcp";
+            if (m == "static") return "static";
+            if (m == "local-link" || m == "link-local") return "link-local";
+            // unknown value -> safe default
             return "dhcp";
         }
-        else if (dhcp == false)
+
+        // --- Old top-level format: connection...ethernet.dhcp (bool) ---
+        JsonVariant eth = config::config["connection"]["settings"]["ethernet"];
+        if (!eth.isNull())
         {
-            return "static";
+            JsonVariant dhcp = eth["dhcp"];
+            if (!dhcp.isNull())
+            {
+                return dhcp.as<bool>() ? "dhcp" : "static";
+            }
         }
 
-        return "link-local";
+        // --- Nothing specified: default to DHCP ---
+        return "dhcp";
     }
 
     int run_dhcp()
