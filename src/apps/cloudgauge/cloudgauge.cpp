@@ -610,6 +610,19 @@ void cloudgauge_init() {
                     p.lut_count++;
                 }
                 log_info("[cloudgauge] Probe '%s' LUT: %d points", p.id, p.lut_count);
+
+                // When a LUT is present, the tank's full height is the last
+                // LUT mm point, so use it as the measurement range (unless the
+                // config explicitly set range_mm). This keeps the mA->mm scale
+                // aligned with the physical tank instead of a fixed default.
+                if (p.lut_count > 0 && probe["range_mm"].isNull()) {
+                    float lut_max_mm = p.lut[p.lut_count - 1].mm;
+                    if (lut_max_mm > 0.0f) {
+                        p.range_mm = lut_max_mm;
+                        log_info("[cloudgauge] Probe '%s' range from LUT: %d mm",
+                                 p.id, (int)p.range_mm);
+                    }
+                }
             }
 
             // Run type-specific hardware setup
