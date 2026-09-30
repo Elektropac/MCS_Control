@@ -320,8 +320,21 @@ static float level_in_unit(const ProbeState& p, float mm, float liters, float pc
     return pct;   // default "%"
 }
 
-// --- Derive alarm state: "overfill" | "low_level" | "normal" ---
+// --- Detect a disconnected / faulty probe ---
+// A current-loop probe (input_min > 0, e.g. 4-20 mA) reading well below its
+// floor means the loop is broken / no probe attached — NOT "tank empty". We
+// treat that as a fault so level alarms don't fire on a missing probe.
+// Voltage probes (input_min == 0) have no such floor, so never fault here.
+static bool probe_is_fault(const ProbeState& p) {
+    if (!p.type_def) return false;
+    if (p.type_def->input_min <= 0.0f) return false;      // voltage type: no fault floor
+    float fault_floor = p.type_def->input_min - 0.5f;     // e.g. 3.5 mA for a 4 mA floor
+    return p.avg_ma < fault_floor;
+}
+
+// --- Derive alarm state: "fault" | "overfill" | "low_level" | "normal" ---
 static const char* probe_state(const ProbeState& p, float level) {
+    if (probe_is_fault(p))                          return "fault";
     if (p.overfill  > 0.0f && level >= p.overfill)  return "overfill";
     if (p.low_level > 0.0f && level <= p.low_level) return "low_level";
     return "normal";
@@ -355,6 +368,7 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["state"] = state;
     obj["low"] = (strcmp(state, "low_level") == 0);
     obj["overfill_alarm"] = (strcmp(state, "overfill") == 0);
+    obj["fault"] = (strcmp(state, "fault") == 0);
 }
 
 // --- Public API ---
