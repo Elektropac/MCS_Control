@@ -3,7 +3,6 @@
 #include "my_wifi.h"
 #include "web_socket.h"
 #include "web_server.h"
-#include "rgb.h"
 #include "platform/task_registry.h"
 
 static void network_task(void* param) {
@@ -15,7 +14,6 @@ static void network_task(void* param) {
     wifi::init();
     web_socket::init();
     web_server::init();
-    rgb::init();
 
     Serial.println("[network] Network stack initialized");
 

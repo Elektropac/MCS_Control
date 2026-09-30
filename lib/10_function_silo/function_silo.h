@@ -8,6 +8,7 @@
 #include "apps/poseidon/poseidon.h"
 #include "apps/setup_info/setup_info.h"
 #include "apps/pump/pump.h"
+#include "apps/test_api/test_api.h"
 
 
 // the common incomeing data structure is
@@ -30,35 +31,9 @@ namespace function_silo
 
         String function_name = json_packet["subject"].as<String>();
 
-        // -- led --
-
-        if (function_name == "led_on")
-        {
-            rgb::set(true);
-            return "{\"result\": \"LED turned on\"}";
-        }
-        else if (function_name == "led_off")
-        {
-            rgb::set(false);
-            return "{\"result\": \"LED turned off\"}";
-        }
-        else if (function_name == "led_toggle")
-        {
-            rgb::toggle();
-            return "{\"result\": \"LED toggled\"}";
-        }
-        else if (function_name == "led_set")
-        {
-            JsonObject json_object = json_packet["data"].as<JsonObject>();
-
-            bool state = json_object["value"];
-            rgb::set(state);
-            return "{\"result\": \"LED set\"}";
-        }
-        
         // -- config --
 
-        else if (function_name == "config_get")
+        if (function_name == "config_get")
         {
             String result;
             serializeJson(config::config, result);
@@ -160,9 +135,13 @@ namespace function_silo
             return poseidon_io_reset_pulses(pin ? pin : "");
         }
 
+        // -- hardware test API (web/test.html) --
+        if (function_name.startsWith("test_"))
+        {
+            String r = test_api_run(function_name, json_packet["data"].as<JsonObject>());
+            if (r.length() > 0) return r;
+        }
 
-
-        
         // Return a JsonString result
         return "";
     }
