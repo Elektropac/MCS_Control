@@ -59,7 +59,18 @@
         "density": 0.84,
         "alarm_unit": "%",
         "low_level": 10,
-        "overfill": 95
+        "overfill": 95,
+        // Fictional mm -> liter table for testing (approx. 5000 L tank,
+        // slightly non-linear so interpolation is visible). [mm, liters].
+        "lut": [
+          [0, 0],
+          [300, 350],
+          [750, 1100],
+          [1200, 2050],
+          [1800, 3300],
+          [2400, 4300],
+          [3000, 5000]
+        ]
       },
       "rules": [
         {
@@ -141,7 +152,17 @@
         "density": 0.84,
         "alarm_unit": "%",
         "low_level": 10,
-        "overfill": 95
+        "overfill": 95,
+        // Fictional mm -> liter table for testing (approx. 2000 L tank).
+        // [mm, liters].
+        "lut": [
+          [0, 0],
+          [250, 200],
+          [600, 550],
+          [1000, 1000],
+          [1500, 1550],
+          [2000, 2000]
+        ]
       },
       "rules": [
         {
