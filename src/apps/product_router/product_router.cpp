@@ -1,5 +1,6 @@
 #include "product_router.h"
 #include "apps/cloudgauge/cloudgauge.h"
+#include "apps/pump/pump.h"
 #include "apps/flow_guard/flow_guard.h"
 #include "logging.h"
 #include <ArduinoJson.h>
@@ -35,9 +36,11 @@ void start_product_apps() {
         log_info("[capabilities] started probe measurement");
     }
 
-    // Pumps → TODO: start pump controller (next step).
+    // Pumps → start the pump/fueling controller.
     if (pump_groups > 0) {
-        log_info("[capabilities] %d pump group(s) found — pump controller TBD", pump_groups);
+        pump_init();
+        pump_start_task();
+        log_info("[capabilities] started pump controller");
     }
 
     if (probe_groups == 0 && pump_groups == 0) {

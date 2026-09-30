@@ -1,52 +1,19 @@
 {
-  // Top-level connection block in the shape the current firmware expects
-  // (connection.settings.ethernet.dhcp = true). The new-format "config"
-  // block below is the Setup Engine contract; this shim keeps networking
-  // working until the network code reads the new format.
-  "connection": {
-    "settings": {
-      "ethernet": { "dhcp": true }
+  // Test config: 1 probe + 1 pump group, DHCP.
+  "connection": { "settings": { "ethernet": { "dhcp": true } } },
+
+  "config": {
+    "guide": "cloudgauge2",
+    "connection": {
+      "internet_client": "ethernet",
+      "settings": { "ethernet": { "mode": "dhcp" } }
+    },
+    "channels": {
+      "A": { "voltage": 24 },
+      "B": { "voltage": 24 }
     }
   },
 
-  // ==== Device configuration ====
-  "config": {
-    // Which setup guide built this config ("custom" = no guide / manual setup).
-    "guide": "cloudgauge2",
-    // Network & server settings for this device.
-    "connection": {
-      "server": {
-        // On-site server the device talks to.
-        "local":  { "enabled": false, "host": "192.168.1.183", "port": 3000 },
-        // Cloud server template (not editable in the UI yet — leave host blank until used).
-        "global": { "host": "", "port": 443 }
-      },
-      // Which interface provides internet: "wifi" or "ethernet".
-      "internet_client": "ethernet",
-      "settings": {
-        // WiFi credentials. enabled=false leaves the radio off.
-        "wifi": { "enabled": false, "ssid": "", "password": "" },
-        "ethernet": {
-          // modes: "dhcp" (auto) | "static" (set ip/gateway/subnet) | "local-link"
-          "mode": "dhcp"
-        },
-        // Bluetooth Low Energy for the phone app / console.
-        "bluetooth": { "enabled": false },
-        // Serial modem — placeholder for future cellular hardware. Ignored by firmware until supported.
-        "modem": { "enabled": false, "apn": "", "port": "", "baud": 115200 }
-      }
-    },
-    // Supply voltage per channel. Applies to every input on that channel.
-    "channels": {
-      "A": {
-        "voltage": 24
-      },
-      "B": {
-        "voltage": 24
-      }
-    }
-  },
-  // ==== Rules, grouped by the solution that created them ====
   "groups": [
     {
       "id": "probe_1",
@@ -60,178 +27,24 @@
         "alarm_unit": "%",
         "low_level": 10,
         "overfill": 95,
-        // Fictional mm -> liter table for testing (approx. 5000 L tank,
-        // slightly non-linear so interpolation is visible). [mm, liters].
-        "lut": [
-          [0, 0],
-          [300, 350],
-          [750, 1100],
-          [1200, 2050],
-          [1800, 3300],
-          [2400, 4300],
-          [3000, 5000]
-        ]
+        "lut": [ [0,0],[1000,2000],[2000,4000],[3000,5000] ]
       },
-      "rules": [
-        {
-          "id": "low_level_alarm",
-          "name": "Low level alarm",
-          "enabled": true,
-          "trigger": {
-            "domain": "probe",
-            "input": "A1",
-            "type": "low_level"
-          },
-          "actions": [
-            {
-              "do": "notify",
-              "channel": "cloud/Nexus",
-              "message": "Probe 1: tank only 10% full",
-              "level": "alarm"
-            },
-            {
-              "do": "buzzer",
-              "sound": "warning"
-            }
-          ]
-        },
-        {
-          "id": "overfill_alarm",
-          "name": "Overfill alarm",
-          "enabled": true,
-          "trigger": {
-            "domain": "probe",
-            "input": "A1",
-            "type": "overfill"
-          },
-          "actions": [
-            {
-              "do": "notify",
-              "channel": "cloud/Nexus",
-              "message": "Probe 1: tank above 95% — overfill",
-              "level": "alarm"
-            },
-            {
-              "do": "buzzer",
-              "sound": "warning"
-            }
-          ]
-        },
-        {
-          "id": "routine_update",
-          "name": "Routine update",
-          "enabled": true,
-          "trigger": {
-            "domain": "timer",
-            "type": "interval",
-            "value": 60
-          },
-          "actions": [
-            {
-              "do": "read",
-              "input": "A1"
-            },
-            {
-              "do": "notify",
-              "channel": "cloud/Nexus",
-              "message": "Probe 1 level update",
-              "level": "info"
-            }
-          ]
-        }
-      ]
+      "rules": []
     },
     {
-      "id": "probe_2",
-      "type": "probe",
-      "probe": {
-        "name": "Probe 2",
-        "input": "B1",
-        "probe_type": "mcs_level",
-        "media": "Diesel",
-        "density": 0.84,
-        "alarm_unit": "%",
-        "low_level": 10,
-        "overfill": 95,
-        // Fictional mm -> liter table for testing (approx. 2000 L tank).
-        // [mm, liters].
-        "lut": [
-          [0, 0],
-          [250, 200],
-          [600, 550],
-          [1000, 1000],
-          [1500, 1550],
-          [2000, 2000]
-        ]
+      "id": "fueling_1",
+      "type": "pump",
+      "channel": "B",
+      "pump": {
+        "name": "Pump 1",
+        "channel": "B",
+        "nozzle": "B1",
+        "pulse": "B2",
+        "relay": "relay_b",
+        "pulses_per_litre": 10,
+        "preset_litres": 0
       },
-      "rules": [
-        {
-          "id": "low_level_alarm",
-          "name": "Low level alarm",
-          "enabled": true,
-          "trigger": {
-            "domain": "probe",
-            "input": "B1",
-            "type": "low_level"
-          },
-          "actions": [
-            {
-              "do": "notify",
-              "channel": "cloud/Nexus",
-              "message": "Probe 2: tank only 10% full",
-              "level": "alarm"
-            },
-            {
-              "do": "buzzer",
-              "sound": "warning"
-            }
-          ]
-        },
-        {
-          "id": "overfill_alarm",
-          "name": "Overfill alarm",
-          "enabled": true,
-          "trigger": {
-            "domain": "probe",
-            "input": "B1",
-            "type": "overfill"
-          },
-          "actions": [
-            {
-              "do": "notify",
-              "channel": "cloud/Nexus",
-              "message": "Probe 2: tank above 95% — overfill",
-              "level": "alarm"
-            },
-            {
-              "do": "buzzer",
-              "sound": "warning"
-            }
-          ]
-        },
-        {
-          "id": "routine_update",
-          "name": "Routine update",
-          "enabled": true,
-          "trigger": {
-            "domain": "timer",
-            "type": "interval",
-            "value": 60
-          },
-          "actions": [
-            {
-              "do": "read",
-              "input": "B1"
-            },
-            {
-              "do": "notify",
-              "channel": "cloud/Nexus",
-              "message": "Probe 2 level update",
-              "level": "info"
-            }
-          ]
-        }
-      ]
+      "rules": []
     }
   ]
 }
