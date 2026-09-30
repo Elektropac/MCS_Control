@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ArduinoJson.h>
+#include <string.h>
 #include "file_system.h"
 #include "LittleFS.h"
 
@@ -127,6 +128,57 @@ namespace config
             return false;
         }
         return true;
+    }
+
+    // -----------------------------------------------------------------
+    // On-demand read of ONE group's rules[] by group id.
+    //
+    // Streams the whole groups[] but keeps only id + rules for each group,
+    // then copies out just the matching group's rules into `out` as an
+    // array. Per config-arkitektur.md we handle one group's rules at a time
+    // so peak RAM stays bounded by a single group, not the whole file.
+    //
+    //   JsonDocument rules;
+    //   config_read_group_rules("probe_1", rules);
+    //   for (JsonObject r : rules.as<JsonArray>()) { ... }
+    //
+    // Returns true if the group was found (out is its rules array; may be
+    // empty). Returns false on error or unknown group.
+    // -----------------------------------------------------------------
+    bool config_read_group_rules(const char* group_id, JsonDocument& out)
+    {
+        out.clear();
+        if (file_system::is_mounted == false) return false;
+
+        File f = LittleFS.open(file_path, "r");
+        if (!f) return false;
+
+        // Filter: keep each group's id + rules only (probe/pump blocks skipped).
+        JsonDocument filter;
+        JsonObject gf = filter["groups"].add<JsonObject>();
+        gf["id"] = true;
+        gf["rules"] = true;
+
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(
+            doc, f, DeserializationOption::Filter(filter));
+        f.close();
+
+        if (err) {
+            log_info("[config] read_group_rules parse error: %s", err.c_str());
+            return false;
+        }
+
+        JsonArray outArr = out.to<JsonArray>();
+        for (JsonObject g : doc["groups"].as<JsonArray>()) {
+            const char* id = g["id"] | "";
+            if (strcmp(id, group_id) != 0) continue;
+            for (JsonObject r : g["rules"].as<JsonArray>()) {
+                outArr.add(r);
+            }
+            return true;
+        }
+        return false;   // group not found
     }
 
 } // namespace config

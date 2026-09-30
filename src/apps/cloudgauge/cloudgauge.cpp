@@ -14,6 +14,7 @@
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
 #include "platform/task_registry.h"
+#include "buzzer.h"
 #include <strings.h>   // strcasecmp
 // Forward-declare config namespace (defined in config.h, included by network_task)
 // We only read config::config and config::is_loaded — no need to re-include the header
@@ -87,6 +88,7 @@ struct LutPoint {
 
 struct ProbeState {
     char id[16];                // from config (e.g. "tank_1")
+    char group_id[24];          // config group id (for on-demand rules lookup)
     char input[4];              // physical input name ("A1", "B3")
     char type[20];              // MCS type name
     char media[16];             // liquid name ("Diesel", "AdBlue", "Water", ...)
@@ -104,6 +106,8 @@ struct ProbeState {
     uint8_t sample_count;
     float avg_ma;
     bool valid;                 // true if config parsed OK
+    char last_state[12];        // previous alarm state (for rule edge detection)
+    uint32_t last_timer_ms;     // last time interval-timer rules ran (millis)
 };
 
 static ProbeState s_probes[MAX_PROBES];
@@ -270,6 +274,8 @@ static void read_all_probes() {
 
 // --- Task ---
 
+static void evaluate_probe_rules(ProbeState& p);   // defined below
+
 static void cloudgauge_task(void* param) {
     (void)param;
 
@@ -290,6 +296,11 @@ static void cloudgauge_task(void* param) {
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(SAMPLE_INTERVAL_MS));
         read_all_probes();
+
+        // Evaluate rules for each probe (edge-detected alarms + timers).
+        for (uint8_t i = 0; i < s_num_probes; i++) {
+            if (s_probes[i].valid) evaluate_probe_rules(s_probes[i]);
+        }
 
         push_counter++;
         if (push_counter >= PUSH_INTERVAL_S) {
@@ -371,6 +382,114 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["fault"] = (strcmp(state, "fault") == 0);
 }
 
+// =======================================================
+// Rule engine — per-probe rules from the config groups
+// =======================================================
+// Triggers:
+//   domain "probe" + type low_level/overfill  -> fires when the probe's
+//     alarm state ENTERS that state (edge, not every tick)
+//   domain "timer" + interval <seconds>       -> fires periodically
+// Actions: buzzer (local), read (trigger a fresh sample log), notify
+//   (queued/logged — actual delivery needs the server link).
+// Rules are read on-demand per group (config_read_group_rules).
+
+namespace config {
+    bool config_read_group_rules(const char* group_id, JsonDocument& out);
+}
+
+// Current alarm state string for a probe (same math as probe_to_json).
+static const char* current_state(const ProbeState& p) {
+    float mm = input_to_mm(p);
+    float liters = mm_to_liters(p, mm);
+    float pct = level_percent(p, mm, liters);
+    float level = level_in_unit(p, mm, liters, pct);
+    return probe_state(p, level);
+}
+
+// Execute one action object { do: ..., ... } for a probe.
+static void run_action(const ProbeState& p, JsonObject action) {
+    const char* what = action["do"] | "";
+
+    if (strcmp(what, "buzzer") == 0) {
+        const char* sound = action["sound"] | "warning";
+        if (strcmp(sound, "ok") == 0)            buzzer_sound_ok();
+        else if (strcmp(sound, "error") == 0)    buzzer_sound_error();
+        else if (strcmp(sound, "complete") == 0) buzzer_sound_complete();
+        else                                     buzzer_sound_warning();
+        log_info("[rules] %s: buzzer '%s'", p.id, sound);
+
+    } else if (strcmp(what, "read") == 0) {
+        // A fresh reading is already maintained by the task; log current value.
+        log_info("[rules] %s: read -> %.2f mA", p.id, p.avg_ma);
+
+    } else if (strcmp(what, "notify") == 0) {
+        const char* msg = action["message"] | "";
+        const char* level = action["level"] | "info";
+        const char* channel = action["channel"] | "";
+        // Delivery goes over the server link when connected; otherwise logged.
+        if (web_socket::is_connected) {
+            JsonDocument n;
+            n["subject"] = "notify";
+            n["channel"] = channel;
+            n["level"] = level;
+            n["message"] = msg;
+            String out; serializeJson(n, out);
+            web_socket::sendMessage(out);
+            log_info("[rules] %s: notify sent (%s) '%s'", p.id, level, msg);
+        } else {
+            log_info("[rules] %s: notify queued (offline, %s) '%s'", p.id, level, msg);
+        }
+
+    } else {
+        log_info("[rules] %s: unknown action '%s'", p.id, what);
+    }
+}
+
+// Evaluate all rules for one probe. Called once per task cycle.
+static void evaluate_probe_rules(ProbeState& p) {
+    const char* state = current_state(p);
+    bool state_changed = (strcmp(state, p.last_state) != 0);
+    uint32_t now = millis();
+
+    // Load this probe's rules on demand (one group at a time).
+    JsonDocument rulesDoc;
+    if (config::config_read_group_rules(p.group_id, rulesDoc)) {
+        for (JsonObject rule : rulesDoc.as<JsonArray>()) {
+            if (!(rule["enabled"] | true)) continue;
+            JsonObject trig = rule["trigger"].as<JsonObject>();
+            const char* domain = trig["domain"] | "";
+            bool fire = false;
+
+            if (strcmp(domain, "probe") == 0) {
+                // Fire only on the edge INTO the matching state.
+                const char* ttype = trig["type"] | "";
+                if (state_changed && strcmp(ttype, state) == 0) fire = true;
+
+            } else if (strcmp(domain, "timer") == 0) {
+                uint32_t interval_ms = (uint32_t)(trig["value"] | 0) * 1000UL;
+                // Fire on first run and every interval thereafter.
+                if (interval_ms > 0 &&
+                    (p.last_timer_ms == 0 || (now - p.last_timer_ms) >= interval_ms)) {
+                    fire = true;
+                    p.last_timer_ms = now;
+                }
+            }
+
+            if (fire) {
+                for (JsonObject a : rule["actions"].as<JsonArray>()) {
+                    run_action(p, a);
+                }
+            }
+        }
+    }
+
+    // Remember the state for next-cycle edge detection.
+    if (state_changed) {
+        strncpy(p.last_state, state, sizeof(p.last_state) - 1);
+        p.last_state[sizeof(p.last_state) - 1] = '\0';
+    }
+}
+
 // --- Public API ---
 
 void cloudgauge_init() {
@@ -442,6 +561,9 @@ void cloudgauge_init() {
             ProbeState& p = s_probes[s_num_probes];
             strncpy(p.id, id, sizeof(p.id) - 1);
             p.id[sizeof(p.id) - 1] = '\0';
+            const char* gid = group["id"] | "";
+            strncpy(p.group_id, gid, sizeof(p.group_id) - 1);
+            p.group_id[sizeof(p.group_id) - 1] = '\0';
             strncpy(p.input, input, sizeof(p.input) - 1);
             p.input[sizeof(p.input) - 1] = '\0';
             strncpy(p.type, type, sizeof(p.type) - 1);
@@ -474,6 +596,8 @@ void cloudgauge_init() {
             p.sample_count = 0;
             p.avg_ma = 0.0f;
             p.valid = true;
+            strcpy(p.last_state, "init");   // forces first evaluation
+            p.last_timer_ms = 0;
 
             // Parse LUT (mm vs liter) if present in the probe block
             p.lut_count = 0;
@@ -540,6 +664,7 @@ String cloudgauge_get_all() {
     serializeJson(doc, result);
     return result;
 }
+
 
 String cloudgauge_get(const char* input_name) {
     for (uint8_t i = 0; i < s_num_probes; i++) {
