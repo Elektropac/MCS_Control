@@ -94,7 +94,9 @@ struct ProbeState {
     const ProbeTypeDef* type_def; // pointer to type definition
     float range_mm;             // measurement range in mm (from config or type default)
     float density;              // liquid density (1.0=water, 0.84=diesel, 0.75=petrol)
-    float min_level;            // alarm threshold in liters (0 = no alarm)
+    float low_level;            // low-level alarm threshold (in alarm_unit; 0 = off)
+    float overfill;             // overfill alarm threshold (in alarm_unit; 0 = off)
+    char alarm_unit[4];         // "%", "mm", or "L" — unit the thresholds are in
     LutPoint lut[MAX_LUT_POINTS]; // cm → liter lookup table
     uint8_t lut_count;          // number of valid LUT entries
     float samples[AVG_WINDOW];  // ring buffer of mA readings
@@ -301,12 +303,40 @@ static void cloudgauge_task(void* param) {
     }
 }
 
+// --- Level as percentage of the tank (0..100) ---
+// Uses liters/capacity when a LUT is present, otherwise mm/range.
+static float level_percent(const ProbeState& p, float mm, float liters) {
+    float capacity = (p.lut_count > 0) ? p.lut[p.lut_count - 1].liters : 0.0f;
+    if (capacity > 0.0f) return (liters / capacity) * 100.0f;
+    if (p.range_mm > 0.0f) return (mm / p.range_mm) * 100.0f;
+    return 0.0f;
+}
+
+// --- Current level expressed in the probe's alarm_unit ---
+// "%" -> percentage, "mm" -> millimetres, "L" -> litres.
+static float level_in_unit(const ProbeState& p, float mm, float liters, float pct) {
+    if (strcmp(p.alarm_unit, "mm") == 0) return mm;
+    if (strcmp(p.alarm_unit, "L") == 0)  return liters;
+    return pct;   // default "%"
+}
+
+// --- Derive alarm state: "overfill" | "low_level" | "normal" ---
+static const char* probe_state(const ProbeState& p, float level) {
+    if (p.overfill  > 0.0f && level >= p.overfill)  return "overfill";
+    if (p.low_level > 0.0f && level <= p.low_level) return "low_level";
+    return "normal";
+}
+
 // --- Build JSON for a single probe ---
 
 static void probe_to_json(JsonObject obj, const ProbeState& p) {
     float mm = input_to_mm(p);
     float liters = mm_to_liters(p, mm);
     float capacity = (p.lut_count > 0) ? p.lut[p.lut_count - 1].liters : 0.0f;
+    float pct = level_percent(p, mm, liters);
+    float level = level_in_unit(p, mm, liters, pct);
+    const char* state = probe_state(p, level);
+
     obj["id"] = p.id;
     obj["input"] = p.input;
     obj["type"] = p.type;
@@ -316,11 +346,15 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["range_mm"] = (int)p.range_mm;
     obj["liters"] = (int)liters;
     obj["capacity"] = (int)capacity;
-    obj["min_level"] = (int)p.min_level;
     obj["has_lut"] = p.lut_count > 0;
     obj["density"] = serialized(String(p.density, 2));
-    if (capacity > 0) obj["pct"] = serialized(String((liters / capacity) * 100.0f, 1));
-    if (p.min_level > 0) obj["low"] = liters < p.min_level;
+    obj["pct"] = serialized(String(pct, 1));
+    obj["alarm_unit"] = p.alarm_unit;
+    obj["low_level"] = serialized(String(p.low_level, 1));
+    obj["overfill"] = serialized(String(p.overfill, 1));
+    obj["state"] = state;
+    obj["low"] = (strcmp(state, "low_level") == 0);
+    obj["overfill_alarm"] = (strcmp(state, "overfill") == 0);
 }
 
 // --- Public API ---
@@ -415,7 +449,13 @@ void cloudgauge_init() {
             if (media_d > 0.0f)
                 log_info("[cloudgauge] Probe '%s' media '%s' -> density %.2f",
                          id, media, p.density);
-            p.min_level = 0.0f;   // alarms come from low_level/overfill later
+
+            // Alarm thresholds (in alarm_unit; default "%"). 0 = alarm off.
+            const char* unit = probe["alarm_unit"] | "%";
+            strncpy(p.alarm_unit, unit, sizeof(p.alarm_unit) - 1);
+            p.alarm_unit[sizeof(p.alarm_unit) - 1] = '\0';
+            p.low_level = probe["low_level"] | 0.0f;
+            p.overfill  = probe["overfill"]  | 0.0f;
             p.sample_idx = 0;
             p.sample_count = 0;
             p.avg_ma = 0.0f;
