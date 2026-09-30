@@ -38,6 +38,19 @@
     .badge { font-size: 10px; color: #fff; background: #2b8ab0; padding: 3px 9px; border-radius: 8px; }
     .badge.pump { background: #df9542; }
     .empty { color: #617381; font-size: 13px; padding: 8px 0; }
+
+    /* Config upload panel */
+    .upload-card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; }
+    .upload-card textarea { width: 100%; height: 180px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; border: 1px solid #cad6dc; border-radius: 10px; padding: 10px; resize: vertical; background: #fffdf8; color: #173447; }
+    .upload-row { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    .btn { padding: 9px 16px; border-radius: 10px; border: 2px solid #0c1b24; font-weight: 800; font-size: 13px; cursor: pointer; background: #f7f1e6; color: #173447; box-shadow: 3px 3px 0 #cfc7ba; }
+    .btn.primary { background: #dcefeb; color: #184654; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    .upload-status { font-size: 13px; font-weight: 700; }
+    .upload-status.ok { color: #2ecc71; }
+    .upload-status.err { color: #e74c3c; }
+    .upload-status.warn { color: #d68910; }
+    .upload-hint { font-size: 12px; color: #617381; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -94,6 +107,21 @@
   <div class="section">
     <div class="section-title">Pumps</div>
     <div class="list-card" id="pumps"><div class="empty">No pumps configured.</div></div>
+  </div>
+
+  <!-- Manual config upload -->
+  <div class="section">
+    <div class="section-title">Upload configuration</div>
+    <div class="upload-card">
+      <textarea id="cfgText" placeholder='Paste config JSON here, or choose a .json / .jsonc file below...'></textarea>
+      <div class="upload-row">
+        <input type="file" id="cfgFile" accept=".json,.jsonc,application/json" style="font-size:13px;">
+        <button class="btn" id="validateBtn" type="button">Validate</button>
+        <button class="btn primary" id="uploadBtn" type="button" disabled>Upload &amp; reboot</button>
+        <span class="upload-status" id="cfgStatus"></span>
+      </div>
+      <div class="upload-hint">The device saves the config to flash and reboots. JSONC comments are stripped before upload.</div>
+    </div>
   </div>
 
   <script>
@@ -179,6 +207,106 @@
     }
 
     load();
+
+    // ---- Manual config upload ----
+    const cfgText = document.getElementById('cfgText');
+    const cfgFile = document.getElementById('cfgFile');
+    const cfgStatus = document.getElementById('cfgStatus');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const validateBtn = document.getElementById('validateBtn');
+    let parsedConfig = null;
+
+    // Strip // line comments and /* */ block comments (JSONC) without
+    // touching those sequences inside string literals.
+    function stripJsonc(src) {
+      // Remove ANSI escape sequences and stray control chars (e.g. arrow-key
+      // "\x1b[A" junk pasted from a terminal) that aren't valid JSON.
+      src = src.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')      // ANSI CSI sequences
+               .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, ''); // other controls (keep \t \n \r)
+      let out = '', inStr = false, quote = '', i = 0;
+      while (i < src.length) {
+        const c = src[i], n = src[i + 1];
+        if (inStr) {
+          out += c;
+          if (c === '\\') { out += src[i + 1] || ''; i += 2; continue; }
+          if (c === quote) inStr = false;
+          i++; continue;
+        }
+        if (c === '"' || c === "'") { inStr = true; quote = c; out += c; i++; continue; }
+        if (c === '/' && n === '/') { while (i < src.length && src[i] !== '\n') i++; continue; }
+        if (c === '/' && n === '*') { i += 2; while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++; i += 2; continue; }
+        out += c; i++;
+      }
+      // remove trailing commas before } or ]
+      return out.replace(/,(\s*[}\]])/g, '$1');
+    }
+
+    function setStatus(msg, cls) {
+      cfgStatus.textContent = msg;
+      cfgStatus.className = 'upload-status ' + (cls || '');
+    }
+
+    function validate() {
+      const raw = cfgText.value.trim();
+      parsedConfig = null;
+      uploadBtn.disabled = true;
+      if (!raw) { setStatus('Nothing to validate', 'warn'); return false; }
+      try {
+        const obj = JSON.parse(stripJsonc(raw));
+        if (typeof obj !== 'object' || obj === null) throw new Error('not an object');
+        if (!obj.config && !obj.groups) {
+          setStatus('Valid JSON, but no "config"/"groups" — is this a device config?', 'warn');
+        } else {
+          const g = obj.config && obj.config.guide ? obj.config.guide : '?';
+          const n = Array.isArray(obj.groups) ? obj.groups.length : 0;
+          setStatus(`Valid — guide "${g}", ${n} group(s)`, 'ok');
+        }
+        parsedConfig = obj;
+        uploadBtn.disabled = false;
+        return true;
+      } catch (e) {
+        setStatus('Invalid JSON: ' + e.message, 'err');
+        return false;
+      }
+    }
+
+    cfgFile.addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => { cfgText.value = reader.result; validate(); };
+      reader.readAsText(f);
+    });
+
+    cfgText.addEventListener('input', () => { uploadBtn.disabled = true; setStatus(''); });
+    validateBtn.addEventListener('click', validate);
+
+    uploadBtn.addEventListener('click', async () => {
+      if (!parsedConfig && !validate()) return;
+      if (!confirm('Upload this config and reboot the device?')) return;
+      uploadBtn.disabled = true;
+      setStatus('Uploading...', 'warn');
+      try {
+        const r = await fetch(API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ subject: 'config_upload', data: parsedConfig })
+        });
+        const res = await r.json();
+        if (res && res.result) {
+          setStatus('Saved — device rebooting. Reloading in 8s...', 'ok');
+          setTimeout(() => location.reload(), 8000);
+        } else {
+          setStatus('Device error: ' + JSON.stringify(res), 'err');
+          uploadBtn.disabled = false;
+        }
+      } catch (e) {
+        // The reboot can drop the connection before the response arrives —
+        // treat a fetch failure after send as a likely-successful reboot.
+        setStatus('Upload sent; device may be rebooting. Reloading in 8s...', 'warn');
+        setTimeout(() => location.reload(), 8000);
+      }
+    });
   </script>
 </body>
 </html>
