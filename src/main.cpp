@@ -18,8 +18,8 @@ namespace config {
 #include "hardware/all_drivers_init.h"
 #include "platform/sampler.h"
 #include "apps/flow_guard/flow_guard.h"
-#include "apps/cloudgauge/cloudgauge.h"
-#include "apps/poseidon/poseidon.h"
+#include "apps/product_display/product_display.h"
+#include "apps/product_router/product_router.h"
 #include "platform/buttons_task.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
@@ -38,36 +38,9 @@ void setup() {
     flow_guard_init();              // flow guard state (cursor synced to sampler)
     all_drivers_init();             // probe I2C chips + init all peripherals
 
-    // --- Product router ---
-    // Read "product" from config to decide which apps to start
-    String product = "cloudgauge2";  // default
-    if (config::is_loaded && !config::config["product"].isNull()) {
-        product = config::config["product"].as<String>();
-    }
-    log_info("[main] Product: %s", product.c_str());
+    product_display_show_splash();  // show product image on OLED at boot
 
-    if (product == "cloudgauge2") {
-        cloudgauge_init();
-        flow_guard_start_task();
-        cloudgauge_start_task();
-    }
-    else if (product == "poseidon") {
-        poseidon_init();
-        poseidon_start_task();
-    }
-    else if (product == "micro_fms") {
-        // TODO: pump_controller_init() + cloudgauge for probes
-        cloudgauge_init();
-        flow_guard_start_task();
-        cloudgauge_start_task();
-        log_info("[main] micro_fms: running cloudgauge for now, pump_controller TBD");
-    }
-    else {
-        log_error("[main] Unknown product '%s', defaulting to cloudgauge2", product.c_str());
-        cloudgauge_init();
-        flow_guard_start_task();
-        cloudgauge_start_task();
-    }
+    start_product_apps();           // start the apps for the configured product
 
     // Platform tasks (always run regardless of product)
     buttons_start_task();           // polls button ADC every 50ms

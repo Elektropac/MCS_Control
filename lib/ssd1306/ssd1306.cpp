@@ -107,6 +107,14 @@ void oled_draw_box(int x, int y, int w, int h) {
     if (s_oled) s_oled->drawBox(x, y, w, h);
 }
 
+void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h) {
+    // U8g2 drawBitmap expects MSB-first data (same as Adafruit drawBitmap).
+    // cnt = bytes per row = w / 8.
+    if (s_oled && bitmap && w > 0 && h > 0) {
+        s_oled->drawBitmap(x, y, w / 8, h, bitmap);
+    }
+}
+
 void oled_set_enabled(bool enabled) {
     s_enabled = enabled;
     if (!enabled && s_oled) {

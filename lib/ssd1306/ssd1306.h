@@ -38,6 +38,10 @@ void oled_draw_line(int x0, int y0, int x1, int y1);
 void oled_draw_frame(int x, int y, int w, int h);
 void oled_draw_box(int x, int y, int w, int h);
 
+// Draw a monochrome bitmap (MSB-first, e.g. Adafruit drawBitmap format).
+// w must be a multiple of 8. Data is in PROGMEM.
+void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h);
+
 // Enable/disable display
 void oled_set_enabled(bool enabled);
 bool oled_is_enabled();

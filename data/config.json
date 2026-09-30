@@ -1,7 +1,17 @@
 {
     // ============================================================
-    // ACTIVE CONFIG — CloudGauge 2
+    // TRANSITION CONFIG — CloudGauge 2
+    // Holds BOTH the old shape (product + probes[], so the cloudgauge
+    // measurement keeps running) AND a "config" block with "guide"
+    // (read on-demand by product_display to show the OLED splash).
     // ============================================================
+
+    // New-format block — read on-demand (config_read_string).
+    "config": {
+        "guide": "cloudgauge2"
+    },
+
+    // --- Old-format fields below keep the current firmware working ---
     "product": "cloudgauge2",
     "version": 1,
     "name": "CloudGauge Dev",
@@ -11,27 +21,16 @@
     },
     "connection": {
         "server": {
-            "local": {
-                "host": "192.168.10.129",
-                "port": 3000,
-                "path": "/ws"
-            },
-            "global": {
-                "host": "echo.websocket.org",
-                "port": 443,
-                "path": "/ws"
-            }
+            "local":  { "host": "192.168.10.129", "port": 3000, "path": "/ws" },
+            "global": { "host": "echo.websocket.org", "port": 443, "path": "/ws" }
         },
         "internet_client": "ethernet",
         "settings": {
-            "ethernet": {
-                "dhcp": false
-            }
+            "ethernet": { "dhcp": false, "ip": "192.168.1.200", "gateway": "192.168.1.1", "subnet": "255.255.255.0" }
         }
     },
     "probes": [
         { "id": "tank_1", "type": "mcs_level", "input": "A1",
-          // "lut": mm vs liter — målt med pejlestang, max 10 punkter
           "lut": [[0, 0], [300, 1500], [600, 3200], [900, 5000], [1200, 7000], [1500, 9200], [1800, 11500], [2100, 14000], [2400, 16500], [2700, 19000]]
         },
         { "id": "tank_2", "type": "mcs_level", "input": "A2" },
@@ -42,71 +41,4 @@
         { "id": "tank_7", "type": "mcs_level", "input": "B3" },
         { "id": "tank_8", "type": "mcs_level", "input": "B4" }
     ]
-
-    // ============================================================
-    // EXAMPLE: Micro FMS — pump controller with optional probes
-    // To use: change "product" to "micro_fms", remove cloudgauge
-    // probes above, uncomment pumps below
-    // ============================================================
-    //
-    // "product": "micro_fms",
-    // "channels": {
-    //     "A": { "voltage": 12 },
-    //     "B": { "voltage": 12 }
-    // },
-    // "pumps": [
-    //     {
-    //         "id": "pump_1",
-    //         "nozzle": "A1",
-    //         "pulser": "A2",
-    //         "relay": "A",
-    //         "debounce_ms": 20,
-    //         "update_interval_s": 5,
-    //         "pulses_per_liter": 100
-    //     },
-    //     {
-    //         "id": "pump_2",
-    //         "nozzle": "B1",
-    //         "pulser": "B2",
-    //         "relay": "B",
-    //         "debounce_ms": 20,
-    //         "update_interval_s": 5,
-    //         "pulses_per_liter": 100
-    //     }
-    // ],
-    // "probes": [
-    //     { "id": "tank_1", "type": "mcs_level", "input": "A3" },
-    //     { "id": "tank_2", "type": "mcs_level", "input": "B3" }
-    // ]
-
-    // ============================================================
-    // EXAMPLE: Poseidon — raw I/O gateway, no app logic
-    // Server controls inputs/outputs directly by name
-    // ============================================================
-    //
-    // "product": "poseidon",
-    // "channels": {
-    //     "A": { "voltage": 24 },
-    //     "B": { "voltage": 12 }
-    // },
-    // "io": [
-    //     { "pin": "A1", "name": "Valve Control",  "mode": "output" },
-    //     { "pin": "A2", "name": "Flow Sensor",    "mode": "analog_current", "interval_s": 10 },
-    //     { "pin": "A3", "name": "Door Switch",    "mode": "digital", "pullup": true },
-    //     { "pin": "A4", "name": "Tank Level",     "mode": "analog_current", "interval_s": 30 },
-    //     { "pin": "B1", "name": "Overfill Alarm", "mode": "digital", "pullup": true },
-    //     { "pin": "B2", "name": "Pump Enable",    "mode": "output" },
-    //     { "pin": "B3", "name": "Temp Sensor",    "mode": "analog_voltage", "interval_s": 60 },
-    //     { "pin": "B4", "name": "Unused",         "mode": "disabled" }
-    // ],
-    // "relays": {
-    //     "A": { "enabled": true, "name": "Main Pump" },
-    //     "B": { "enabled": true, "name": "Backup Valve" }
-    // },
-    // // IFTTT rules — if condition met, execute action (evaluated every second)
-    // "rules": [
-    //     { "name": "Overfill stop",  "if_pin": "A4", "if_field": "ma", "if_op": ">",  "if_value": 18, "then_pin": "RA", "then_action": "off" },
-    //     { "name": "Door alarm",     "if_pin": "B1", "if_field": "state", "if_op": "==", "if_value": 0, "then_pin": "A1", "then_action": "high" },
-    //     { "name": "Low level stop", "if_pin": "A4", "if_field": "ma", "if_op": "<",  "if_value": 5,  "then_pin": "RB", "then_action": "off" }
-    // ]
 }
