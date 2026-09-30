@@ -14,6 +14,7 @@
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
 #include "platform/task_registry.h"
+#include <strings.h>   // strcasecmp
 // Forward-declare config namespace (defined in config.h, included by network_task)
 // We only read config::config and config::is_loaded — no need to re-include the header
 namespace config {
@@ -88,6 +89,7 @@ struct ProbeState {
     char id[16];                // from config (e.g. "tank_1")
     char input[4];              // physical input name ("A1", "B3")
     char type[20];              // MCS type name
+    char media[16];             // liquid name ("Diesel", "AdBlue", "Water", ...)
     uint8_t channel;            // ADC/input channel index 0-7
     const ProbeTypeDef* type_def; // pointer to type definition
     float range_mm;             // measurement range in mm (from config or type default)
@@ -127,6 +129,18 @@ static const ProbeTypeDef* find_probe_type(const char* type_name) {
         }
     }
     return nullptr;
+}
+
+// --- Map media name to density (kg/L) ---
+// Mirrors the Setup Engine CG2_KNOWN_DENSITY table. "Custom" (or any
+// unknown/empty media) returns <= 0 so the caller falls back to the
+// density value from config.
+static float media_to_density(const char* media) {
+    if (!media || !media[0]) return -1.0f;
+    if (strcasecmp(media, "Diesel") == 0) return 0.84f;
+    if (strcasecmp(media, "AdBlue") == 0) return 1.09f;
+    if (strcasecmp(media, "Water")  == 0) return 1.00f;
+    return -1.0f;   // Custom / unknown -> fall back to config density
 }
 
 // --- Map channel voltage from config ---
@@ -296,6 +310,7 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["id"] = p.id;
     obj["input"] = p.input;
     obj["type"] = p.type;
+    obj["media"] = p.media;
     obj["ma"] = serialized(String(p.avg_ma, 2));
     obj["mm"] = (int)mm;
     obj["range_mm"] = (int)p.range_mm;
@@ -386,8 +401,20 @@ void cloudgauge_init() {
             p.channel = (uint8_t)ch;
             p.type_def = typeDef;
             p.range_mm = probe["range_mm"] | typeDef->default_range_mm;
-            float d = probe["density"] | 1.0f;
+
+            // Media drives density (option B): look up density from the media
+            // name; fall back to the config "density" value for Custom/unknown.
+            const char* media = probe["media"] | "";
+            strncpy(p.media, media, sizeof(p.media) - 1);
+            p.media[sizeof(p.media) - 1] = '\0';
+
+            float media_d = media_to_density(media);
+            float cfg_d   = probe["density"] | 1.0f;
+            float d = (media_d > 0.0f) ? media_d : cfg_d;
             p.density = (d > 0.1f && d <= 2.0f) ? d : 1.0f;  // sanity check
+            if (media_d > 0.0f)
+                log_info("[cloudgauge] Probe '%s' media '%s' -> density %.2f",
+                         id, media, p.density);
             p.min_level = 0.0f;   // alarms come from low_level/overfill later
             p.sample_idx = 0;
             p.sample_count = 0;

@@ -69,6 +69,11 @@
       return 'ρ ' + d.toFixed(2);
     }
 
+    // Prefer the media name from config; fall back to guessing from density.
+    function mediaLabel(p) {
+      return (p.media && p.media.length) ? p.media : densityToMedia(p.density);
+    }
+
     async function api(subject) {
       try {
         const r = await fetch(API, {
@@ -93,7 +98,7 @@
           <div class="tank-card" id="card-${i}">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div class="id">${p.id}</div>
-              <span class="type-badge">${densityToMedia(p.density)}</span>
+              <span class="type-badge">${mediaLabel(p)}</span>
             </div>
             <div class="value" id="val-${i}">—</div>
             <div class="sub" id="sub-${i}">Waiting...</div>
