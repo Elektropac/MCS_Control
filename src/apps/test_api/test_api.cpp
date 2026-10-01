@@ -11,6 +11,7 @@
 #include "hardware/serial_control.h"
 #include "hardware/version.h"
 #include "platform/sampler.h"
+#include "buttons.h"
 
 namespace test_api {
 
@@ -884,6 +885,19 @@ static String probe_live_json(JsonDocument& json_packet) {
     return result;
 }
 
+static String buttons_test_json() {
+    // Single fast read: raw ADC + which button it maps to. The test page
+    // polls this repeatedly to show the live pressed button.
+    int adc = buttons_read_adc();
+    Button b = buttons_read_raw();
+    JsonDocument doc;
+    doc["adc"] = adc;
+    doc["button"] = buttons_to_text(b);  // "UP"/"DOWN"/"LEFT"/"RIGHT"/"OK"/"NONE"
+    String result;
+    serializeJson(doc, result);
+    return result;
+}
+
 String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_i2c_scan")     return i2c_scan_json();
     if (function_name == "test_adc_read")     return adc_read_json();
@@ -898,6 +912,7 @@ String handle(const String& function_name, JsonDocument& json_packet) {
     if (function_name == "test_calibrate_gain") return calibrate_gain_json(json_packet);
     if (function_name == "test_fueling")      return fueling_sim_json(json_packet);
     if (function_name == "test_probes")       return probe_live_json(json_packet);
+    if (function_name == "test_buttons")      return buttons_test_json();
     return ""; // not handled
 }
 

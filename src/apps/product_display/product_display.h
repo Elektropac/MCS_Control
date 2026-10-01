@@ -15,3 +15,18 @@
 // Show the product splash for the configured guide, then hold it briefly so
 // it's visible at boot. No-op (returns immediately) if the guide is unknown.
 void product_display_show_splash();
+
+// -----------------------------------------------------------------
+// Display power management
+//
+// The OLED turns itself OFF after a period of inactivity (default 10 min)
+// to protect the panel and save power. Any button press wakes it again.
+// -----------------------------------------------------------------
+
+// Start the background task that powers the OLED off after the inactivity
+// timeout. Call once at boot, after the splash.
+void product_display_start_power_manager();
+
+// Register user activity (e.g. a button press): resets the inactivity timer
+// and, if the panel was off, turns it back on and redraws the splash.
+void product_display_mark_activity();

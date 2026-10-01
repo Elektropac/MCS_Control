@@ -40,3 +40,6 @@ Button buttons_get_event();
 
 // Convert button to string (for debug)
 const char* buttons_to_text(Button btn);
+
+// Raw averaged ADC value on the button pin (for calibration/diagnostics)
+int buttons_read_adc();

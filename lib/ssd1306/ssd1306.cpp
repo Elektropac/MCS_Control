@@ -1,5 +1,7 @@
 #include "ssd1306.h"
 #include <U8g2lib.h>
+#include <Arduino.h>
+#include "logging.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -32,14 +34,38 @@ static uint8_t line_y(uint8_t line) {
 // ------------------------------------------
 
 void oled_init(uint8_t clk, uint8_t din, uint8_t cs, uint8_t dc, uint8_t rst) {
+    // Explicit hardware reset BEFORE handing the pin to U8g2.
+    //
+    // A hard power-cut (pulling the plug) can leave the SSD1306 controller
+    // latched in a bad state that U8g2's own begin() does not always clear.
+    // Driving RST low -> high with proper settle time guarantees the panel
+    // starts from a known state regardless of how power was lost.
+    if (rst != U8X8_PIN_NONE) {
+        pinMode(rst, OUTPUT);
+        digitalWrite(rst, HIGH);
+        delay(10);
+        digitalWrite(rst, LOW);   // assert reset
+        delay(10);
+        digitalWrite(rst, HIGH);  // release reset
+        delay(10);
+    }
+
     static U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI display(
         U8G2_R2, clk, din, cs, dc, rst
     );
     s_oled = &display;
-    s_oled->begin();
+
+    bool ok = s_oled->begin();
+    if (!ok) {
+        log_error("  --  OLED (SSD1306) begin() FAILED");
+        s_oled = nullptr;   // so draw calls stay honest no-ops, not silent lies
+        return;
+    }
+
     s_oled->setFont(u8g2_font_6x10_tr);
     s_oled->clearBuffer();
     s_oled->sendBuffer();
+    log_info("  OK  OLED (SSD1306 128x64)");
 }
 
 void oled_begin() {
@@ -117,10 +143,26 @@ void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h) {
 
 void oled_set_enabled(bool enabled) {
     s_enabled = enabled;
-    if (!enabled && s_oled) {
+    if (!s_oled) return;
+
+    if (enabled) {
+        // Wake the panel back up. Caller should redraw after this.
+        s_oled->setPowerSave(0);   // display ON (SSD1306 0xAF)
+    } else {
+        // Real power-down: clear what's shown, then turn the panel OFF.
+        // setPowerSave(1) stops the panel driving pixels (SSD1306 0xAE) —
+        // lower current and a truly dark screen, not just black pixels.
         s_oled->clearBuffer();
         s_oled->sendBuffer();
+        s_oled->setPowerSave(1);   // display OFF
     }
+}
+
+// Explicit panel on/off without touching the enabled flag's draw-gating.
+// true  = panel ON  (pixels driven again; redraw after calling)
+// false = panel OFF (dark, low power)
+void oled_power(bool on) {
+    if (s_oled) s_oled->setPowerSave(on ? 0 : 1);
 }
 
 bool oled_is_enabled() {

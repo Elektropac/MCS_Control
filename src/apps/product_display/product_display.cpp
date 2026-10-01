@@ -16,6 +16,13 @@ namespace config {
 // How long the boot splash stays on screen.
 static const uint32_t SPLASH_HOLD_MS = 2500;
 
+// Turn the panel off after this much inactivity (10 minutes).
+static const uint32_t INACTIVITY_TIMEOUT_MS = 10UL * 60UL * 1000UL; // 10 min
+
+// Shared state for the power manager.
+static volatile uint32_t s_last_activity_ms = 0;   // millis() of last activity
+static volatile bool     s_panel_on         = true;
+
 // Map a guide name to its 128x64 bitmap. Returns nullptr if unknown.
 // Product names: CloudGauge2, Sapphire Lite Mini, Poseidon, Bridge.
 static const unsigned char* bitmap_for_guide(const String& guide) {
@@ -24,6 +31,18 @@ static const unsigned char* bitmap_for_guide(const String& guide) {
     if (guide == "poseidon")           return poseidon_128x64;
     if (guide == "bridge")             return bridge_128x64;
     return nullptr;
+}
+
+// Draw the product splash for the current guide (no delay). Returns true if
+// an image was drawn. Shared by boot splash and wake-from-sleep redraw.
+static bool draw_product_splash() {
+    String guide = config::config_read_string("config", "guide", "");
+    const unsigned char* bmp = bitmap_for_guide(guide);
+    if (!bmp) return false;
+    oled_begin();
+    oled_draw_bitmap(0, 0, bmp, 128, 64);
+    oled_end();
+    return true;
 }
 
 void product_display_show_splash() {
@@ -40,4 +59,38 @@ void product_display_show_splash() {
     oled_draw_bitmap(0, 0, bmp, 128, 64);
     oled_end();
     vTaskDelay(pdMS_TO_TICKS(SPLASH_HOLD_MS));
+}
+
+// -----------------------------------------------------------------
+// Power manager
+// -----------------------------------------------------------------
+void product_display_mark_activity() {
+    s_last_activity_ms = millis();
+    if (!s_panel_on) {
+        // Draw into the (hidden) buffer first, THEN power the panel on, so the
+        // user never sees the stale previous frame flash before the splash.
+        draw_product_splash();   // fills + sends buffer while panel is off
+        oled_power(true);        // reveal the already-correct image
+        s_panel_on = true;
+        log_info("[product_display] woke panel on activity");
+    }
+}
+
+static void display_power_task(void* param) {
+    (void)param;
+    for (;;) {
+        if (s_panel_on &&
+            (millis() - s_last_activity_ms) >= INACTIVITY_TIMEOUT_MS) {
+            oled_power(false);
+            s_panel_on = false;
+            log_info("[product_display] inactivity timeout — panel off");
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void product_display_start_power_manager() {
+    s_last_activity_ms = millis();   // start the clock now (after splash)
+    s_panel_on = true;
+    xTaskCreate(display_power_task, "disp_power", 2048, nullptr, 1, nullptr);
 }

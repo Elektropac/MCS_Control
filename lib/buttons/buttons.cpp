@@ -2,13 +2,15 @@
 
 // ------------------------------------------
 // ADC center values for each button
+// Measured on hardware (2026-10-01), mapping corrected to physical buttons:
+// OK~2, DOWN~614, RIGHT~1052, UP~1391, LEFT~1656. Idle rests ~1872.
 // ------------------------------------------
-static const int BTN_OK_CENTER    = 0;
-static const int BTN_RIGHT_CENTER = 800;
-static const int BTN_LEFT_CENTER  = 1600;
-static const int BTN_DOWN_CENTER  = 2350;
-static const int BTN_UP_CENTER    = 3200;
-static const int BTN_TOLERANCE    = 200;
+static const int BTN_OK_CENTER    = 2;
+static const int BTN_DOWN_CENTER  = 614;
+static const int BTN_RIGHT_CENTER = 1052;
+static const int BTN_UP_CENTER    = 1391;
+static const int BTN_LEFT_CENTER  = 1656;
+static const int BTN_TOLERANCE    = 120;
 
 // ------------------------------------------
 // Repeat timing
@@ -116,6 +118,15 @@ Button buttons_get_event() {
     }
 
     return BTN_NONE;
+}
+
+int buttons_read_adc() {
+    int samples = 0;
+    for (int i = 0; i < 5; i++) {
+        samples += analogRead(s_pin);
+        delayMicroseconds(300);
+    }
+    return samples / 5;
 }
 
 const char* buttons_to_text(Button btn) {

@@ -40,6 +40,7 @@ void setup() {
     all_drivers_init();             // probe I2C chips + init all peripherals
 
     product_display_show_splash();  // show product image on OLED at boot
+    product_display_start_power_manager();  // auto-off after inactivity, wake on button
 
     channels_setup();               // device-level: set channel supply voltage
     start_product_apps();           // start the apps for what the config contains

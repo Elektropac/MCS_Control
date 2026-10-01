@@ -45,3 +45,7 @@ void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h);
 // Enable/disable display
 void oled_set_enabled(bool enabled);
 bool oled_is_enabled();
+
+// Turn the physical panel on/off (SSD1306 power-save). ON = pixels driven
+// (redraw after calling), OFF = dark + low power.
+void oled_power(bool on);

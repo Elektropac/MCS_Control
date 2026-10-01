@@ -21,6 +21,14 @@
     #output { background: #10202b; color: #7fe0a0; border-radius: 12px; padding: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre-wrap; overflow-y: auto; line-height: 1.5; }
     .pass { color: #3fb950; } .fail { color: #f85149; } .info { color: #79c0ff; } .warn { color: #d29922; }
 
+    /* Button-test D-pad cells */
+    .btn-cell { height: 60px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: #476071; background: #f7f1e6;
+      border: 2px solid #0c1b24; border-radius: 12px; box-shadow: 3px 3px 0 #cfc7ba;
+      transition: all .05s; }
+    .btn-cell.active { background: #3fb950; color: #fff; transform: translate(2px,2px);
+      box-shadow: 1px 1px 0 #cfc7ba; }
+
     /* Two-column layout: controls left, output pinned right */
     .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
     .right { position: sticky; top: 20px; }
@@ -52,6 +60,30 @@
     <button class="btn" onclick="run('test_i2c_scan')">🔍 I2C Scan</button>
     <button class="btn" onclick="run('test_adc_read')">📊 ADC Read</button>
     <button class="btn" onclick="run('test_version')">📋 Version</button>
+  </div>
+
+  <h2>Button Test</h2>
+  <div style="color:#476071;font-size:13px;margin-bottom:6px;">Hold a button down to see it light up (short taps may be missed).</div>
+  <div class="grid">
+    <button class="btn" onclick="btnStart()">▶ Start</button>
+    <button class="btn" onclick="btnStop()">⏹ Stop</button>
+  </div>
+  <div id="btn-pad" style="display:none;margin:10px 0;">
+    <div style="display:grid;grid-template-columns:repeat(3,60px);grid-gap:6px;justify-content:center;">
+      <div></div>
+      <div class="btn-cell" id="bc-UP">▲</div>
+      <div></div>
+      <div class="btn-cell" id="bc-LEFT">◀</div>
+      <div class="btn-cell" id="bc-OK">OK</div>
+      <div class="btn-cell" id="bc-RIGHT">▶</div>
+      <div></div>
+      <div class="btn-cell" id="bc-DOWN">▼</div>
+      <div></div>
+    </div>
+    <div style="text-align:center;margin-top:8px;color:#7ec8e3;">
+      Pressed: <span id="btn-name" style="font-weight:bold;color:#eee;">NONE</span>
+      &nbsp;·&nbsp; ADC: <span id="btn-adc" style="color:#eee;">—</span>
+    </div>
   </div>
 
   <h2>Self-Test</h2>
@@ -187,6 +219,36 @@
 
     let fuelInterval = null;
     let probeInterval = null;
+
+    let btnInterval = null;
+    function btnStart() {
+      document.getElementById('btn-pad').style.display = 'block';
+      log('🎮 Button test — press the buttons', 'pass');
+      if (btnInterval) clearInterval(btnInterval);
+      btnInterval = setInterval(btnPoll, 60);
+    }
+    function btnStop() {
+      if (btnInterval) { clearInterval(btnInterval); btnInterval = null; }
+      document.getElementById('btn-pad').style.display = 'none';
+      log('🎮 Button test stopped', 'info');
+    }
+    async function btnPoll() {
+      try {
+        const r = await fetch('/api/function_silo', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subject: 'test_buttons'})
+        });
+        const json = await r.json();
+        const name = json.button || 'NONE';
+        document.getElementById('btn-name').textContent = name;
+        document.getElementById('btn-adc').textContent = (json.adc !== undefined ? json.adc : '—');
+        ['UP','DOWN','LEFT','RIGHT','OK'].forEach(k => {
+          const el = document.getElementById('bc-' + k);
+          if (el) el.classList.toggle('active', k === name);
+        });
+      } catch(e) {}
+    }
 
     async function probeStart() {
       const mode = document.getElementById('probe-mode').value;

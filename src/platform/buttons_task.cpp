@@ -1,12 +1,14 @@
 #include "buttons_task.h"
 #include "buttons.h"
 #include "platform/task_registry.h"
+#include "apps/product_display/product_display.h"
 
 static void buttons_task(void* param) {
     (void)param;
     for (;;) {
         Button btn = buttons_get_event();
         if (btn != BTN_NONE) {
+            product_display_mark_activity();  // wake the OLED on any press
             // TODO: send to menu or interface
         }
         vTaskDelay(pdMS_TO_TICKS(50));
