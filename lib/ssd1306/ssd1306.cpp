@@ -2,6 +2,8 @@
 #include <U8g2lib.h>
 #include <Arduino.h>
 #include "logging.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -9,6 +11,12 @@
 // Display instance — created at init
 // ------------------------------------------
 static U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI* s_oled = nullptr;
+
+// Serialises all access to the single U8g2 frame buffer + panel power, so
+// multiple tasks (menu, splash/power manager) can never draw at once.
+static SemaphoreHandle_t s_mutex = nullptr;
+static inline void oled_lock()   { if (s_mutex) xSemaphoreTakeRecursive(s_mutex, portMAX_DELAY); }
+static inline void oled_unlock() { if (s_mutex) xSemaphoreGiveRecursive(s_mutex); }
 
 // ------------------------------------------
 // Layout constants
@@ -34,6 +42,7 @@ static uint8_t line_y(uint8_t line) {
 // ------------------------------------------
 
 void oled_init(uint8_t clk, uint8_t din, uint8_t cs, uint8_t dc, uint8_t rst) {
+    if (!s_mutex) s_mutex = xSemaphoreCreateRecursiveMutex();
     // Explicit hardware reset BEFORE handing the pin to U8g2.
     //
     // A hard power-cut (pulling the plug) can leave the SSD1306 controller
@@ -69,6 +78,7 @@ void oled_init(uint8_t clk, uint8_t din, uint8_t cs, uint8_t dc, uint8_t rst) {
 }
 
 void oled_begin() {
+    oled_lock();                     // held until oled_end()
     if (s_oled) s_oled->clearBuffer();
 }
 
@@ -76,6 +86,7 @@ void oled_end() {
     if (s_oled && s_enabled) {
         s_oled->sendBuffer();
     }
+    oled_unlock();
 }
 
 void oled_print_left(uint8_t line, const char* text) {
@@ -121,6 +132,28 @@ void oled_printf_right(uint8_t line, const char* fmt, ...) {
     oled_print_right(line, buf);
 }
 
+void oled_draw_str(int x, int y, const char* text) {
+    if (s_oled) s_oled->drawStr(x, y, text);
+}
+
+int oled_text_width(const char* text) {
+    return s_oled ? s_oled->getStrWidth(text) : 0;
+}
+
+void oled_draw_str_center(int y, const char* text) {
+    if (!s_oled) return;
+    int w = s_oled->getStrWidth(text);
+    s_oled->drawStr((DISPLAY_W - w) / 2, y, text);
+}
+
+void oled_set_draw_color(uint8_t color) {
+    if (s_oled) s_oled->setDrawColor(color);
+}
+
+void oled_fill_screen() {
+    if (s_oled) s_oled->drawBox(0, 0, 128, 64);
+}
+
 void oled_draw_line(int x0, int y0, int x1, int y1) {
     if (s_oled) s_oled->drawLine(x0, y0, x1, y1);
 }
@@ -133,6 +166,14 @@ void oled_draw_box(int x, int y, int w, int h) {
     if (s_oled) s_oled->drawBox(x, y, w, h);
 }
 
+void oled_draw_rframe(int x, int y, int w, int h, int r) {
+    if (s_oled) s_oled->drawRFrame(x, y, w, h, r);
+}
+
+void oled_draw_rbox(int x, int y, int w, int h, int r) {
+    if (s_oled) s_oled->drawRBox(x, y, w, h, r);
+}
+
 void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h) {
     // U8g2 drawBitmap expects MSB-first data (same as Adafruit drawBitmap).
     // cnt = bytes per row = w / 8.
@@ -142,8 +183,9 @@ void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h) {
 }
 
 void oled_set_enabled(bool enabled) {
+    oled_lock();
     s_enabled = enabled;
-    if (!s_oled) return;
+    if (!s_oled) { oled_unlock(); return; }
 
     if (enabled) {
         // Wake the panel back up. Caller should redraw after this.
@@ -156,13 +198,16 @@ void oled_set_enabled(bool enabled) {
         s_oled->sendBuffer();
         s_oled->setPowerSave(1);   // display OFF
     }
+    oled_unlock();
 }
 
 // Explicit panel on/off without touching the enabled flag's draw-gating.
 // true  = panel ON  (pixels driven again; redraw after calling)
 // false = panel OFF (dark, low power)
 void oled_power(bool on) {
+    oled_lock();
     if (s_oled) s_oled->setPowerSave(on ? 0 : 1);
+    oled_unlock();
 }
 
 bool oled_is_enabled() {

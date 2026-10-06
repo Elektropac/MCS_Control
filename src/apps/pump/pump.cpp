@@ -258,3 +258,12 @@ String pump_get(const char* id) {
     }
     return "{\"error\":\"pump not found\"}";
 }
+
+// True if any pump has a nozzle lifted or its relay on (fueling in progress).
+bool pump_any_active() {
+    for (uint8_t i = 0; i < s_num_pumps; i++) {
+        if (!s_pumps[i].valid) continue;
+        if (s_pumps[i].nozzle_lifted || s_pumps[i].relay_on) return true;
+    }
+    return false;
+}

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MCS Control — Firmware Update</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    h1 { font-size: 22px; font-weight: 900; color: #173447; }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
+    .nav a.active { background: #dcefeb; color: #184654; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.ok { background: #2ecc71; }
+    .dot.err { background: #e74c3c; }
+    .dot.busy { background: #df9542; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+    .card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .card h2 { font-size: 15px; font-weight: 800; color: #173447; }
+    .kv { display: flex; justify-content: space-between; font-size: 13px; }
+    .kv .k { color: #617381; font-weight: 600; }
+    .kv .v { color: #173447; font-weight: 800; }
+    .big { font-size: 26px; font-weight: 900; color: #173447; line-height: 1.1; }
+    .msg { font-size: 13px; color: #476071; min-height: 18px; }
+    .btn { padding: 10px 16px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 3px 3px 0 #cfc7ba; }
+    .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #cfc7ba; }
+    .btn.primary { background: #dcefeb; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .progress-wrap { background: #e8e1d4; border-radius: 10px; height: 18px; overflow: hidden; border: 1px solid #cfc7ba; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #2a9fe0, #1478d4); transition: width 0.3s; }
+    .state-pill { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; padding: 3px 10px; border-radius: 8px; }
+    .state-pill.idle, .state-pill.ready { background: #7f97a5; }
+    .state-pill.checking, .state-pill.updating, .state-pill.waiting { background: #df9542; }
+    .state-pill.success { background: #2ecc71; }
+    .state-pill.error { background: #e74c3c; }
+    .releases { display: flex; flex-direction: column; gap: 8px; }
+    .release { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1.5px solid #d7cfc0; border-radius: 12px; background: #fffdf8; }
+    .release.sel { border-color: #1478d4; background: #eef7fd; }
+    .release .ver { font-weight: 800; font-size: 14px; }
+    .release .meta { font-size: 11px; color: #617381; }
+    .warn { background: #fdf0e3; border: 1.5px solid #e3b887; border-radius: 12px; padding: 10px 12px; font-size: 12px; color: #8a5a1f; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>&#128260; Firmware Update</h1>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/tanks.html">Tanks</a>
+      <a href="/pumps.html">Pumps</a>
+      <a href="/setup.html">Setup</a>
+      <a href="/test.html">Test</a>
+      <a href="/ota.html" class="active">Update</a>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="dot"></span>
+    <span id="conn">Connecting...</span>
+  </div>
+
+  <div class="grid">
+    <!-- Current / status -->
+    <div class="card">
+      <h2>Status</h2>
+      <div class="kv"><span class="k">State</span><span class="v"><span class="state-pill idle" id="statePill">—</span></span></div>
+      <div class="kv"><span class="k">Current version</span><span class="v" id="curVer">—</span></div>
+      <div class="kv"><span class="k">Available version</span><span class="v" id="availVer">—</span></div>
+      <div class="kv"><span class="k">Transport</span><span class="v" id="transport">—</span></div>
+      <div class="msg" id="msg"></div>
+
+      <div id="progressBlock" style="display:none;">
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="kv" style="margin-top:6px;"><span class="k">Downloaded</span><span class="v" id="dlText">0 / 0</span></div>
+      </div>
+
+      <div class="warn" id="fuelingWarn" style="display:none;">
+        &#9888; A fuelling is in progress — the update will start automatically once it finishes. It will never interrupt a fuelling.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="btnCheck" onclick="doCheck()">Check for updates</button>
+        <button class="btn primary" id="btnUpdate" onclick="doUpdate()" disabled>Install update</button>
+      </div>
+    </div>
+
+    <!-- Releases -->
+    <div class="card">
+      <h2>Available releases</h2>
+      <div class="releases" id="releases">
+        <div class="msg">Press "Check for updates" to load the release list.</div>
+      </div>
+      <div class="kv"><span class="k">Manifest</span><span class="v" style="font-size:11px;word-break:break-all;" id="manifestUrl">—</span></div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/';
+    let selectedVersion = '';
+    let busy = false;
+
+    // Compare dotted versions: returns <0 if a<b, 0 if equal, >0 if a>b.
+    function cmpVer(a, b) {
+      const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+      const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
+      for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const d = (pa[i] || 0) - (pb[i] || 0);
+        if (d !== 0) return d < 0 ? -1 : 1;
+      }
+      return 0;
+    }
+
+    async function api(subject, data) {
+      try {
+        const body = data ? {subject, data} : {subject};
+        const r = await fetch(API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        });
+        return await r.json();
+      } catch(e) { return null; }
+    }
+
+    function stateClass(s) {
+      s = (s || '').toLowerCase();
+      if (s.startsWith('check')) return 'checking';
+      if (s.startsWith('updat')) return 'updating';
+      if (s.startsWith('wait')) return 'waiting';
+      if (s.startsWith('succ')) return 'success';
+      if (s.startsWith('err')) return 'error';
+      if (s.startsWith('ready')) return 'ready';
+      return 'idle';
+    }
+
+    function render(st) {
+      if (!st) {
+        document.getElementById('dot').className = 'dot err';
+        document.getElementById('conn').textContent = 'Connection lost';
+        return;
+      }
+      busy = !!st.busy;
+      const cls = stateClass(st.state);
+      document.getElementById('dot').className = 'dot ' + (busy ? 'busy' : 'ok');
+      document.getElementById('conn').textContent = busy ? 'Working...' : 'Live';
+
+      const pill = document.getElementById('statePill');
+      pill.textContent = st.state || '—';
+      pill.className = 'state-pill ' + cls;
+
+      document.getElementById('curVer').textContent = st.currentVersion || '—';
+      document.getElementById('availVer').textContent = st.availableVersion || '—';
+      document.getElementById('transport').textContent = st.transport || '—';
+      document.getElementById('msg').textContent = st.message || '';
+      document.getElementById('manifestUrl').textContent = st.manifestUrl || '—';
+
+      // Fueling warning
+      document.getElementById('fuelingWarn').style.display =
+        (st.state && st.state.toLowerCase().indexOf('fueling') >= 0) ? '' : 'none';
+
+      // Progress
+      const total = st.downloadTotal || st.size || 0;
+      const dl = st.downloaded || 0;
+      if (cls === 'updating' && total > 0) {
+        document.getElementById('progressBlock').style.display = '';
+        const pct = Math.min(100, Math.round(dl / total * 100));
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('dlText').textContent =
+          `${(dl/1024).toFixed(0)} / ${(total/1024).toFixed(0)} KB (${pct}%)`;
+      } else {
+        document.getElementById('progressBlock').style.display = 'none';
+      }
+
+      // Buttons
+      document.getElementById('btnCheck').disabled = busy;
+      // Enable install when an update is available OR the user has explicitly
+      // selected a release (allows deliberate re-flash / downgrade).
+      const hasSelection = !!(st.selectedVersion || selectedVersion);
+      const btnUpdate = document.getElementById('btnUpdate');
+      btnUpdate.disabled = busy || !(st.updateAvailable || hasSelection);
+      // Label the action clearly: downgrade vs update vs reinstall.
+      const cur = st.currentVersion || '';
+      const sel = st.selectedVersion || selectedVersion || '';
+      if (sel && cur && !busy) {
+        const c = cmpVer(sel, cur);
+        btnUpdate.textContent = c < 0 ? 'Downgrade to ' + sel
+                              : c > 0 ? 'Install ' + sel
+                              : 'Reinstall ' + sel;
+      } else {
+        btnUpdate.textContent = 'Install update';
+      }
+
+      renderReleases(st.releases || []);
+    }
+
+    function renderReleases(rels) {
+      const el = document.getElementById('releases');
+      if (!rels.length) {
+        el.innerHTML = '<div class="msg">No releases loaded yet.</div>';
+        return;
+      }
+      el.innerHTML = '';
+      rels.forEach(r => {
+        const sel = (r.version === selectedVersion);
+        const kb = r.size ? (r.size/1024).toFixed(0) + ' KB' : '';
+        const div = document.createElement('div');
+        div.className = 'release' + (sel ? ' sel' : '');
+        div.innerHTML = `
+          <div>
+            <div class="ver">${r.version}</div>
+            <div class="meta">${kb}${r.generatedAt ? ' · ' + r.generatedAt : ''}${r.notes ? ' · ' + r.notes : ''}</div>
+          </div>
+          <button class="btn" ${busy ? 'disabled' : ''} onclick="selectVer('${r.version}')">Select</button>`;
+        el.appendChild(div);
+      });
+    }
+
+    async function selectVer(v) {
+      if (busy) return;
+      const st = await api('ota_select', {version: v});
+      selectedVersion = v;
+      render(st && st.state ? st : await api('ota_status'));
+    }
+
+    async function doCheck() {
+      await api('ota_check');
+      // Status will reflect progress on next poll.
+    }
+
+    async function doUpdate() {
+      if (!confirm('Install the selected firmware? The device will reboot after a successful update.')) return;
+      await api('ota_update');
+    }
+
+    async function poll() {
+      const st = await api('ota_status');
+      if (st && st.selectedVersion) selectedVersion = st.selectedVersion;
+      render(st);
+    }
+
+    (async () => {
+      await poll();
+      setInterval(poll, 1500);
+    })();
+  </script>
+</body>
+</html>

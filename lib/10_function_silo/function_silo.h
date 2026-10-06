@@ -9,6 +9,7 @@
 #include "apps/setup_info/setup_info.h"
 #include "apps/pump/pump.h"
 #include "apps/test_api/test_api.h"
+#include "apps/ota/ota.h"
 
 
 // the common incomeing data structure is
@@ -91,6 +92,31 @@ namespace function_silo
             JsonObject json_object = json_packet["data"].as<JsonObject>();
             const char* id = json_object["id"];
             return pump_get(id ? id : "");
+        }
+
+        // -- ota (firmware update, web/ota.html) --
+
+        else if (function_name == "ota_status")
+        {
+            return otaStatusJson();
+        }
+        else if (function_name == "ota_check")
+        {
+            bool ok = otaRequestCheck();
+            return String("{\"result\":\"") + (ok ? "check queued" : "busy") + "\"}";
+        }
+        else if (function_name == "ota_update")
+        {
+            bool ok = otaRequestUpdate();
+            return String("{\"result\":\"") + (ok ? "update queued" : "busy") + "\"}";
+        }
+        else if (function_name == "ota_select")
+        {
+            JsonObject data = json_packet["data"].as<JsonObject>();
+            String version = data.isNull() ? String("") : (data["version"] | String(""));
+            bool ok = otaSelectVersion(version);
+            // Return current status so the UI updates immediately.
+            return otaStatusJson();
         }
 
         // -- system --

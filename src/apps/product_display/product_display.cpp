@@ -1,7 +1,9 @@
 #include "product_display.h"
 #include "control_oled_128x64_bitmaps.h"
+#include "mcs_logo.h"
 #include "ssd1306.h"
 #include "logging.h"
+#include "apps/menu/menu.h"
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -15,6 +17,8 @@ namespace config {
 
 // How long the boot splash stays on screen.
 static const uint32_t SPLASH_HOLD_MS = 2500;
+// How long the MCS brand logo shows before the product splash.
+static const uint32_t LOGO_HOLD_MS = 2000;
 
 // Turn the panel off after this much inactivity (10 minutes).
 static const uint32_t INACTIVITY_TIMEOUT_MS = 10UL * 60UL * 1000UL; // 10 min
@@ -45,6 +49,14 @@ static bool draw_product_splash() {
     return true;
 }
 
+void mcs_logo_show_splash() {
+    log_info("[product_display] showing MCS logo splash");
+    oled_begin();
+    oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
+    oled_end();
+    vTaskDelay(pdMS_TO_TICKS(LOGO_HOLD_MS));
+}
+
 void product_display_show_splash() {
     String guide = config::config_read_string("config", "guide", "");
     const unsigned char* bmp = bitmap_for_guide(guide);
@@ -64,16 +76,23 @@ void product_display_show_splash() {
 // -----------------------------------------------------------------
 // Power manager
 // -----------------------------------------------------------------
-void product_display_mark_activity() {
+bool product_display_panel_on() {
+    return s_panel_on;
+}
+
+bool product_display_mark_activity() {
     s_last_activity_ms = millis();
     if (!s_panel_on) {
-        // Draw into the (hidden) buffer first, THEN power the panel on, so the
-        // user never sees the stale previous frame flash before the splash.
-        draw_product_splash();   // fills + sends buffer while panel is off
-        oled_power(true);        // reveal the already-correct image
+        // Was asleep: wake to the HOME screen. Draw HOME into the hidden buffer
+        // first, then power on, so no stale frame flashes. Return true so the
+        // caller knows this press was "wake only" (not navigation).
+        menu_go_home();
+        oled_power(true);
         s_panel_on = true;
         log_info("[product_display] woke panel on activity");
+        return true;
     }
+    return false;
 }
 
 static void display_power_task(void* param) {
