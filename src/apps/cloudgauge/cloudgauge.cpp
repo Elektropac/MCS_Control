@@ -105,9 +105,17 @@ struct ProbeState {
     uint8_t sample_idx;
     uint8_t sample_count;
     float avg_ma;
+    float raw_ma;               // latest UNsmoothed reading (fast trend detect)
     bool valid;                 // true if config parsed OK
     char last_state[12];        // previous alarm state (for rule edge detection)
     uint32_t last_timer_ms;     // last time interval-timer rules ran (millis)
+    // --- Trend tracking: an overfill alarm only holds while the level is
+    // still RISING, a low alarm only while FALLING. When movement stops the
+    // alarm clears even if the threshold is still crossed (avoids nuisance
+    // alarms when filling/draining has already stopped). ---
+    float    trend_ref_mm;      // reference level for trend comparison
+    uint32_t trend_ref_ms;      // when the reference was taken
+    int8_t   trend;             // -1 falling, 0 stable, +1 rising
 };
 
 static ProbeState s_probes[MAX_PROBES];
@@ -161,9 +169,9 @@ static Voltage voltage_from_config(int v) {
 
 // --- Helpers ---
 
-static float input_to_mm(const ProbeState& p) {
+// Convert a given mA reading to a density-compensated mm level.
+static float ma_to_mm(const ProbeState& p, float val) {
     if (!p.type_def) return 0.0f;
-    float val = p.avg_ma;
     float min = p.type_def->input_min;
     float max = p.type_def->input_max;
     if (val <= min) return 0.0f;
@@ -173,6 +181,16 @@ static float input_to_mm(const ProbeState& p) {
     // Lighter liquid (diesel 0.84) produces less pressure → probe reads low
     // Actual mm = raw_mm / density
     return raw_mm / p.density;
+}
+
+// Smoothed level (for display + alarm thresholds).
+static float input_to_mm(const ProbeState& p) {
+    return ma_to_mm(p, p.avg_ma);
+}
+
+// Raw/unsmoothed level (for trend direction — reacts immediately, no 10s lag).
+static float input_to_mm_raw(const ProbeState& p) {
+    return ma_to_mm(p, p.raw_ma);
 }
 
 // Linear interpolation in LUT (mm → liters)
@@ -206,6 +224,7 @@ static float compute_average(ProbeState& p) {
 }
 
 static void add_sample(ProbeState& p, float ma) {
+    p.raw_ma = ma;              // keep the unsmoothed value for trend detection
     p.samples[p.sample_idx] = ma;
     p.sample_idx = (p.sample_idx + 1) % AVG_WINDOW;
     if (p.sample_count < AVG_WINDOW) p.sample_count++;
@@ -275,6 +294,7 @@ static void read_all_probes() {
 // --- Task ---
 
 static void evaluate_probe_rules(ProbeState& p);   // defined below
+static void update_trend(ProbeState& p, float mm); // defined below
 
 static void cloudgauge_task(void* param) {
     (void)param;
@@ -296,6 +316,13 @@ static void cloudgauge_task(void* param) {
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(SAMPLE_INTERVAL_MS));
         read_all_probes();
+
+        // Update level trend (rising/falling/stable) from the RAW reading so
+        // it reacts immediately when filling stops — the 10-sample average lags
+        // ~10s and would hold an overfill alarm long after the hose is off.
+        for (uint8_t i = 0; i < s_num_probes; i++) {
+            if (s_probes[i].valid) update_trend(s_probes[i], input_to_mm_raw(s_probes[i]));
+        }
 
         // Evaluate rules for each probe (edge-detected alarms + timers).
         for (uint8_t i = 0; i < s_num_probes; i++) {
@@ -343,11 +370,40 @@ static bool probe_is_fault(const ProbeState& p) {
     return p.avg_ma < fault_floor;
 }
 
+// --- Update the level trend (rising / falling / stable) with a deadband so
+// measurement noise isn't mistaken for real movement. Called once per cycle. ---
+static const float   TREND_DEADBAND_MM = 5.0f;    // movement below this = noise
+static const uint32_t TREND_WINDOW_MS  = 3000;    // re-evaluate every ~3s
+
+static void update_trend(ProbeState& p, float mm) {
+    uint32_t now = millis();
+    if (p.trend_ref_ms == 0) {           // first call: seed the reference
+        p.trend_ref_mm = mm;
+        p.trend_ref_ms = now;
+        p.trend = 0;
+        return;
+    }
+    if (now - p.trend_ref_ms < TREND_WINDOW_MS) return;   // not time yet
+    float delta = mm - p.trend_ref_mm;
+    if      (delta >  TREND_DEADBAND_MM) p.trend = +1;     // rising
+    else if (delta < -TREND_DEADBAND_MM) p.trend = -1;     // falling
+    else                                 p.trend = 0;      // stable
+    p.trend_ref_mm = mm;
+    p.trend_ref_ms = now;
+}
+
 // --- Derive alarm state: "fault" | "overfill" | "low_level" | "normal" ---
+// The danger is the MOVEMENT, not the static level: a tank sitting at 98%
+// won't overflow by itself once filling has stopped. So:
+//   overfill  — alarms only while above the threshold AND still RISING.
+//               Stops filling (stable or falling) -> alarm clears.
+//   low_level — alarms only while below the threshold AND still FALLING.
+//   fault     — ignores trend (sensor error, always shown).
+// Trend uses a deadband so measurement noise isn't mistaken for movement.
 static const char* probe_state(const ProbeState& p, float level) {
-    if (probe_is_fault(p))                          return "fault";
-    if (p.overfill  > 0.0f && level >= p.overfill)  return "overfill";
-    if (p.low_level > 0.0f && level <= p.low_level) return "low_level";
+    if (probe_is_fault(p))                                           return "fault";
+    if (p.overfill  > 0.0f && level >= p.overfill  && p.trend > 0)   return "overfill";
+    if (p.low_level > 0.0f && level <= p.low_level && p.trend < 0)   return "low_level";
     return "normal";
 }
 
