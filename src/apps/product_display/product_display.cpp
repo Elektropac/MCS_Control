@@ -95,6 +95,18 @@ bool product_display_mark_activity() {
     return false;
 }
 
+void product_display_wake() {
+    // Turn the panel on without changing what's shown (used by the alarm
+    // overlay so an alarm lights up a sleeping screen). Also resets the
+    // inactivity clock so the panel stays on while the alarm is active.
+    s_last_activity_ms = millis();
+    if (!s_panel_on) {
+        oled_power(true);
+        s_panel_on = true;
+        log_info("[product_display] woke panel for alarm");
+    }
+}
+
 static void display_power_task(void* param) {
     (void)param;
     for (;;) {

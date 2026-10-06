@@ -42,7 +42,8 @@ void setup() {
     all_drivers_init();             // probe I2C chips + init all peripherals
 
     mcs_logo_show_splash();         // MCS brand logo at boot (~2s)
-    product_display_show_splash();  // show product image on OLED at boot
+    // Boot shows the MCS logo splash; the guide name then appears via the
+    // HOME screen's logo-zoom animation (no separate product image splash).
     product_display_start_power_manager();  // auto-off after inactivity, wake on button
     menu_start();                   // OLED menu (HOME/Tanks/Pumps), driven by buttons
 

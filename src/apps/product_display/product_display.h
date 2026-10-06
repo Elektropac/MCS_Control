@@ -37,3 +37,8 @@ bool product_display_mark_activity();
 
 // True if the OLED panel is currently powered on.
 bool product_display_panel_on();
+
+// Wake the panel (power on) without changing content or jumping to HOME, and
+// reset the inactivity clock. Used by the alarm overlay so an alarm lights up
+// a sleeping screen and keeps it on while active.
+void product_display_wake();

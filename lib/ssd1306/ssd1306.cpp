@@ -154,6 +154,36 @@ void oled_fill_screen() {
     if (s_oled) s_oled->drawBox(0, 0, 128, 64);
 }
 
+static const uint8_t* title_font(uint8_t size) {
+    if (size >= 18) return u8g2_font_helvB18_tr;
+    if (size >= 14) return u8g2_font_helvB14_tr;
+    return u8g2_font_helvB12_tr;
+}
+
+int oled_title_width(const char* text, uint8_t size) {
+    if (!s_oled) return 0;
+    s_oled->setFont(title_font(size));
+    int w = s_oled->getStrWidth(text);
+    s_oled->setFont(u8g2_font_6x10_tr);   // restore
+    return w;
+}
+
+int oled_draw_title_center(int y, const char* text, uint8_t size) {
+    if (!s_oled) return 0;
+    s_oled->setFont(title_font(size));
+    int w = s_oled->getStrWidth(text);
+    s_oled->drawStr((DISPLAY_W - w) / 2, y, text);
+    s_oled->setFont(u8g2_font_6x10_tr);   // restore default for other renderers
+    return w;
+}
+
+void oled_draw_title_at(int x, int y, const char* text, uint8_t size) {
+    if (!s_oled) return;
+    s_oled->setFont(title_font(size));
+    s_oled->drawStr(x, y, text);
+    s_oled->setFont(u8g2_font_6x10_tr);   // restore
+}
+
 void oled_draw_line(int x0, int y0, int x1, int y1) {
     if (s_oled) s_oled->drawLine(x0, y0, x1, y1);
 }
@@ -179,6 +209,23 @@ void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h) {
     // cnt = bytes per row = w / 8.
     if (s_oled && bitmap && w > 0 && h > 0) {
         s_oled->drawBitmap(x, y, w / 8, h, bitmap);
+    }
+}
+
+void oled_draw_bitmap_scaled(int x, int y, int dstW, int dstH,
+                             const uint8_t* bitmap, int srcW, int srcH) {
+    if (!s_oled || !bitmap || dstW <= 0 || dstH <= 0) return;
+    const int bytesPerRow = (srcW + 7) / 8;
+    // For each destination pixel, sample the nearest source pixel (MSB-first).
+    for (int dy = 0; dy < dstH; dy++) {
+        int sy = dy * srcH / dstH;
+        for (int dx = 0; dx < dstW; dx++) {
+            int sx = dx * srcW / dstW;
+            uint8_t byte = pgm_read_byte(&bitmap[sy * bytesPerRow + (sx >> 3)]);
+            if (byte & (0x80 >> (sx & 7))) {
+                s_oled->drawPixel(x + dx, y + dy);
+            }
+        }
     }
 }
 

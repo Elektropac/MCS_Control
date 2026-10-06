@@ -45,6 +45,15 @@ void oled_set_draw_color(uint8_t color);
 // Fill the entire 128x64 screen (uses current draw color).
 void oled_fill_screen();
 
+// Large bold title text, horizontally centered at baseline y. size picks the
+// bold Helvetica face: 18, 14 or 12 px (falls back to 12). Returns the pixel
+// width drawn. After drawing, the font is restored to the default 6x10.
+int  oled_draw_title_center(int y, const char* text, uint8_t size);
+// Measure a title string in the given bold size without drawing.
+int  oled_title_width(const char* text, uint8_t size);
+// Draw title text at an absolute x (baseline y) in the given bold size.
+void oled_draw_title_at(int x, int y, const char* text, uint8_t size);
+
 // Primitives
 void oled_draw_line(int x0, int y0, int x1, int y1);
 void oled_draw_frame(int x, int y, int w, int h);
@@ -57,6 +66,11 @@ void oled_draw_rbox(int x, int y, int w, int h, int r);
 // Draw a monochrome bitmap (MSB-first, e.g. Adafruit drawBitmap format).
 // w must be a multiple of 8. Data is in PROGMEM.
 void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h);
+
+// Draw a monochrome bitmap scaled to dstW x dstH at (x,y), nearest-neighbor.
+// Source is srcW x srcH, MSB-first. Used for the HOME logo zoom animation.
+void oled_draw_bitmap_scaled(int x, int y, int dstW, int dstH,
+                             const uint8_t* bitmap, int srcW, int srcH);
 
 // Enable/disable display
 void oled_set_enabled(bool enabled);

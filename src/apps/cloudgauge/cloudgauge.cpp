@@ -37,7 +37,8 @@ namespace web_socket {
 // --- Constants ---
 #define MAX_PROBES          8
 #define SAMPLE_INTERVAL_MS  1000
-#define AVG_WINDOW          10
+#define AVG_WINDOW          3    // rolling average length (was 10 ~10s; 3 = ~3x
+                                 // faster response, accepts a little more noise)
 #define PUSH_INTERVAL_S     60
 
 // --- Probe type definitions ---
@@ -109,13 +110,14 @@ struct ProbeState {
     bool valid;                 // true if config parsed OK
     char last_state[12];        // previous alarm state (for rule edge detection)
     uint32_t last_timer_ms;     // last time interval-timer rules ran (millis)
-    // --- Trend tracking: an overfill alarm only holds while the level is
-    // still RISING, a low alarm only while FALLING. When movement stops the
-    // alarm clears even if the threshold is still crossed (avoids nuisance
-    // alarms when filling/draining has already stopped). ---
-    float    trend_ref_mm;      // reference level for trend comparison
-    uint32_t trend_ref_ms;      // when the reference was taken
-    int8_t   trend;             // -1 falling, 0 stable, +1 rising
+    // --- Alarm latch: an alarm fires the moment the level crosses a threshold
+    // and stays active for ALARM_HOLD_MS, then auto-clears even if still past
+    // the threshold (a full tank is normal — no need to nag). It won't re-fire
+    // until the level has returned to the normal band and crosses again. ---
+    bool     over_armed;        // true when below overfill (ready to fire)
+    uint32_t over_alarm_ms;     // millis() when overfill alarm started (0 = off)
+    bool     low_armed;         // true when above low (ready to fire)
+    uint32_t low_alarm_ms;      // millis() when low alarm started (0 = off)
 };
 
 static ProbeState s_probes[MAX_PROBES];
@@ -294,7 +296,8 @@ static void read_all_probes() {
 // --- Task ---
 
 static void evaluate_probe_rules(ProbeState& p);   // defined below
-static void update_trend(ProbeState& p, float mm); // defined below
+static void update_alarm_latch(ProbeState& p, float level); // defined below
+static float current_level(const ProbeState& p);  // defined below
 
 static void cloudgauge_task(void* param) {
     (void)param;
@@ -317,11 +320,10 @@ static void cloudgauge_task(void* param) {
         vTaskDelay(pdMS_TO_TICKS(SAMPLE_INTERVAL_MS));
         read_all_probes();
 
-        // Update level trend (rising/falling/stable) from the RAW reading so
-        // it reacts immediately when filling stops — the 10-sample average lags
-        // ~10s and would hold an overfill alarm long after the hose is off.
+        // Update the alarm latch for each probe (fires on threshold crossing,
+        // holds 5 min, auto-clears, re-arms when back in the normal band).
         for (uint8_t i = 0; i < s_num_probes; i++) {
-            if (s_probes[i].valid) update_trend(s_probes[i], input_to_mm_raw(s_probes[i]));
+            if (s_probes[i].valid) update_alarm_latch(s_probes[i], current_level(s_probes[i]));
         }
 
         // Evaluate rules for each probe (edge-detected alarms + timers).
@@ -370,40 +372,55 @@ static bool probe_is_fault(const ProbeState& p) {
     return p.avg_ma < fault_floor;
 }
 
-// --- Update the level trend (rising / falling / stable) with a deadband so
-// measurement noise isn't mistaken for real movement. Called once per cycle. ---
-static const float   TREND_DEADBAND_MM = 5.0f;    // movement below this = noise
-static const uint32_t TREND_WINDOW_MS  = 3000;    // re-evaluate every ~3s
+// --- Alarm latch -----------------------------------------------------------
+// An alarm fires the instant the level crosses a threshold, holds for
+// ALARM_HOLD_MS, then auto-clears (a full/empty tank sitting still is normal).
+// It re-arms only when the level returns to the normal band, so a full tank
+// doesn't re-trigger every few minutes. Called once per cycle with the current
+// level (in alarm_unit). Fault is handled separately (always shown).
+static const uint32_t ALARM_HOLD_MS = 5UL * 60UL * 1000UL;   // 5 minutes
 
-static void update_trend(ProbeState& p, float mm) {
+static void update_alarm_latch(ProbeState& p, float level) {
     uint32_t now = millis();
-    if (p.trend_ref_ms == 0) {           // first call: seed the reference
-        p.trend_ref_mm = mm;
-        p.trend_ref_ms = now;
-        p.trend = 0;
-        return;
+    if (now == 0) now = 1;   // avoid 0 meaning "off"
+
+    // --- Overfill ---
+    if (p.overfill > 0.0f) {
+        if (level >= p.overfill) {
+            if (p.over_armed) {               // just crossed up -> fire
+                p.over_alarm_ms = now;
+                p.over_armed = false;
+            } else if (p.over_alarm_ms && now - p.over_alarm_ms >= ALARM_HOLD_MS) {
+                p.over_alarm_ms = 0;          // held long enough -> auto-clear
+            }
+        } else {
+            p.over_armed = true;              // back in normal band -> re-arm
+            p.over_alarm_ms = 0;
+        }
     }
-    if (now - p.trend_ref_ms < TREND_WINDOW_MS) return;   // not time yet
-    float delta = mm - p.trend_ref_mm;
-    if      (delta >  TREND_DEADBAND_MM) p.trend = +1;     // rising
-    else if (delta < -TREND_DEADBAND_MM) p.trend = -1;     // falling
-    else                                 p.trend = 0;      // stable
-    p.trend_ref_mm = mm;
-    p.trend_ref_ms = now;
+
+    // --- Low level ---
+    if (p.low_level > 0.0f) {
+        if (level <= p.low_level) {
+            if (p.low_armed) {                // just crossed down -> fire
+                p.low_alarm_ms = now;
+                p.low_armed = false;
+            } else if (p.low_alarm_ms && now - p.low_alarm_ms >= ALARM_HOLD_MS) {
+                p.low_alarm_ms = 0;
+            }
+        } else {
+            p.low_armed = true;
+            p.low_alarm_ms = 0;
+        }
+    }
 }
 
-// --- Derive alarm state: "fault" | "overfill" | "low_level" | "normal" ---
-// The danger is the MOVEMENT, not the static level: a tank sitting at 98%
-// won't overflow by itself once filling has stopped. So:
-//   overfill  — alarms only while above the threshold AND still RISING.
-//               Stops filling (stable or falling) -> alarm clears.
-//   low_level — alarms only while below the threshold AND still FALLING.
-//   fault     — ignores trend (sensor error, always shown).
-// Trend uses a deadband so measurement noise isn't mistaken for movement.
-static const char* probe_state(const ProbeState& p, float level) {
-    if (probe_is_fault(p))                                           return "fault";
-    if (p.overfill  > 0.0f && level >= p.overfill  && p.trend > 0)   return "overfill";
-    if (p.low_level > 0.0f && level <= p.low_level && p.trend < 0)   return "low_level";
+// --- Derive alarm state from the latch: "fault" | "overfill" | "low_level"
+// | "normal". Fault wins, then an active (within-hold) overfill/low latch. ---
+static const char* probe_state(const ProbeState& p, float /*level*/) {
+    if (probe_is_fault(p))      return "fault";
+    if (p.over_alarm_ms != 0)   return "overfill";
+    if (p.low_alarm_ms  != 0)   return "low_level";
     return "normal";
 }
 
@@ -451,6 +468,14 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
 
 namespace config {
     bool config_read_group_rules(const char* group_id, JsonDocument& out);
+}
+
+// Current level in the probe's alarm_unit (for the alarm latch).
+static float current_level(const ProbeState& p) {
+    float mm = input_to_mm(p);
+    float liters = mm_to_liters(p, mm);
+    float pct = level_percent(p, mm, liters);
+    return level_in_unit(p, mm, liters, pct);
 }
 
 // Current alarm state string for a probe (same math as probe_to_json).
@@ -651,9 +676,14 @@ void cloudgauge_init() {
             p.sample_idx = 0;
             p.sample_count = 0;
             p.avg_ma = 0.0f;
+            p.raw_ma = 0.0f;
             p.valid = true;
             strcpy(p.last_state, "init");   // forces first evaluation
             p.last_timer_ms = 0;
+            // Alarm latch starts armed (ready to fire on first crossing),
+            // with no alarm active.
+            p.over_armed = true;  p.over_alarm_ms = 0;
+            p.low_armed  = true;  p.low_alarm_ms  = 0;
 
             // Parse LUT (mm vs liter) if present in the probe block
             p.lut_count = 0;

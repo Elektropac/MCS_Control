@@ -2,6 +2,8 @@
 #include "ssd1306.h"
 #include "logging.h"
 #include "apps/product_display/control_oled_128x64_bitmaps.h"
+#include "apps/product_display/mcs_logo_crop.h"
+#include "apps/product_display/mcs_logo_vert.h"
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/pump/pump.h"
 #include "apps/product_display/product_display.h"
@@ -38,6 +40,11 @@ static bool    s_detail  = false;  // detail page open for current item
 // UPDATE section: which release in the list is highlighted for install.
 static uint8_t s_ota_sel = 0;
 
+// HOME logo-zoom animation: millis() when HOME was last entered. The logo
+// shrinks from full-screen into the top-left corner, then the guide name
+// appears centered. 0 = not animating (show the settled HOME).
+static uint32_t s_home_anim_start = 0;
+
 // Alarm snooze: a button press while an alarm is showing dismisses the overlay
 // for this long so the user can use the menu. It re-pops when the time elapses
 // (as long as the alarm is still active).
@@ -51,24 +58,108 @@ static volatile bool s_want_home = false;
 // -----------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------
-static const unsigned char* guide_bitmap() {
-    String g = config::config_read_string("config", "guide", "");
-    if (g == "cloudgauge2")        return cloudgauge2_128x64;
-    if (g == "sapphire_lite_mini") return sapphire_lite_mini_128x64;
-    if (g == "poseidon")           return poseidon_128x64;
-    if (g == "bridge")             return bridge_128x64;
-    return nullptr;
-}
 
 // -----------------------------------------------------------------
 // Renderers
 // -----------------------------------------------------------------
+
+// Map the internal guide id to a human-readable display name. Unknown/custom
+// guides fall back to showing whatever the config holds (or "MCS Control").
+static String guide_display_name() {
+    String g = config::config_read_string("config", "guide", "");
+    if (g == "cloudgauge2")        return "CloudGauge 2";
+    if (g == "sapphire_lite_mini") return "Sapphire Lite Mini";
+    if (g == "poseidon")           return "Poseidon";
+    if (g == "bridge")             return "Bridge";
+    if (g.length() == 0)           return "MCS Control";
+    return g;   // custom/unknown: show the raw name
+}
+
+// HOME screen: a short animation where the MCS logo zooms down from full
+// screen into a small top-left corner mark, then the guide name appears
+// centered. After the animation it settles to (corner logo + centered name).
 static void render_home() {
     s_count = 0;
-    const unsigned char* bmp = guide_bitmap();
+    String name = guide_display_name();
+
+    // Animation: shrink through three real logo sizes (crisp, no scaling),
+    // easing toward the left edge, then settle to the vertical logo + name.
+    const uint32_t T1 = 350, T2 = 650, T3 = 900;
+    uint32_t t = (s_home_anim_start == 0) ? T3 : (millis() - s_home_anim_start);
+
     oled_begin();
-    if (bmp) oled_draw_bitmap(0, 0, bmp, 128, 64);
-    else     oled_print_center(2, "MCS Control");
+
+    if (t < T1) {
+        oled_draw_bitmap((128 - mcs_logo_full_w) / 2, (64 - mcs_logo_full_h) / 2,
+                         mcs_logo_full, mcs_logo_full_w, mcs_logo_full_h);
+        oled_end(); return;
+    }
+    if (t < T2) {
+        float p = (float)(t - T1) / (T2 - T1);
+        int cx = (128 - mcs_logo_mid_w) / 2, cy = (64 - mcs_logo_mid_h) / 2;
+        int x = cx + (int)((2 - cx) * p);        // ease toward left
+        oled_draw_bitmap(x, cy, mcs_logo_mid, mcs_logo_mid_w, mcs_logo_mid_h);
+        oled_end(); return;
+    }
+    if (t < T3) {
+        oled_draw_bitmap(2, (64 - mcs_logo_small_h) / 2,
+                         mcs_logo_small, mcs_logo_small_w, mcs_logo_small_h);
+        oled_end(); return;
+    }
+
+    // --- Settled: vertical MCS logo down the LEFT edge, guide name filling the
+    // rest of the screen (full height), centered in that region. The vertical
+    // logo frees the whole height so even 3-line names fit comfortably. ---
+    oled_draw_bitmap(1, (64 - mcs_logo_vert_h) / 2,
+                     mcs_logo_vert, mcs_logo_vert_w, mcs_logo_vert_h);
+
+    const int textX0 = mcs_logo_vert_w + 5;      // left edge of the text region
+    const int regionW = 128 - textX0 - 2;        // usable text width
+    const uint8_t sizes[] = { 20, 16, 12 };
+    for (uint8_t si = 0; si < 3; si++) {
+        uint8_t sz = sizes[si];
+        bool lastSize = (si == 2);
+        int lineH = sz + 3;
+        String lines[3]; int nlines = 0; int start = 0; bool fits = true;
+        while (start < (int)name.length() && nlines < 3) {
+            // Grow line word-by-word while it fits the region width.
+            int end = start, lastSpace = -1;
+            while (end < (int)name.length()) {
+                int nextSpace = name.indexOf(' ', end);
+                int wordEnd = (nextSpace < 0) ? name.length() : nextSpace;
+                if (oled_title_width(name.substring(start, wordEnd).c_str(), sz) > regionW) break;
+                lastSpace = wordEnd;
+                end = wordEnd + 1;
+                if (nextSpace < 0) { lastSpace = name.length(); break; }
+            }
+            int lineEnd;
+            if (lastSpace > start) {
+                lineEnd = lastSpace;              // break at a fitting space
+            } else {
+                if (!lastSize) { fits = false; break; }   // word too wide -> smaller font
+                int i = start;                    // smallest size: hard break
+                while (i < (int)name.length() &&
+                       oled_title_width(name.substring(start, i + 1).c_str(), sz) <= regionW) i++;
+                lineEnd = (i > start) ? i : start + 1;
+            }
+            lines[nlines++] = name.substring(start, lineEnd);
+            start = lineEnd;
+            while (start < (int)name.length() && name[start] == ' ') start++;
+        }
+        if (start < (int)name.length()) fits = false;
+        if (nlines * lineH > 64) fits = false;
+        if (!fits && !lastSize) continue;
+
+        int blockH = nlines * lineH;
+        int firstBaseline = (64 - blockH) / 2 + sz;
+        for (int i = 0; i < nlines; i++) {
+            int tw = oled_title_width(lines[i].c_str(), sz);
+            int x = textX0 + (regionW - tw) / 2;      // center within text region
+            oled_draw_title_at(x, firstBaseline + i * lineH, lines[i].c_str(), sz);
+        }
+        break;
+    }
+
     oled_end();
 }
 
@@ -570,11 +661,16 @@ static void apply_button(Button btn) {
 static void menu_task(void*) {
     uint8_t  alarm_idx = 0;
     uint32_t alarm_cycle_ms = 0;
+    Section prev_section = (Section)255;   // force first HOME to animate
     for (;;) {
-        // Block up to 250ms for a button event. Waking early = instant nav;
-        // timing out = periodic live refresh (wave animation / values).
+        // While the HOME logo-zoom plays, redraw fast (~40ms) for smoothness;
+        // otherwise the normal 250ms refresh is plenty.
+        bool home_animating = (s_section == SEC_HOME && s_home_anim_start != 0 &&
+                               (millis() - s_home_anim_start) < 700);
+        TickType_t wait = home_animating ? pdMS_TO_TICKS(40) : pdMS_TO_TICKS(250);
+
         Button btn;
-        if (xQueueReceive(s_queue, &btn, pdMS_TO_TICKS(250)) == pdTRUE) {
+        if (xQueueReceive(s_queue, &btn, wait) == pdTRUE) {
             if (s_want_home) { s_want_home = false; s_section = SEC_HOME; s_index = 0; s_detail = false; }
             // A real button press while alarming snoozes the overlay so the
             // user can navigate the menu (the alarm re-pops after the snooze).
@@ -586,14 +682,20 @@ static void menu_task(void*) {
             s_want_home = false; s_section = SEC_HOME; s_index = 0; s_detail = false;
         }
 
-        if (!product_display_panel_on()) continue;
+        // Trigger the HOME zoom animation whenever we newly arrive at HOME.
+        if (s_section == SEC_HOME && prev_section != SEC_HOME) {
+            s_home_anim_start = millis();
+        }
+        prev_section = s_section;
 
-        // Alarm overlay takes over the screen whenever a probe is alarming,
-        // unless the user recently pressed a button (snooze window).
+        // --- Alarm handling (checked BEFORE the panel-sleep guard so an alarm
+        // can wake a sleeping screen). Overlay takes over unless the user
+        // recently pressed a button (snooze window). ---
         uint8_t alarms = collect_alarms();
         bool snoozed = (int32_t)(s_alarm_snooze_until - millis()) > 0;
         if (alarms == 0) s_alarm_snooze_until = 0;   // reset when cleared
         if (alarms > 0 && !snoozed) {
+            product_display_wake();          // light up the panel if it was off
             if (alarm_idx >= alarms) alarm_idx = 0;
             // Advance to the next alarm every ~2.5s when several are active.
             if (alarms > 1 && millis() - alarm_cycle_ms > 2500) {
@@ -604,6 +706,9 @@ static void menu_task(void*) {
             continue;
         }
         alarm_idx = 0;
+
+        // No active alarm: respect the panel-sleep state (don't draw if asleep).
+        if (!product_display_panel_on()) continue;
 
         render_current();     // only menu_task ever draws
     }
