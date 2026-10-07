@@ -127,6 +127,12 @@ struct RuleGroup {
     char     type[8];                 // "probe" | "pump"
     // probe edge
     char     last_probe_state[12];
+    // Configured pins for this pump group (-1 = none). The sampler watches all
+    // 8 channels 24/7, but a group only COUNTS pulses on its own pulse pin and
+    // only tracks its own nozzle pin — so pumps don't count each other's or
+    // the probes' activity.
+    int8_t   nozzle_ch;
+    int8_t   pulse_ch;
     // io digital edge per input channel (bit per A1..B4)
     uint8_t  prev_digital;            // last sampled digital bitmap
     bool     digital_primed;
@@ -151,6 +157,30 @@ struct RuleGroup {
 static RuleGroup s_groups[MAX_RULE_GROUPS];
 static uint8_t   s_num_groups = 0;
 static TaskHandle_t s_task_handle = nullptr;
+
+// --- Cached rules (loaded ONCE at init) ---------------------------------
+// PERFORMANCE: the tick loop must NOT read /config.json from flash. Parsing
+// the whole file every 100 ms per group hammered LittleFS and made the device
+// crawl. Instead we load every group's rules[] into RAM once at init and the
+// task reads from this cache. ~13 KB of rules fits easily (device has ~230 KB
+// free). Re-loaded only on config change (reboot).
+static JsonDocument s_rules_cache;        // { "<group_id>": [ ...rules... ], ... }
+static bool         s_rules_cached = false;
+
+// Load all groups' rules into the RAM cache. Called once at init.
+static void load_rules_cache() {
+    s_rules_cache.clear();
+    JsonObject root = s_rules_cache.to<JsonObject>();
+    for (uint8_t i = 0; i < s_num_groups; i++) {
+        JsonDocument tmp;
+        if (config::config_read_group_rules(s_groups[i].id, tmp)) {
+            // Copy this group's rules array into the cache under its id.
+            root[s_groups[i].id] = tmp;
+        }
+    }
+    s_rules_cached = true;
+    log_info("[rules] cached rules for %d group(s) in RAM", s_num_groups);
+}
 
 // --- Incoming comm message (fed by the network layer) ---
 // Visible to comm triggers for ONE tick, then cleared. Kept tiny; the network
@@ -513,10 +543,18 @@ static void sample_group_io(RuleGroup& g, uint8_t& out_digital) {
 
     SamplerEvent evt;
     while (sampler_read_next(g.sampler_cursor, evt)) {
-        for (uint8_t ch = 0; ch < 8; ch++) {
+        // Only count pulses on THIS group's configured pulse pin. The sampler
+        // watches all 8 channels 24/7, but a pump must not count another
+        // pump's pulses or a probe's digital changes. Counting runs ALWAYS
+        // (not gated on "pumping") so the flow-guard rule can catch pulses
+        // that arrive when no transaction is active.
+        int8_t ch = g.pulse_ch;
+        if (ch >= 0 && ch < 8) {
             uint8_t bit = (evt.state >> ch) & 0x01;
-            // Count falling edges as pulses (same as pump.cpp).
-            if (g.prev_bit[ch] == 1 && bit == 0) {
+            // Pulse = RISING edge: the digital input goes through an opto-
+            // coupler that inverts the (pull-up, active-low) electrical pulse,
+            // so the sampler sees it as 0 -> 1. Verified on hardware (Jesper).
+            if (g.prev_bit[ch] == 0 && bit == 1) {
                 g.pulse_total[ch]++;
                 uint32_t now = millis(); if (now == 0) now = 1;
                 g.pulse_last_ms[ch] = now;
@@ -542,10 +580,11 @@ static void evaluate_group(RuleGroup& g) {
         sample_group_io(g, sampled_digital);
     }
 
-    JsonDocument rulesDoc;
-    if (config::config_read_group_rules(g.id, rulesDoc)) {
+    // Read this group's rules from the RAM cache (NO flash I/O in the loop).
+    JsonArray rules = s_rules_cache[g.id].as<JsonArray>();
+    if (!rules.isNull()) {
         uint8_t idx = 0;
-        for (JsonObject rule : rulesDoc.as<JsonArray>()) {
+        for (JsonObject rule : rules) {
             if (!(rule["enabled"] | true)) { idx++; continue; }
             JsonObject trig = rule["trigger"].as<JsonObject>();
             if (eval_trigger(g, trig, idx, sampled_digital)) {
@@ -616,24 +655,36 @@ void rule_engine_init() {
 
         RuleGroup& g = s_groups[s_num_groups];
         memset(&g, 0, sizeof(g));
+        g.nozzle_ch = -1;   // no pins by default (set below for pump groups)
+        g.pulse_ch  = -1;
         const char* gid = group["id"] | "";
         strncpy(g.id, gid, sizeof(g.id) - 1);
         strncpy(g.type, gtype, sizeof(g.type) - 1);
         strcpy(g.last_probe_state, "init");    // forces first probe evaluation
         g.sampler_cursor = sampler_write_position();
-        for (uint8_t c = 0; c < 8; c++) g.prev_bit[c] = 1;   // idle-high inputs
+        // Seed prev_bit from the ACTUAL current input levels (do not assume a
+        // polarity). On this board idle inputs read 0, but reading the real
+        // state avoids a spurious first edge regardless of wiring.
+        {
+            uint8_t cur = sampler_current_state();
+            for (uint8_t c = 0; c < 8; c++) g.prev_bit[c] = (cur >> c) & 0x01;
+        }
         g.digital_primed = false;
         g.valid = true;
 
-        // Pump groups: configure nozzle + pulse inputs as digital pull-ups,
-        // seed the transaction state machine. (Measurement/relay primitives
-        // are shared; this just prepares the inputs the rules reference.)
+        // Pump groups: configure nozzle + pulse inputs as DIGITAL with pull-up,
+        // seed the transaction state machine. A digital input needs BOTH the
+        // digital switch AND the pull-up enabled (MODE_DIGITAL_PU) — a bare
+        // pull-up does not route the pin to the digital read path, so the
+        // sampler would never see nozzle/pulse edges.
         if (!strcmp(gtype, "pump") && !group["pump"].isNull()) {
             JsonObject pump = group["pump"].as<JsonObject>();
             int8_t nz = input_name_to_channel(pump["nozzle"] | "");
             int8_t pl = input_name_to_channel(pump["pulse"]  | "");
-            if (nz >= 0) input_config_set((Input)nz, SW_PULLUP, true);
-            if (pl >= 0) input_config_set((Input)pl, SW_PULLUP, true);
+            g.nozzle_ch = nz;
+            g.pulse_ch  = pl;
+            if (nz >= 0) input_config_mode((Input)nz, MODE_DIGITAL_PU);
+            if (pl >= 0) input_config_mode((Input)pl, MODE_DIGITAL_PU);
             // Initial transaction state.
             char key[40];
             snprintf(key, sizeof(key), "%s.state", g.id);
@@ -643,6 +694,7 @@ void rule_engine_init() {
         s_num_groups++;
         log_info("[rules] group '%s' (%s)", g.id, g.type);
     }
+    load_rules_cache();   // load all rules into RAM once (no flash I/O per tick)
     log_info("[rules] Initialized, %d group(s)", s_num_groups);
 }
 
@@ -675,4 +727,28 @@ void rule_engine_feed_message(const char* msg) {
     strncpy(s_msg_buf, msg, MSG_BUF_LEN - 1);
     s_msg_buf[MSG_BUF_LEN - 1] = '\0';
     s_msg_pending = true;
+}
+
+// Diagnostics: dump raw pulse/edge state per group as JSON (for debugging the
+// sampler/pulse path from the web API).
+String rule_engine_debug() {
+    JsonDocument doc;
+    doc["write_pos"] = sampler_write_position();
+    doc["cur_state"] = sampler_current_state();
+    JsonArray arr = doc["groups"].to<JsonArray>();
+    for (uint8_t i = 0; i < s_num_groups; i++) {
+        RuleGroup& g = s_groups[i];
+        JsonObject o = arr.add<JsonObject>();
+        o["id"] = g.id;
+        o["type"] = g.type;
+        o["cursor"] = g.sampler_cursor;
+        o["prev_digital"] = g.prev_digital;
+        JsonArray pt = o["pulse_total"].to<JsonArray>();
+        JsonArray pb = o["prev_bit"].to<JsonArray>();
+        for (uint8_t c = 0; c < 8; c++) { pt.add(g.pulse_total[c]); pb.add(g.prev_bit[c]); }
+        char key[40];
+        snprintf(key, sizeof(key), "%s.state", g.id);
+        o["state"] = rule_kv_get(key, "idle");
+    }
+    String s; serializeJson(doc, s); return s;
 }

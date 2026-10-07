@@ -8,6 +8,7 @@
 #include "apps/poseidon/poseidon.h"
 #include "apps/setup_info/setup_info.h"
 #include "apps/pump/pump.h"
+#include "apps/rule_engine/rule_engine.h"
 #include "apps/test_api/test_api.h"
 #include "apps/ota/ota.h"
 
@@ -86,6 +87,10 @@ namespace function_silo
         else if (function_name == "pump_get_all")
         {
             return pump_get_all();
+        }
+        else if (function_name == "rule_debug")
+        {
+            return rule_engine_debug();
         }
         else if (function_name == "pump_get")
         {

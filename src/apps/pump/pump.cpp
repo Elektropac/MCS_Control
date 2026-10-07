@@ -6,6 +6,7 @@
 #include "hardware/input_config.h"
 #include "platform/sampler.h"
 #include "platform/task_registry.h"
+#include "apps/rule_engine/rule_engine.h"
 #include "logging.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -60,6 +61,7 @@ struct PumpState {
     uint32_t pulse_count;     // accumulated pulses (this transaction)
     uint32_t sampler_cursor;  // position in sampler ring buffer
     uint8_t prev_bit;         // previous pulse bit (edge detection)
+    bool prev_pumping;        // engine state was "pumping" last tick (for reset)
     bool valid;
 };
 
@@ -79,26 +81,32 @@ static void sample_pump(PumpState& p) {
     if (p.nozzle_ch >= 0) {
         uint8_t state = sampler_current_state();
         bool raw = (state >> p.nozzle_ch) & 0x01;
-        // Nozzle switch pulled up to 24V; lifted = LOW (active-low). Treat
-        // LOW as lifted. (Physical wiring may invert; refine with hardware.)
-        p.nozzle_lifted = (raw == 0);
+        // Hardware verified (0.3.29, Jesper): with MODE_DIGITAL_PU a FLOATING
+        // input reads bit 0, and tying the input to GND reads bit 1. On this
+        // board the nozzle switch pulls the input to GND when lifted, so
+        // GND = LIFTED = bit 1. (The start rule already fires on the rising
+        // edge float->GND, which is why the relay engaged correctly; only this
+        // status field was inverted on the web page.)
+        p.nozzle_lifted = (raw == 1);
     }
 
     // Pulse: count falling edges on the pulse channel.
+    // Pulse: count on the pulse channel. The input goes through an opto-
+    // coupler that inverts the (pull-up, active-low) electrical pulse, so the
+    // sampler sees a pulse as a RISING edge (0 -> 1). Count ALWAYS, not gated
+    // on the relay: pulses that arrive with the pump OFF are what the flow-
+    // guard rule needs to detect (unauthorised flow). Verified on hardware.
     if (p.pulse_ch >= 0) {
-        // The rule engine owns the relay now, so read the ACTUAL relay state
-        // for status-display pulse gating (p.relay_on is no longer driven here).
-        bool pumping = p.has_relay ? relay_get(p.relay) : false;
         SamplerEvent evt;
         while (sampler_read_next(p.sampler_cursor, evt)) {
             uint8_t bit = (evt.state >> p.pulse_ch) & 0x01;
-            if (p.prev_bit == 1 && bit == 0) {
-                // Only count flow while the relay is on (pump running).
-                if (pumping) p.pulse_count++;
+            if (p.prev_bit == 0 && bit == 1) {
+                p.pulse_count++;
             }
             p.prev_bit = bit;
         }
-        p.relay_on = pumping;   // keep status field in sync for the web/OLED UI
+        // Keep the status relay field in sync with the actual relay.
+        if (p.has_relay) p.relay_on = relay_get(p.relay);
     }
 }
 
@@ -110,16 +118,26 @@ static void pump_set_relay(PumpState& p, bool on) {
 }
 
 // --- JSON for one pump ---
+// Shows the RAW per-pulse counter (full resolution: every pulse, litres with
+// decimals) — this is what worked before. The transaction STATE comes from the
+// rule engine (it owns start/stop/timeout), but the live pulse/litre display
+// uses pump.cpp's own sampler counter so you see 1,2,3… and 0.1,0.2 L, not the
+// engine's whole-litre KV steps.
 static void pump_to_json(JsonObject obj, const PumpState& p) {
+    char key[40];
+    snprintf(key, sizeof(key), "%s.state", p.id);
+    String eng_state = rule_kv_get(key, "idle");
+
     obj["id"] = p.id;
     obj["name"] = p.name;
     obj["nozzle_input"] = p.nozzle_input;
     obj["pulse_input"] = p.pulse_input;
     obj["nozzle_lifted"] = p.nozzle_lifted;
     obj["relay_on"] = p.relay_on;
-    obj["pulses"] = p.pulse_count;
+    obj["state"] = eng_state;                       // idle/pumping/done (engine)
+    obj["pulses"] = p.pulse_count;                  // RAW pulses (full resolution)
     obj["pulses_per_litre"] = serialized(String(p.pulses_per_litre, 2));
-    obj["litres"] = serialized(String(pump_litres(p), 2));
+    obj["litres"] = serialized(String(pump_litres(p), 2));   // raw/ppl, decimals
     obj["preset_litres"] = serialized(String(p.preset_litres, 1));
 }
 
@@ -140,12 +158,18 @@ static void pump_task(void* param) {
             if (!s_pumps[i].valid) continue;
             sample_pump(s_pumps[i]);
 
-            // NOTE: relay control (start/stop, preset, timeouts, flow guard)
-            // is now owned by the shared rule engine (src/apps/rule_engine),
-            // which executes the fueling rules[] from config. This task only
-            // SAMPLES nozzle + pulse state for the web/OLED status display.
-            // (Was: preset auto-stop driving the relay here — removed so the
-            // engine is the single owner of the relay.)
+            // Reset the display pulse counter at the START of a transaction
+            // (engine state enters "pumping"), so each fueling shows from 0.
+            // The rule engine owns start/stop/preset/timeouts/flow-guard; this
+            // task only SAMPLES pulses for the web/OLED status display.
+            PumpState& p = s_pumps[i];
+            char key[40];
+            snprintf(key, sizeof(key), "%s.state", p.id);
+            bool pumping_now = (rule_kv_get(key, "idle") == "pumping");
+            if (pumping_now && !p.prev_pumping) {
+                p.pulse_count = 0;   // new transaction -> fresh count
+            }
+            p.prev_pumping = pumping_now;
         }
 
         push_counter += PUMP_SAMPLE_MS;
@@ -206,15 +230,20 @@ void pump_init() {
         p.relay_on = false;
         p.pulse_count = 0;
         p.sampler_cursor = sampler_write_position();
-        p.prev_bit = 1;
+        // Seed prev_bit from the ACTUAL current pulse-pin level (idle is low on
+        // this board via the opto-coupler), so the first real pulse isn't lost
+        // or miscounted by assuming the wrong idle level.
+        p.prev_bit = (p.pulse_ch >= 0) ? ((sampler_current_state() >> p.pulse_ch) & 0x01) : 0;
         p.valid = true;
 
-        // Configure inputs: nozzle as digital pull-up, pulse as digital pull-up.
+        // Configure inputs: nozzle + pulse as DIGITAL with pull-up. Both the
+        // digital switch AND the pull-up must be on (MODE_DIGITAL_PU) for the
+        // pin to reach the digital read path — a bare pull-up is not enough.
         if (p.nozzle_ch >= 0) {
-            input_config_set((Input)p.nozzle_ch, SW_PULLUP, true);
+            input_config_mode((Input)p.nozzle_ch, MODE_DIGITAL_PU);
         }
         if (p.pulse_ch >= 0) {
-            input_config_set((Input)p.pulse_ch, SW_PULLUP, true);
+            input_config_mode((Input)p.pulse_ch, MODE_DIGITAL_PU);
         }
         // Relay starts off.
         if (p.has_relay) relay_set(p.relay, false);

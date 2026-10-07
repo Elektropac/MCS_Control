@@ -43,6 +43,9 @@ bool rule_engine_fueling_active();
 // The message is valid for one tick. Safe to call from another task.
 void rule_engine_feed_message(const char* msg);
 
+// Diagnostics: raw pulse/edge/cursor state per group as JSON (web debugging).
+String rule_engine_debug();
+
 // --- Internal key/value state table (exposed for test/inspection) ---
 // Values are stored as strings; numeric helpers parse on demand. Each key
 // also records a "last changed" timestamp so timer "elapsed-since-state"
