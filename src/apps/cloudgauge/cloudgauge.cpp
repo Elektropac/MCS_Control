@@ -322,14 +322,17 @@ static void cloudgauge_task(void* param) {
 
         // Update the alarm latch for each probe (fires on threshold crossing,
         // holds 5 min, auto-clears, re-arms when back in the normal band).
+        // The latch is MEASUREMENT-side state (drives current_state), so it
+        // stays here. The rule engine reads that state read-only.
         for (uint8_t i = 0; i < s_num_probes; i++) {
             if (s_probes[i].valid) update_alarm_latch(s_probes[i], current_level(s_probes[i]));
         }
 
-        // Evaluate rules for each probe (edge-detected alarms + timers).
-        for (uint8_t i = 0; i < s_num_probes; i++) {
-            if (s_probes[i].valid) evaluate_probe_rules(s_probes[i]);
-        }
+        // NOTE: probe rule evaluation has moved to the shared rule engine
+        // (src/apps/rule_engine). The engine reads each probe's alarm state
+        // via cloudgauge_group_state() and runs the configured rules there,
+        // so probe + pump share ONE engine. Measurement stays in this file.
+        // (Was: evaluate_probe_rules(s_probes[i]) for each probe.)
 
         push_counter++;
         if (push_counter >= PUSH_INTERVAL_S) {
@@ -777,4 +780,35 @@ String cloudgauge_get(const char* input_name) {
         }
     }
     return "{\"error\":\"probe not found\"}";
+}
+
+// =======================================================
+// Read-only accessors for the shared rule engine
+// =======================================================
+// The rule engine executes probe rules now (lifted out of this file). It
+// needs to READ a probe group's current alarm state + level — WITHOUT
+// touching any measurement code. These reuse the exact same math as
+// probe_to_json()/evaluate_probe_rules() via current_state()/current_level(),
+// so behaviour is identical. Lookup is by config group id.
+
+// Current alarm state of a probe group: "normal"|"low_level"|"overfill"|
+// "fault", or "" if the group id is unknown.
+const char* cloudgauge_group_state(const char* group_id) {
+    for (uint8_t i = 0; i < s_num_probes; i++) {
+        if (s_probes[i].valid && strcmp(s_probes[i].group_id, group_id) == 0) {
+            return current_state(s_probes[i]);
+        }
+    }
+    return "";
+}
+
+// Current level of a probe group in its alarm_unit (%, mm or L).
+// Returns 0 if the group id is unknown.
+float cloudgauge_group_value(const char* group_id) {
+    for (uint8_t i = 0; i < s_num_probes; i++) {
+        if (s_probes[i].valid && strcmp(s_probes[i].group_id, group_id) == 0) {
+            return current_level(s_probes[i]);
+        }
+    }
+    return 0.0f;
 }

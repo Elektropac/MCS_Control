@@ -34,6 +34,7 @@ namespace wifi  { extern bool connected; }
 // --- Measurement tasks we pause during a download (we own these APIs) ---
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/pump/pump.h"
+#include "apps/rule_engine/rule_engine.h"
 
 namespace {
 
@@ -601,7 +602,9 @@ void runUpdate() {
     // --- FUELING-SAFE GATE ---------------------------------------------
     // Never interrupt a fuelling. If any pump is active, do not start — flag
     // waiting and let the task retry on the next poll. We re-queue the action.
-    if (pump_any_active()) {
+    // Check BOTH the pump app (physical nozzle/relay) and the rule engine
+    // (transaction state machine), since the engine now owns fueling logic.
+    if (pump_any_active() || rule_engine_fueling_active()) {
         setState(OTA_WAITING_FUELING, "Update deferred: fueling in progress");
         log_info("[ota] update deferred — fueling active");
         s_pendingAction = OTA_ACTION_UPDATE;   // retry next poll

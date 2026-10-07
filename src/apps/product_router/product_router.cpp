@@ -2,6 +2,7 @@
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/pump/pump.h"
 #include "apps/flow_guard/flow_guard.h"
+#include "apps/rule_engine/rule_engine.h"
 #include "logging.h"
 #include <ArduinoJson.h>
 #include <string.h>
@@ -41,6 +42,15 @@ void start_product_apps() {
         pump_init();
         pump_start_task();
         log_info("[capabilities] started pump controller");
+    }
+
+    // Shared rule engine → executes rules[] for BOTH probe and pump groups.
+    // One config-driven engine (rule-engine-reference.md). Measurement stays
+    // in cloudgauge; the engine only reads probe state + drives relays/state.
+    if (probe_groups > 0 || pump_groups > 0) {
+        rule_engine_init();
+        rule_engine_start_task();
+        log_info("[capabilities] started shared rule engine");
     }
 
     if (probe_groups == 0 && pump_groups == 0) {

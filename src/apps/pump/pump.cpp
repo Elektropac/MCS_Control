@@ -86,15 +86,19 @@ static void sample_pump(PumpState& p) {
 
     // Pulse: count falling edges on the pulse channel.
     if (p.pulse_ch >= 0) {
+        // The rule engine owns the relay now, so read the ACTUAL relay state
+        // for status-display pulse gating (p.relay_on is no longer driven here).
+        bool pumping = p.has_relay ? relay_get(p.relay) : false;
         SamplerEvent evt;
         while (sampler_read_next(p.sampler_cursor, evt)) {
             uint8_t bit = (evt.state >> p.pulse_ch) & 0x01;
             if (p.prev_bit == 1 && bit == 0) {
                 // Only count flow while the relay is on (pump running).
-                if (p.relay_on) p.pulse_count++;
+                if (pumping) p.pulse_count++;
             }
             p.prev_bit = bit;
         }
+        p.relay_on = pumping;   // keep status field in sync for the web/OLED UI
     }
 }
 
@@ -136,14 +140,12 @@ static void pump_task(void* param) {
             if (!s_pumps[i].valid) continue;
             sample_pump(s_pumps[i]);
 
-            // Preset auto-stop: if a preset is set and reached, stop the pump.
-            PumpState& p = s_pumps[i];
-            if (p.relay_on && p.preset_litres > 0.0f &&
-                pump_litres(p) >= p.preset_litres) {
-                pump_set_relay(p, false);
-                log_info("[pump] %s: preset %.1f L reached -> relay off",
-                         p.name, p.preset_litres);
-            }
+            // NOTE: relay control (start/stop, preset, timeouts, flow guard)
+            // is now owned by the shared rule engine (src/apps/rule_engine),
+            // which executes the fueling rules[] from config. This task only
+            // SAMPLES nozzle + pulse state for the web/OLED status display.
+            // (Was: preset auto-stop driving the relay here — removed so the
+            // engine is the single owner of the relay.)
         }
 
         push_counter += PUMP_SAMPLE_MS;
