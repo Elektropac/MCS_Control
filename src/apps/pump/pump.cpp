@@ -125,28 +125,37 @@ static void sample_pump(PumpState& p) {
                     // dt i ticks (250µs) mellem denne og forrige puls.
                     uint32_t dt = evt.sample_index - p.last_pulse_idx;
                     if (p.dt_mean <= 0.0f) {
-                        // Første gyldige interval: initialisér middel.
+                        // Første gyldige interval: initialisér baseline.
                         p.dt_mean = (float)dt;
                         p.dt_var  = 0.0f;
                     } else {
                         float m = p.dt_mean;
-                        // BOUNCE/PREL: fysisk umuligt kort interval (< 2 ticks
-                        // = 500µs) ELLER << halvdelen af middel = dobbelttælling.
-                        if (dt < 2 || (float)dt < m * 0.4f) {
+                        bool normal = false;
+                        // BOUNCE/PREL: for kort interval (ekstra flanke tæt på
+                        // en rigtig) = dobbelttælling. < 0.6x baseline.
+                        if (dt < 2 || (float)dt < m * 0.6f) {
                             p.q_bounce++;
                         }
-                        // DROPOUT: hul væsentligt større end middel = tabt puls.
-                        else if ((float)dt > m * 2.5f) {
+                        // DROPOUT: hul = tabt puls. Et enkelt tabt gør intervallet
+                        // ~2x; vær lidt under for at fange det (> 1.8x baseline).
+                        else if ((float)dt > m * 1.8f) {
                             p.q_dropout++;
                         }
-                        // JITTER: moderat afvigelse fra middel (uregelmæssig).
-                        else if ((float)dt > m * 1.4f || (float)dt < m * 0.7f) {
+                        // JITTER: moderat afvigelse (uregelmæssig timing).
+                        else if ((float)dt > m * 1.3f || (float)dt < m * 0.75f) {
                             p.q_jitter++;
                         }
-                        // Opdatér løbende middel + varians (EWMA, alpha=1/8).
-                        float d = (float)dt - m;
-                        p.dt_mean = m + d * 0.125f;
-                        p.dt_var  = p.dt_var + (d * d - p.dt_var) * 0.125f;
+                        else {
+                            normal = true;   // kun "normale" intervaller er rene
+                        }
+                        // VIGTIGT: opdatér KUN baseline med normale intervaller,
+                        // så en stribe fejl ikke trækker middelværdien hen mod
+                        // fejlene og udvasker detektionen.
+                        if (normal) {
+                            float d = (float)dt - m;
+                            p.dt_mean = m + d * 0.125f;
+                            p.dt_var  = p.dt_var + (d * d - p.dt_var) * 0.125f;
+                        }
                     }
                     p.q_window++;
                 }
@@ -209,6 +218,10 @@ static void pump_to_json(JsonObject obj, const PumpState& p) {
     q["bounce"]   = p.q_bounce;
     q["ghost"]    = p.q_ghost;
     q["window"]   = p.q_window;                  // antal målte intervaller
+    // Målt puls-rate (Hz) fra baseline-interval — til frekvens/kalibrerings-
+    // vurdering: afviger den fra forventet (flow*ppl/60) er pulser/L forkert.
+    float hz = (p.dt_mean > 0.0f) ? (4000.0f / p.dt_mean) : 0.0f;  // 4kHz sampler
+    q["hz"] = serialized(String(hz, 1));
 }
 
 // --- Task ---
