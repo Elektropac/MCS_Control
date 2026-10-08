@@ -31,7 +31,7 @@
     .badge.lifted { background: #df9542; }
     .badge.returned { background: #7f97a5; }
     .no-pumps { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
-    /* Pulskvalitet */
+    /* Pulse quality */
     .qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .qchip { display: flex; flex-direction: column; gap: 2px; padding: 7px 9px; border-radius: 10px; cursor: pointer; border: 1.5px solid #cad6dc; background: #fbfdfc; transition: transform .05s; }
     .qchip:active { transform: translateY(1px); }
@@ -61,7 +61,7 @@
       <p id="qmodal-what"></p>
       <p id="qmodal-cause"></p>
       <p id="qmodal-action"></p>
-      <button class="close" onclick="document.getElementById('qmodal').classList.remove('show')">Luk</button>
+      <button class="close" onclick="document.getElementById('qmodal').classList.remove('show')">Close</button>
     </div>
   </div>
   <div class="header">
@@ -99,37 +99,37 @@
       } catch(e) { return null; }
     }
 
-    // Forklaringer pr. fejltype til popup (hvad / årsag / handling).
+    // Explanation per fault type for the popup (what / cause / action).
     const QINFO = {
       jitter: {
-        title: 'Jitter — uregelmæssige pulser',
-        what: 'Tiden mellem pulserne svinger meget, selvom flowet burde være jævnt.',
-        cause: 'Mulig årsag: slidt pulsgiver, dårlig/løs forbindelse eller elektrisk støj på signalet.',
-        action: 'Tjek kabling og stik. Hvis det fortsætter: udskift pulsgiveren.'
+        title: 'Jitter — irregular pulses',
+        what: 'The time between pulses varies a lot, even though the flow should be steady.',
+        cause: 'Possible cause: worn pulse sender, poor/loose connection, or electrical noise on the signal.',
+        action: 'Check wiring and connectors. If it persists: replace the pulse sender.'
       },
       dropout: {
-        title: 'Dropout — manglende pulser',
-        what: 'Nogle pulser når ikke frem — der er huller i strømmen. Flowet måles for LAVT, så kunden får mere end der registreres.',
-        cause: 'Mulig årsag: løs ledning, defekt pulsgiver eller for svagt signal.',
-        action: 'Tjek forbindelsen og signalniveauet. Kalibrér/udskift pulsgiveren.'
+        title: 'Dropout — missing pulses',
+        what: 'Some pulses do not arrive — there are gaps in the stream. Flow is measured too LOW, so the customer gets more than is registered.',
+        cause: 'Possible cause: loose wire, faulty pulse sender, or too weak a signal.',
+        action: 'Check the connection and signal level. Calibrate/replace the pulse sender.'
       },
       prel: {
-        title: 'Prel — dobbelt-tælling',
-        what: 'Kontakten "preller" og giver falske ekstra pulser oven i de rigtige. Flowet måles for HØJT, så kunden får mindre end der registreres.',
-        cause: 'Mulig årsag: slidt mekanisk pulsgiver eller manglende afstøjning.',
-        action: 'Udskift pulsgiveren eller tilføj debounce/filter på indgangen.'
+        title: 'Bounce — double counting',
+        what: 'The contact "bounces" and produces false extra pulses on top of the real ones. Flow is measured too HIGH, so the customer gets less than is registered.',
+        cause: 'Possible cause: worn mechanical pulse sender or missing debounce.',
+        action: 'Replace the pulse sender or add a debounce/filter on the input.'
       },
       ghost: {
-        title: 'Spøgelsespulser — flow uden tankning',
-        what: 'Der kommer pulser mens dysen er lagt på plads / relæet er slået fra. Det bør aldrig ske.',
-        cause: 'Mulig årsag: elektrisk støj, fejlkobling eller — i værste fald — uautoriseret flow.',
-        action: 'Undersøg straks. Tjek kabling og at pulsgiveren ikke påvirkes af andet udstyr.'
+        title: 'Ghost pulses — flow without fuelling',
+        what: 'Pulses arrive while the nozzle is returned / the relay is off. This should never happen.',
+        cause: 'Possible cause: electrical noise, miswiring, or — worst case — unauthorised flow.',
+        action: 'Investigate immediately. Check wiring and that the pulse sender is not affected by other equipment.'
       },
       frekvens: {
-        title: 'Frekvens — målt pulsrate',
-        what: 'Den aktuelt målte pulsrate (Hz). Sammenlign med den forventede rate (flow × pulser/liter ÷ 60). Afviger den systematisk, tæller pulsgiveren forkert antal pulser pr. liter.',
-        cause: 'Mulig årsag: pulsgiveren er miskalibreret eller af forkert type.',
-        action: 'Kalibrér pulsgiveren — justér pulser/liter så den målte mængde passer med en kendt reference-dosering.'
+        title: 'Frequency — measured pulse rate',
+        what: 'The currently measured pulse rate (Hz). Compare with the expected rate (flow × pulses/litre ÷ 60). A systematic deviation means the pulse sender counts the wrong number of pulses per litre.',
+        cause: 'Possible cause: the pulse sender is miscalibrated or the wrong type.',
+        action: 'Calibrate the pulse sender — adjust pulses/litre so the measured volume matches a known reference dose.'
       }
     };
     function showQ(key) {
@@ -138,7 +138,7 @@
       document.getElementById('qmodal-title').textContent = info.title;
       document.getElementById('qmodal-what').textContent = info.what;
       document.getElementById('qmodal-cause').textContent = info.cause;
-      document.getElementById('qmodal-action').textContent = 'Handling: ' + info.action;
+      document.getElementById('qmodal-action').textContent = 'Action: ' + info.action;
       document.getElementById('qmodal').classList.add('show');
     }
     async function resetQuality() {
@@ -168,7 +168,7 @@
               <span class="badge returned" id="nozzle-${i}">—</span>
             </div>
             <div class="row">
-              <span class="sub">Pulskvalitet</span>
+              <span class="sub">Pulse quality</span>
             </div>
             <div class="qgrid" id="qgrid-${i}"></div>
           </div>`;
@@ -198,18 +198,18 @@
         nozEl.textContent = p.nozzle_lifted ? 'Lifted' : 'Returned';
         nozEl.className = 'badge ' + (p.nozzle_lifted ? 'lifted' : 'returned');
 
-        // Pulskvalitet (Fase 1: kun visning)
-        // Pulskvalitet: vis ALLE fejltyper samtidig, hver med egen status.
+        // Pulse quality (Phase 1: display only)
+        // Pulse quality: show ALL fault types at once, each with its own status.
         const q = p.quality || {};
         const cv = parseFloat(q.cv_pct) || 0;
         const hz = parseFloat(q.hz) || 0;
-        // Hver type: {navn, dårlig?, kort måltal}
+        // Each type: {name, bad?, short metric}
         const types = [
           { key:'jitter',   label:'Jitter',    bad:(q.jitter>4 || cv>20), detail:`${cv.toFixed(0)}% variation` },
-          { key:'dropout',  label:'Dropout',   bad:(q.dropout>2),         detail:`${q.dropout||0} tabt` },
-          { key:'prel',     label:'Prel',      bad:(q.bounce>2),          detail:`${q.bounce||0} dobbelt` },
-          { key:'ghost',    label:'Spøgelse',  bad:(q.ghost>0),           detail:`${q.ghost||0} uden flow` },
-          { key:'frekvens', label:'Frekvens',  bad:false, info:true, detail:`${hz.toFixed(0)} Hz målt` },
+          { key:'dropout',  label:'Dropout',   bad:(q.dropout>2),         detail:`${q.dropout||0} missed` },
+          { key:'prel',     label:'Bounce',      bad:(q.bounce>2),          detail:`${q.bounce||0} double` },
+          { key:'ghost',    label:'Ghost',  bad:(q.ghost>0),           detail:`${q.ghost||0} no-flow` },
+          { key:'frekvens', label:'Frequency',  bad:false, info:true, detail:`${hz.toFixed(0)} Hz measured` },
         ];
         const grid = document.getElementById('qgrid-' + i);
         if (grid) {
@@ -219,8 +219,8 @@
                <span class="qstat">${(t.bad||t.info) ? t.detail : 'OK'}</span>
              </div>`
           ).join('')
-          + `<div class="qmeta">${q.window||0} pulser målt · tryk på en type for forklaring</div>`
-          + `<button class="qreset" onclick="resetQuality()">Nulstil pulskvalitet</button>`;
+          + `<div class="qmeta">${q.window||0} pulses measured · tap a type for explanation</div>`
+          + `<button class="qreset" onclick="resetQuality()">Reset pulse quality</button>`;
         }
       });
     }
