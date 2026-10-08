@@ -94,6 +94,7 @@
               <span class="sub">Pulskvalitet</span>
               <span class="badge returned" id="quality-${i}">—</span>
             </div>
+            <div class="sub" id="qexplain-${i}" style="font-size:12px;color:#476071;line-height:1.4;"></div>
             <div class="sub" id="qdetail-${i}" style="font-size:11px;color:#8a9aa6;"></div>
           </div>`;
       });
@@ -125,11 +126,24 @@
         // Pulskvalitet (Fase 1: kun visning)
         const qEl = document.getElementById('quality-' + i);
         const qdEl = document.getElementById('qdetail-' + i);
+        const qxEl = document.getElementById('qexplain-' + i);
         const q = p.quality || {};
         const v = q.verdict || '—';
+        // Forklaring pr. fejltype: hvad betyder det + sandsynlig årsag.
+        const QEXPLAIN = {
+          'god':             '✓ Pulssignalet er regelmæssigt og sundt.',
+          'jitter':          '⚠ Jitter: uregelmæssige pulsinterval (ustabilt signal). Mulig årsag: slidt pulsgiver, dårlig forbindelse eller elektrisk støj.',
+          'dropout':         '⚠ Dropout: pulser mangler — flow måles for lavt. Mulig årsag: løs ledning, defekt pulsgiver eller for svagt signal.',
+          'prel':            '⚠ Prel: dobbelt-tælling fra prellende kontakt — flow måles for højt. Mulig årsag: slidt mekanisk pulsgiver.',
+          'spøgelsespulser': '⚠ Spøgelsespulser: pulser UDEN aktiv tankning (dyse nede/relæ fra). Mulig årsag: elektrisk støj eller fejlkobling — undersøg.',
+          'frekvens':        '⚠ Frekvensafvigelse: pulser/liter afviger fra kalibrering. Pulsgiveren bør kalibreres.'
+        };
         if (qEl) {
           qEl.textContent = v === 'god' ? 'OK' : v.toUpperCase();
           qEl.className = 'badge ' + (v === 'god' ? 'on' : 'off');
+        }
+        if (qxEl) {
+          qxEl.textContent = QEXPLAIN[v] || '';
         }
         if (qdEl) {
           const parts = [];
