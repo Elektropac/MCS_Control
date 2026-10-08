@@ -41,6 +41,8 @@
     .qchip.ok .qlabel { color: #1f8a4c; } .qchip.ok .qstat { color: #2ecc71; }
     .qchip.bad { border-color: #e9b4ad; background: #fdf1ef; }
     .qchip.bad .qlabel { color: #c0392b; } .qchip.bad .qstat { color: #e74c3c; }
+    .qchip.info { border-color: #b9d4e6; background: #f0f7fc; }
+    .qchip.info .qlabel { color: #1f6a9c; } .qchip.info .qstat { color: #2a7fb8; }
     .qmeta { grid-column: 1 / -1; font-size: 10px; color: #8a9aa6; margin-top: 2px; }
     .qreset { grid-column: 1 / -1; margin-top: 4px; padding: 6px; border: 1.5px solid #cad6dc; border-radius: 10px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 11px; cursor: pointer; }
     /* Modal */
@@ -122,6 +124,12 @@
         what: 'Der kommer pulser mens dysen er lagt på plads / relæet er slået fra. Det bør aldrig ske.',
         cause: 'Mulig årsag: elektrisk støj, fejlkobling eller — i værste fald — uautoriseret flow.',
         action: 'Undersøg straks. Tjek kabling og at pulsgiveren ikke påvirkes af andet udstyr.'
+      },
+      frekvens: {
+        title: 'Frekvens — målt pulsrate',
+        what: 'Den aktuelt målte pulsrate (Hz). Sammenlign med den forventede rate (flow × pulser/liter ÷ 60). Afviger den systematisk, tæller pulsgiveren forkert antal pulser pr. liter.',
+        cause: 'Mulig årsag: pulsgiveren er miskalibreret eller af forkert type.',
+        action: 'Kalibrér pulsgiveren — justér pulser/liter så den målte mængde passer med en kendt reference-dosering.'
       }
     };
     function showQ(key) {
@@ -194,19 +202,21 @@
         // Pulskvalitet: vis ALLE fejltyper samtidig, hver med egen status.
         const q = p.quality || {};
         const cv = parseFloat(q.cv_pct) || 0;
+        const hz = parseFloat(q.hz) || 0;
         // Hver type: {navn, dårlig?, kort måltal}
         const types = [
           { key:'jitter',   label:'Jitter',    bad:(q.jitter>4 || cv>20), detail:`${cv.toFixed(0)}% variation` },
           { key:'dropout',  label:'Dropout',   bad:(q.dropout>2),         detail:`${q.dropout||0} tabt` },
           { key:'prel',     label:'Prel',      bad:(q.bounce>2),          detail:`${q.bounce||0} dobbelt` },
           { key:'ghost',    label:'Spøgelse',  bad:(q.ghost>0),           detail:`${q.ghost||0} uden flow` },
+          { key:'frekvens', label:'Frekvens',  bad:false, info:true, detail:`${hz.toFixed(0)} Hz målt` },
         ];
         const grid = document.getElementById('qgrid-' + i);
         if (grid) {
           grid.innerHTML = types.map(t =>
-            `<div class="qchip ${t.bad?'bad':'ok'}" onclick="showQ('${t.key}')">
+            `<div class="qchip ${t.bad?'bad':(t.info?'info':'ok')}" onclick="showQ('${t.key}')">
                <span class="qlabel">${t.label}</span>
-               <span class="qstat">${t.bad ? t.detail : 'OK'}</span>
+               <span class="qstat">${(t.bad||t.info) ? t.detail : 'OK'}</span>
              </div>`
           ).join('')
           + `<div class="qmeta">${q.window||0} pulser målt · tryk på en type for forklaring</div>`
