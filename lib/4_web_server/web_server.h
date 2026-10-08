@@ -54,13 +54,74 @@ namespace web_server
         return;
     }
 
+    // Read a full HTTP request without blocking for the stream's ~1s timeout.
+    // readString() always stalls until the inter-byte timeout elapses (~1000ms
+    // on every request). Instead we read bytes as they arrive and return as
+    // soon as the request is complete: headers terminator (\r\n\r\n) seen AND
+    // the body (per Content-Length) fully received. A short wall-clock cap
+    // guards against a stalled/partial client.
+    static String read_full_request(Client &client)
+    {
+        String raw;
+        raw.reserve(512);
+        const uint32_t start = millis();
+        const uint32_t MAX_MS = 250;          // hard cap per request
+        int header_end = -1;
+        int content_length = -1;
+
+        while (millis() - start < MAX_MS)
+        {
+            while (client.available())
+            {
+                raw += (char)client.read();
+
+                // Detect end of headers once.
+                if (header_end < 0)
+                {
+                    header_end = raw.indexOf("\r\n\r\n");
+                    if (header_end >= 0)
+                    {
+                        // Parse Content-Length (case-insensitive).
+                        String h = raw.substring(0, header_end);
+                        h.toLowerCase();
+                        int ci = h.indexOf("content-length:");
+                        if (ci >= 0)
+                        {
+                            int ve = h.indexOf("\r\n", ci);
+                            if (ve < 0) ve = h.length();
+                            content_length =
+                                h.substring(ci + 15, ve).toInt();
+                        }
+                        else
+                        {
+                            content_length = 0; // no body (e.g. GET)
+                        }
+                    }
+                }
+
+                // If headers are done, check whether the body is complete.
+                if (header_end >= 0)
+                {
+                    int body_have = raw.length() - (header_end + 4);
+                    if (body_have >= content_length)
+                        return raw;          // complete -> return now
+                }
+            }
+
+            if (!client.connected() && !client.available())
+                break;                        // client went away
+            delay(1);                         // yield briefly, then re-check
+        }
+        return raw;                           // best effort on timeout
+    }
+
     void poll()
     {
         EthernetClient eth_client = eth_server.available();
 
         if (eth_client)
         {
-            String request_line = eth_client.readString();
+            String request_line = read_full_request(eth_client);
 
             Request req = parse_request(request_line);
 
@@ -74,7 +135,7 @@ namespace web_server
 
             if (wifi_client)
             {
-                String request_line = wifi_client.readString();
+                String request_line = read_full_request(wifi_client);
                 Request req = parse_request(request_line);
 
                 handle_client(wifi_client, req);
