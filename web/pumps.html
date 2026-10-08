@@ -90,6 +90,11 @@
               <span class="sub">Nozzle</span>
               <span class="badge returned" id="nozzle-${i}">—</span>
             </div>
+            <div class="row">
+              <span class="sub">Pulskvalitet</span>
+              <span class="badge returned" id="quality-${i}">—</span>
+            </div>
+            <div class="sub" id="qdetail-${i}" style="font-size:11px;color:#8a9aa6;"></div>
           </div>`;
       });
       pumpCount = pumps.length;
@@ -116,6 +121,25 @@
         const nozEl = document.getElementById('nozzle-' + i);
         nozEl.textContent = p.nozzle_lifted ? 'Lifted' : 'Returned';
         nozEl.className = 'badge ' + (p.nozzle_lifted ? 'lifted' : 'returned');
+
+        // Pulskvalitet (Fase 1: kun visning)
+        const qEl = document.getElementById('quality-' + i);
+        const qdEl = document.getElementById('qdetail-' + i);
+        const q = p.quality || {};
+        const v = q.verdict || '—';
+        if (qEl) {
+          qEl.textContent = v === 'god' ? 'OK' : v.toUpperCase();
+          qEl.className = 'badge ' + (v === 'god' ? 'on' : 'off');
+        }
+        if (qdEl) {
+          const parts = [];
+          if (q.cv_pct !== undefined) parts.push(`jitter ${q.cv_pct}%`);
+          if (q.dropout) parts.push(`${q.dropout} dropout`);
+          if (q.bounce)  parts.push(`${q.bounce} prel`);
+          if (q.ghost)   parts.push(`${q.ghost} spøgelse`);
+          if (q.window !== undefined) parts.push(`${q.window} målt`);
+          qdEl.textContent = parts.join(' · ');
+        }
       });
     }
 

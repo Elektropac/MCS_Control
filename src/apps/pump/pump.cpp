@@ -63,6 +63,18 @@ struct PumpState {
     uint8_t prev_bit;         // previous pulse bit (edge detection)
     bool prev_pumping;        // engine state was "pumping" last tick (for reset)
     bool valid;
+
+    // --- Pulskvalitets-analyse (additivt; beregnes i sample_pump) ---
+    // Hvert flanke-tidsstempel (sampler sample_index @ 250µs) bruges til at
+    // måle intervallet dt mellem pulser. Fra dt-strømmen udledes 5 fejltyper.
+    uint32_t last_pulse_idx;  // sample_index for forrige puls (0 = ingen endnu)
+    float    dt_mean;         // løbende middel af dt (i ticks), EWMA
+    float    dt_var;          // løbende varians-estimat (til jitter CV)
+    uint32_t q_jitter;        // tæller: intervaller med stor afvigelse
+    uint32_t q_dropout;       // tæller: huller (dt >> middel)
+    uint32_t q_bounce;        // tæller: for korte intervaller (prel)
+    uint32_t q_ghost;         // tæller: pulser mens ikke-pumping (uautoriseret)
+    uint32_t q_window;        // antal pulser i aktuelt kvalitets-vindue
 };
 
 static PumpState s_pumps[MAX_PUMPS];
@@ -102,6 +114,43 @@ static void sample_pump(PumpState& p) {
             uint8_t bit = (evt.state >> p.pulse_ch) & 0x01;
             if (p.prev_bit == 0 && bit == 1) {
                 p.pulse_count++;
+
+                // --- Pulskvalitets-måling på denne stigende flanke ---
+                // GHOST: en puls mens pumpen ikke er autoriseret (dyse nede
+                // eller relæ fra) = uautoriseret/spøgelses-flow.
+                bool authorised = p.nozzle_lifted && p.relay_on;
+                if (!authorised) {
+                    p.q_ghost++;
+                } else if (p.last_pulse_idx != 0) {
+                    // dt i ticks (250µs) mellem denne og forrige puls.
+                    uint32_t dt = evt.sample_index - p.last_pulse_idx;
+                    if (p.dt_mean <= 0.0f) {
+                        // Første gyldige interval: initialisér middel.
+                        p.dt_mean = (float)dt;
+                        p.dt_var  = 0.0f;
+                    } else {
+                        float m = p.dt_mean;
+                        // BOUNCE/PREL: fysisk umuligt kort interval (< 2 ticks
+                        // = 500µs) ELLER << halvdelen af middel = dobbelttælling.
+                        if (dt < 2 || (float)dt < m * 0.4f) {
+                            p.q_bounce++;
+                        }
+                        // DROPOUT: hul væsentligt større end middel = tabt puls.
+                        else if ((float)dt > m * 2.5f) {
+                            p.q_dropout++;
+                        }
+                        // JITTER: moderat afvigelse fra middel (uregelmæssig).
+                        else if ((float)dt > m * 1.4f || (float)dt < m * 0.7f) {
+                            p.q_jitter++;
+                        }
+                        // Opdatér løbende middel + varians (EWMA, alpha=1/8).
+                        float d = (float)dt - m;
+                        p.dt_mean = m + d * 0.125f;
+                        p.dt_var  = p.dt_var + (d * d - p.dt_var) * 0.125f;
+                    }
+                    p.q_window++;
+                }
+                p.last_pulse_idx = evt.sample_index;
             }
             p.prev_bit = bit;
         }
@@ -139,6 +188,27 @@ static void pump_to_json(JsonObject obj, const PumpState& p) {
     obj["pulses_per_litre"] = serialized(String(p.pulses_per_litre, 2));
     obj["litres"] = serialized(String(pump_litres(p), 2));   // raw/ppl, decimals
     obj["preset_litres"] = serialized(String(p.preset_litres, 1));
+
+    // --- Pulskvalitet (Fase 1: kun visning, ingen alarm) ---
+    // Jitter som variationskoefficient: std(dt)/middel(dt) i procent.
+    float cv = 0.0f;
+    if (p.dt_mean > 0.0f && p.dt_var > 0.0f) {
+        cv = (sqrtf(p.dt_var) / p.dt_mean) * 100.0f;
+    }
+    // Samlet dom: "god" medmindre en fejltype har mærkbare tællinger.
+    const char* verdict = "god";
+    if      (p.q_ghost   > 0)  verdict = "spøgelsespulser";
+    else if (p.q_bounce  > 2)  verdict = "prel";
+    else if (p.q_dropout > 2)  verdict = "dropout";
+    else if (p.q_jitter  > 4 || cv > 20.0f) verdict = "jitter";
+    JsonObject q = obj["quality"].to<JsonObject>();
+    q["verdict"]  = verdict;
+    q["cv_pct"]   = serialized(String(cv, 1));   // jitter-mål
+    q["jitter"]   = p.q_jitter;
+    q["dropout"]  = p.q_dropout;
+    q["bounce"]   = p.q_bounce;
+    q["ghost"]    = p.q_ghost;
+    q["window"]   = p.q_window;                  // antal målte intervaller
 }
 
 // --- Task ---
@@ -168,6 +238,10 @@ static void pump_task(void* param) {
             bool pumping_now = (rule_kv_get(key, "idle") == "pumping");
             if (pumping_now && !p.prev_pumping) {
                 p.pulse_count = 0;   // new transaction -> fresh count
+                // Nulstil pulskvalitets-analyse for ny transaktion.
+                p.last_pulse_idx = 0;
+                p.dt_mean = 0.0f; p.dt_var = 0.0f;
+                p.q_jitter = p.q_dropout = p.q_bounce = p.q_ghost = p.q_window = 0;
             }
             p.prev_pumping = pumping_now;
         }
