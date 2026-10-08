@@ -350,6 +350,15 @@ String pump_get_all() {
     return result;
 }
 
+void pump_quality_reset() {
+    for (uint8_t i = 0; i < s_num_pumps; i++) {
+        PumpState& p = s_pumps[i];
+        p.last_pulse_idx = 0;
+        p.dt_mean = 0.0f; p.dt_var = 0.0f;
+        p.q_jitter = p.q_dropout = p.q_bounce = p.q_ghost = p.q_window = 0;
+    }
+}
+
 String pump_get(const char* id) {
     for (uint8_t i = 0; i < s_num_pumps; i++) {
         if (strcmp(s_pumps[i].id, id) == 0 || strcmp(s_pumps[i].name, id) == 0) {

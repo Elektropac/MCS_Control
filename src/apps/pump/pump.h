@@ -31,6 +31,9 @@ String pump_get_all();
 // One pump by group id or name.
 String pump_get(const char* id);
 
+// Nulstil pulskvalitets-tællere for alle pumper (web reset-knap).
+void pump_quality_reset();
+
 // True if ANY pump is currently active (nozzle lifted or relay on) — i.e. a
 // fueling transaction is in progress. Used by OTA to avoid interrupting a
 // fuelling. Safe to call from another task (reads runtime state only).

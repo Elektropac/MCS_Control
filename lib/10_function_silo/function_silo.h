@@ -88,6 +88,11 @@ namespace function_silo
         {
             return pump_get_all();
         }
+        else if (function_name == "pump_quality_reset")
+        {
+            pump_quality_reset();
+            return String("{\"result\":\"quality reset\"}");
+        }
         else if (function_name == "rule_debug")
         {
             return rule_engine_debug();

@@ -31,9 +31,37 @@
     .badge.lifted { background: #df9542; }
     .badge.returned { background: #7f97a5; }
     .no-pumps { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
+    /* Pulskvalitet */
+    .qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .qchip { display: flex; flex-direction: column; gap: 2px; padding: 7px 9px; border-radius: 10px; cursor: pointer; border: 1.5px solid #cad6dc; background: #fbfdfc; transition: transform .05s; }
+    .qchip:active { transform: translateY(1px); }
+    .qchip .qlabel { font-size: 12px; font-weight: 800; }
+    .qchip .qstat { font-size: 11px; font-weight: 700; }
+    .qchip.ok  { border-color: #bfe6cf; background: #f1faf4; }
+    .qchip.ok .qlabel { color: #1f8a4c; } .qchip.ok .qstat { color: #2ecc71; }
+    .qchip.bad { border-color: #e9b4ad; background: #fdf1ef; }
+    .qchip.bad .qlabel { color: #c0392b; } .qchip.bad .qstat { color: #e74c3c; }
+    .qmeta { grid-column: 1 / -1; font-size: 10px; color: #8a9aa6; margin-top: 2px; }
+    .qreset { grid-column: 1 / -1; margin-top: 4px; padding: 6px; border: 1.5px solid #cad6dc; border-radius: 10px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 11px; cursor: pointer; }
+    /* Modal */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(10,20,30,.45); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
+    .modal-bg.show { display: flex; }
+    .modal { background: #fffefb; border-radius: 16px; max-width: 420px; padding: 22px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+    .modal h2 { font-size: 18px; color: #173447; margin-bottom: 10px; }
+    .modal p { font-size: 14px; color: #3a5160; line-height: 1.55; margin-bottom: 8px; }
+    .modal .close { margin-top: 12px; padding: 9px 16px; border: 2px solid #0c1b24; border-radius: 10px; background: #dcefeb; font-weight: 800; cursor: pointer; }
   </style>
 </head>
 <body>
+  <div class="modal-bg" id="qmodal" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal">
+      <h2 id="qmodal-title">—</h2>
+      <p id="qmodal-what"></p>
+      <p id="qmodal-cause"></p>
+      <p id="qmodal-action"></p>
+      <button class="close" onclick="document.getElementById('qmodal').classList.remove('show')">Luk</button>
+    </div>
+  </div>
   <div class="header">
     <h1>&#9981; Pumps</h1>
     <div class="nav">
@@ -69,6 +97,47 @@
       } catch(e) { return null; }
     }
 
+    // Forklaringer pr. fejltype til popup (hvad / årsag / handling).
+    const QINFO = {
+      jitter: {
+        title: 'Jitter — uregelmæssige pulser',
+        what: 'Tiden mellem pulserne svinger meget, selvom flowet burde være jævnt.',
+        cause: 'Mulig årsag: slidt pulsgiver, dårlig/løs forbindelse eller elektrisk støj på signalet.',
+        action: 'Tjek kabling og stik. Hvis det fortsætter: udskift pulsgiveren.'
+      },
+      dropout: {
+        title: 'Dropout — manglende pulser',
+        what: 'Nogle pulser når ikke frem — der er huller i strømmen. Flowet måles for LAVT, så kunden får mere end der registreres.',
+        cause: 'Mulig årsag: løs ledning, defekt pulsgiver eller for svagt signal.',
+        action: 'Tjek forbindelsen og signalniveauet. Kalibrér/udskift pulsgiveren.'
+      },
+      prel: {
+        title: 'Prel — dobbelt-tælling',
+        what: 'Kontakten "preller" og giver falske ekstra pulser oven i de rigtige. Flowet måles for HØJT, så kunden får mindre end der registreres.',
+        cause: 'Mulig årsag: slidt mekanisk pulsgiver eller manglende afstøjning.',
+        action: 'Udskift pulsgiveren eller tilføj debounce/filter på indgangen.'
+      },
+      ghost: {
+        title: 'Spøgelsespulser — flow uden tankning',
+        what: 'Der kommer pulser mens dysen er lagt på plads / relæet er slået fra. Det bør aldrig ske.',
+        cause: 'Mulig årsag: elektrisk støj, fejlkobling eller — i værste fald — uautoriseret flow.',
+        action: 'Undersøg straks. Tjek kabling og at pulsgiveren ikke påvirkes af andet udstyr.'
+      }
+    };
+    function showQ(key) {
+      const info = QINFO[key];
+      if (!info) return;
+      document.getElementById('qmodal-title').textContent = info.title;
+      document.getElementById('qmodal-what').textContent = info.what;
+      document.getElementById('qmodal-cause').textContent = info.cause;
+      document.getElementById('qmodal-action').textContent = 'Handling: ' + info.action;
+      document.getElementById('qmodal').classList.add('show');
+    }
+    async function resetQuality() {
+      await api('pump_quality_reset');
+      poll();
+    }
+
     function buildCards(pumps) {
       const el = document.getElementById('pumps');
       el.innerHTML = '';
@@ -92,10 +161,8 @@
             </div>
             <div class="row">
               <span class="sub">Pulskvalitet</span>
-              <span class="badge returned" id="quality-${i}">—</span>
             </div>
-            <div class="sub" id="qexplain-${i}" style="font-size:12px;color:#476071;line-height:1.4;"></div>
-            <div class="sub" id="qdetail-${i}" style="font-size:11px;color:#8a9aa6;"></div>
+            <div class="qgrid" id="qgrid-${i}"></div>
           </div>`;
       });
       pumpCount = pumps.length;
@@ -124,35 +191,26 @@
         nozEl.className = 'badge ' + (p.nozzle_lifted ? 'lifted' : 'returned');
 
         // Pulskvalitet (Fase 1: kun visning)
-        const qEl = document.getElementById('quality-' + i);
-        const qdEl = document.getElementById('qdetail-' + i);
-        const qxEl = document.getElementById('qexplain-' + i);
+        // Pulskvalitet: vis ALLE fejltyper samtidig, hver med egen status.
         const q = p.quality || {};
-        const v = q.verdict || '—';
-        // Forklaring pr. fejltype: hvad betyder det + sandsynlig årsag.
-        const QEXPLAIN = {
-          'god':             '✓ Pulssignalet er regelmæssigt og sundt.',
-          'jitter':          '⚠ Jitter: uregelmæssige pulsinterval (ustabilt signal). Mulig årsag: slidt pulsgiver, dårlig forbindelse eller elektrisk støj.',
-          'dropout':         '⚠ Dropout: pulser mangler — flow måles for lavt. Mulig årsag: løs ledning, defekt pulsgiver eller for svagt signal.',
-          'prel':            '⚠ Prel: dobbelt-tælling fra prellende kontakt — flow måles for højt. Mulig årsag: slidt mekanisk pulsgiver.',
-          'spøgelsespulser': '⚠ Spøgelsespulser: pulser UDEN aktiv tankning (dyse nede/relæ fra). Mulig årsag: elektrisk støj eller fejlkobling — undersøg.',
-          'frekvens':        '⚠ Frekvensafvigelse: pulser/liter afviger fra kalibrering. Pulsgiveren bør kalibreres.'
-        };
-        if (qEl) {
-          qEl.textContent = v === 'god' ? 'OK' : v.toUpperCase();
-          qEl.className = 'badge ' + (v === 'god' ? 'on' : 'off');
-        }
-        if (qxEl) {
-          qxEl.textContent = QEXPLAIN[v] || '';
-        }
-        if (qdEl) {
-          const parts = [];
-          if (q.cv_pct !== undefined) parts.push(`jitter ${q.cv_pct}%`);
-          if (q.dropout) parts.push(`${q.dropout} dropout`);
-          if (q.bounce)  parts.push(`${q.bounce} prel`);
-          if (q.ghost)   parts.push(`${q.ghost} spøgelse`);
-          if (q.window !== undefined) parts.push(`${q.window} målt`);
-          qdEl.textContent = parts.join(' · ');
+        const cv = parseFloat(q.cv_pct) || 0;
+        // Hver type: {navn, dårlig?, kort måltal}
+        const types = [
+          { key:'jitter',   label:'Jitter',    bad:(q.jitter>4 || cv>20), detail:`${cv.toFixed(0)}% variation` },
+          { key:'dropout',  label:'Dropout',   bad:(q.dropout>2),         detail:`${q.dropout||0} tabt` },
+          { key:'prel',     label:'Prel',      bad:(q.bounce>2),          detail:`${q.bounce||0} dobbelt` },
+          { key:'ghost',    label:'Spøgelse',  bad:(q.ghost>0),           detail:`${q.ghost||0} uden flow` },
+        ];
+        const grid = document.getElementById('qgrid-' + i);
+        if (grid) {
+          grid.innerHTML = types.map(t =>
+            `<div class="qchip ${t.bad?'bad':'ok'}" onclick="showQ('${t.key}')">
+               <span class="qlabel">${t.label}</span>
+               <span class="qstat">${t.bad ? t.detail : 'OK'}</span>
+             </div>`
+          ).join('')
+          + `<div class="qmeta">${q.window||0} pulser målt · tryk på en type for forklaring</div>`
+          + `<button class="qreset" onclick="resetQuality()">Nulstil pulskvalitet</button>`;
         }
       });
     }
