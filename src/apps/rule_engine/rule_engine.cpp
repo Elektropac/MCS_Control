@@ -152,6 +152,10 @@ struct RuleGroup {
     uint32_t timer_last_ms[16];
     uint32_t pulse_fired_at[16];
     bool     boot_done;               // recover_on_boot one-shot
+    // Flow-guard (pulse_rate): kræv et MINDSTE antal pulser i et glidende
+    // vindue før alarm — så en enkelt spuriøs puls (støj/boot) ikke udløser den.
+    uint32_t fg_window_start_ms[8];   // start på nuværende tælle-vindue pr. kanal
+    uint32_t fg_window_count0[8];     // pulse_total ved vinduets start
     bool     valid;
 };
 static RuleGroup s_groups[MAX_RULE_GROUPS];
@@ -438,14 +442,27 @@ static bool eval_trigger(RuleGroup& g, JsonObject trig, uint8_t rule_idx,
         }
 
         if (!strcmp(ttype, "pulse_rate")) {
-            // Flow guard: any pulse activity (op "above", value small) within
-            // the last tick window. We treat "a pulse arrived recently" as
-            // active flow. The condition (state != pumping) gates misuse.
-            uint32_t now2 = millis();
-            uint32_t last = g.pulse_last_ms[ch];
-            if (last == 0) return false;
-            // Fire if a pulse arrived within ~2 ticks (recent flow).
-            return (now2 - last) <= (RULE_TICK_MS * 2);
+            // Flow guard: kræv VEDVARENDE flow, ikke en enkelt puls. En rigtig
+            // uautoriseret tankning giver en strøm af pulser; støj eller en
+            // boot-glitch giver 1-2 isolerede. Vi tæller pulser i et glidende
+            // vindue og udløser kun hvis der kom MINDST `min_pulses` inden for
+            // `window_ms`. Parametre kan sættes i reglen, med realistiske
+            // defaults (5 pulser på 2 s ≈ 0,5 L ved 10 pulser/L).
+            uint32_t now2       = millis();
+            uint32_t min_pulses = trig["min_pulses"] | 5;
+            uint32_t window_ms  = trig["window_ms"]  | 2000;
+            uint32_t total      = g.pulse_total[ch];
+
+            // Start/forny vinduet hvis det er udløbet eller uinitialiseret.
+            if (g.fg_window_start_ms[ch] == 0 ||
+                (now2 - g.fg_window_start_ms[ch]) > window_ms) {
+                g.fg_window_start_ms[ch] = now2;
+                g.fg_window_count0[ch]   = total;
+                return false;   // nyt vindue -> endnu ikke nok data
+            }
+            // Antal pulser i det nuværende vindue.
+            uint32_t in_window = total - g.fg_window_count0[ch];
+            return (in_window >= min_pulses);
         }
         return false;
     }
