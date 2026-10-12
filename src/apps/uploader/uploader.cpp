@@ -34,13 +34,27 @@ namespace uploader
     {
         if (!s_probe_queue) return false;
         // timeout 0: never block a producer; drop if the queue is full.
-        return xQueueSend(s_probe_queue, &sample, 0) == pdPASS;
+        bool ok = xQueueSend(s_probe_queue, &sample, 0) == pdPASS;
+        if (ok) {
+            log_info("[uploader] queued probe '%s': mm=%d liters=%d state=%s",
+                     sample.id, (int)sample.mm, (int)sample.liters, sample.state);
+        } else {
+            log_error("[uploader] probe queue FULL, dropped '%s'", sample.id);
+        }
+        return ok;
     }
 
     bool queue_pump(const PumpSample& sample)
     {
         if (!s_pump_queue) return false;
-        return xQueueSend(s_pump_queue, &sample, 0) == pdPASS;
+        bool ok = xQueueSend(s_pump_queue, &sample, 0) == pdPASS;
+        if (ok) {
+            log_info("[uploader] queued pump '%s': litres=%.2f total=%.2f state=%s",
+                     sample.id, sample.litres, sample.total_litres, sample.state);
+        } else {
+            log_error("[uploader] pump queue FULL, dropped '%s'", sample.id);
+        }
+        return ok;
     }
 
     // ---- Task ------------------------------------------------------------
