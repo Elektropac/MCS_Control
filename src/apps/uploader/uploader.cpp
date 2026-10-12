@@ -109,14 +109,16 @@ namespace uploader
             if (!has_data) continue;        // nothing to send this round
 
             if (!connected) {
-                // Transport down — items already drained are dropped. (A future
-                // step could buffer to flash; for now we favour fresh data.)
+                log_info("[uploader] transport down, dropped %u probes + %u pumps",
+                         probes.size(), pumps.size());
                 continue;
             }
 
             String payload;
             serializeJson(doc, payload);
             web_socket::sendMessage(payload);
+            log_info("[uploader] sent %u probes + %u pumps (%u bytes)",
+                     probes.size(), pumps.size(), payload.length());
         }
     }
 
