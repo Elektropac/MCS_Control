@@ -34,6 +34,8 @@ namespace web_socket {
     void sendMessage(const String &message);
 }
 
+#include "apps/uploader/uploader.h"
+
 // --- Constants ---
 #define MAX_PROBES          8
 #define SAMPLE_INTERVAL_MS  1000
@@ -123,6 +125,14 @@ struct ProbeState {
 static ProbeState s_probes[MAX_PROBES];
 static uint8_t s_num_probes = 0;
 static TaskHandle_t s_task_handle = nullptr;
+
+// Forward declarations — these helpers are defined later in this file but are
+// used by cloudgauge_task() when building upload samples.
+static float input_to_mm(const ProbeState& p);
+static float mm_to_liters(const ProbeState& p, float mm);
+static float level_percent(const ProbeState& p, float mm, float liters);
+static float level_in_unit(const ProbeState& p, float mm, float liters, float pct);
+static const char* probe_state(const ProbeState& p, float level);
 
 // --- Parse input name to channel index ---
 // "A1"→0, "A2"→1, "A3"→2, "A4"→3, "B1"→4, "B2"→5, "B3"→6, "B4"→7
@@ -337,10 +347,30 @@ static void cloudgauge_task(void* param) {
         push_counter++;
         if (push_counter >= PUSH_INTERVAL_S) {
             push_counter = 0;
-            if (web_socket::is_connected) {
-                String json = cloudgauge_get_all();
-                web_socket::sendMessage(json);
-                log_info("[cloudgauge] Pushed to server");
+            // Hand each probe's snapshot to the uploader queue. The uploader
+            // task batches probes + pumps into one payload and sends it via
+            // web_socket::sendMessage(). (Was: direct cloudgauge_get_all()
+            // push from here.)
+            for (uint8_t i = 0; i < s_num_probes; i++) {
+                const ProbeState& p = s_probes[i];
+                if (!p.valid) continue;
+
+                float mm = input_to_mm(p);
+                float liters = mm_to_liters(p, mm);
+                float pct = level_percent(p, mm, liters);
+                float level = level_in_unit(p, mm, liters, pct);
+
+                uploader::ProbeSample s{};
+                strlcpy(s.id, p.id, sizeof(s.id));
+                strlcpy(s.media, p.media, sizeof(s.media));
+                s.ma = p.avg_ma;
+                s.mm = (int32_t)mm;
+                s.liters = (int32_t)liters;
+                s.pct = pct;
+                strlcpy(s.state, probe_state(p, level), sizeof(s.state));
+                s.timestamp = millis();
+
+                uploader::queue_probe(s);
             }
         }
     }
