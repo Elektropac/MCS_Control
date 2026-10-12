@@ -37,7 +37,13 @@ namespace w5500
     int run_dhcp()
     {
         log_info("[w5500] network mode: dhcp");
-        return Ethernet.begin(mac_byte);
+        auto result = Ethernet.begin(mac_byte);
+
+        if (result == 1) {
+            connected = true;
+        }
+
+        return result;
     }
 
     int run_link_local()
@@ -72,6 +78,9 @@ namespace w5500
         if (config::ethernet_config.mode == "dhcp") init_result = run_dhcp();
         else if (config::ethernet_config.mode == "static") init_result = run_static();
         else if (config::ethernet_config.mode == "link-local") init_result = run_link_local();
+
+        // Fallback to link-local if initialization failed
+        if (init_result == 0) init_result = run_link_local();
     }
 
     void poll()

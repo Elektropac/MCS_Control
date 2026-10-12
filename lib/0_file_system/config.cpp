@@ -12,7 +12,8 @@ namespace config
     String file_path = "/config.json";
     bool is_loaded = false;
     JsonDocument config;
-    
+
+    String config_version = "false";
     WIFI_CONFIG wifi_config;
     ETHERNET_CONFIG ethernet_config;
     String internet_client = "ethernet";
@@ -60,11 +61,17 @@ namespace config
             return;
         }
 
+        auto is_config_version = config["config_version"].isNull();
+        if (!is_config_version)
+        {
+            config_version = config["config_version"].as<String>();
+        }
+
         auto is_wifi_object = config["connection"]["settings"]["wifi"].isNull();
 
         if (!is_wifi_object)
         {
-            wifi_config.use_wifi = true;
+            wifi_config.use_wifi = config["connection"]["settings"]["wifi"]["enabled"].as<bool>();
             wifi_config.ssid = config["connection"]["settings"]["wifi"]["ssid"].as<String>();
             wifi_config.password = config["connection"]["settings"]["wifi"]["password"].as<String>();
         }

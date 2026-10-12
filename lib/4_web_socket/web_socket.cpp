@@ -58,8 +58,8 @@ namespace web_socket
         web_socket_client = new WebSocketClient(ssl_manager.client(), host.c_str(), port);
         ssl_manager.configure(host.c_str(), port, use_ssl);
 
-        // Default path + ?key=...
-        String path = "/ws/" + wifi::make_mac() + "?key=" + make_key();
+        // path = /ws/<mac_address> + ?key=<generated_key> + &config_version=<config_version>
+        String path = "/control/ws/" + wifi::make_mac() + "?key=" + make_key() + "&config_version=" + config::config_version;
 
         log_info("[web_socket] WebSocket connecting to %s:%d%s", host.c_str(), port, path.c_str());
 

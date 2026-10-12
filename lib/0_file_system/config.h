@@ -34,7 +34,8 @@ namespace config
     extern String file_path;
     extern bool is_loaded;
     extern JsonDocument config;
-
+    
+    extern String config_version;
     extern WIFI_CONFIG wifi_config;
     extern ETHERNET_CONFIG ethernet_config;
     extern String internet_client;
