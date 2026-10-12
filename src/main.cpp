@@ -27,9 +27,14 @@ namespace config {
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
 
+#include "file_system.h"
+#include "config.h"
+
 void setup() {
     Serial.begin(115200);
     log_init();                     // log system (serial + ring buffer)
+    file_system::init();
+    config::init();
 
     // Filesystem + config (must be before apps that read config)
     file_system::init();

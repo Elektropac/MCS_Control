@@ -1,4 +1,5 @@
 #include "network_task.h"
+
 #include "w5500.h"
 #include "my_wifi.h"
 #include "web_socket.h"
@@ -6,36 +7,99 @@
 #include "platform/task_registry.h"
 #include "apps/service_ap/service_ap.h"
 
+bool network_initialized = false;
+
 static void network_task(void* param) {
     (void)param;
 
-    // Initialize network stack (runs once)
-    // file_system and config already init'd in setup()
+    // Initialize network stack (runs once).
+    // file_system and config already init'd in setup().
+    // web_server / web_socket are initialized by their own tasks below.
     w5500::init();
     wifi::init();
-    web_socket::init();
-    web_server::init();
 
-    Serial.println("[network] Network stack initialized");
+    network_initialized = true;
+
+    // Poll loop
+    for (;;) {
+        w5500::poll();
+        wifi::poll();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+static void web_server_task(void* param) {
+    (void)param;
+
+    while(!network_initialized) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    web_server::init();
 
     // Poll loop
     for (;;) {
         web_server::poll();
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+static void web_socket_task(void* param) {
+    (void)param;
+    
+    while(!network_initialized) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    web_socket::init();
+
+    // Poll loop
+    for (;;) {
         web_socket::poll();
         service_ap::poll();        // captive-portal DNS (no-op when AP off)
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
+
 void network_start_task() {
-    TaskHandle_t handle = nullptr;
+    TaskHandle_t networkHandle = nullptr;
+    TaskHandle_t webServerHandle = nullptr;
+    TaskHandle_t webSocketHandle = nullptr;
+    int networkSize = 1024 * 8;
+    int webServerSize = 1024 * 8;
+    int webSocketSize = 1024 * 8;
+
     xTaskCreate(
         network_task,
         "network",
-        8192,
+        networkSize,
         nullptr,
         1,
-        &handle
+        &networkHandle
     );
-    task_register(handle, "network", 1, 8192);
+    
+    task_register(networkHandle, "network", 1, networkSize);
+
+    xTaskCreate(
+        web_server_task,
+        "web_server",
+        webServerSize,
+        nullptr,
+        1,
+        &webServerHandle
+    );
+    task_register(webServerHandle, "web_server", 1, webServerSize);
+
+    xTaskCreate(
+        web_socket_task,
+        "web_socket",
+        webSocketSize,
+        nullptr,
+        1,
+        &webSocketHandle
+    );
+    task_register(webSocketHandle, "web_socket", 1, webSocketSize);
 }
+
+

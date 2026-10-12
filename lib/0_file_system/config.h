@@ -1,52 +1,51 @@
 #pragma once
 
+#include <Arduino.h>
 #include <ArduinoJson.h>
 #include <string.h>
 #include "file_system.h"
 #include "LittleFS.h"
-
 #include "logging.h"
+
+struct WIFI_CONFIG
+{
+    bool use_wifi = false;
+    String ssid;
+    String password;
+};
+
+struct ETHERNET_CONFIG
+{
+    String mode = "local-link"; // modes: "dhcp" or "static" or "local-link"
+
+    String ip;
+    String gateway;
+    String subnet;
+};
+
+struct SERVER_CONFIG
+{
+    String global_host;
+    int global_port;
+
+    bool try_local = false;
+    String local_host;
+    int local_port;
+};
 
 namespace config
 {
-    String file_path = "/config.json";
-    bool is_loaded = false;
-    JsonDocument config;
+    extern String file_path;
+    extern bool is_loaded;
+    extern JsonDocument config;
 
-    void init()
-    {
-        if (file_system::is_mounted == false)
-        {
-            // Serial.println("[config] File system not mounted. Cannot load configuration.");
-            log_info("[config] File system not mounted. Cannot load configuration.");
-            return;
-        }
+    extern String config_version;
+    extern WIFI_CONFIG wifi_config;
+    extern ETHERNET_CONFIG ethernet_config;
+    extern String internet_client;
+    extern SERVER_CONFIG server_config;
 
-        File configFile = LittleFS.open(file_path, "r");
-        if (!configFile)
-        {
-            // Serial.println("[config] Failed to open config file. Using default configuration.");
-            log_info("[config] Failed to open config file. Using default configuration.");
-            return;
-        }
-
-        DeserializationError error = deserializeJson(config, configFile);
-        if (error)
-        {
-            // Serial.println("[config] Failed to parse config file. Using default configuration.");
-            log_info("[config] Failed to parse config file. Using default configuration.");
-            config.clear(); // Clear the document to ensure it's empty
-            is_loaded = false;
-        }
-        else
-        {
-            // Serial.println("[config] Configuration loaded successfully.");
-            log_info("[config] Configuration loaded successfully.");
-            is_loaded = true;
-        }
-        
-        configFile.close();
-    }
+    void init();
 
     // -----------------------------------------------------------------
     // On-demand read of ONE string field from /config.json.
@@ -61,31 +60,7 @@ namespace config
     // Returns `fallback` if the file/section/key is missing or on any error.
     // -----------------------------------------------------------------
     String config_read_string(const char* section, const char* key,
-                              const char* fallback = "")
-    {
-        if (file_system::is_mounted == false) return String(fallback);
-
-        File f = LittleFS.open(file_path, "r");
-        if (!f) return String(fallback);
-
-        // Filter: keep only config[section][key], skip everything else.
-        JsonDocument filter;
-        filter[section][key] = true;
-
-        JsonDocument doc;
-        DeserializationError err = deserializeJson(
-            doc, f, DeserializationOption::Filter(filter));
-        f.close();
-
-        if (err) {
-            log_info("[config] read_string parse error: %s", err.c_str());
-            return String(fallback);
-        }
-
-        JsonVariant v = doc[section][key];
-        if (v.isNull() || !v.is<const char*>()) return String(fallback);
-        return String(v.as<const char*>());
-    }
+                              const char* fallback = "");
 
     // -----------------------------------------------------------------
     // On-demand read of the groups[] array WITHOUT the heavy rules[].
@@ -100,35 +75,7 @@ namespace config
     //
     // Returns true on success (out["groups"] is an array, possibly empty).
     // -----------------------------------------------------------------
-    bool config_read_groups(JsonDocument& out)
-    {
-        out.clear();
-        if (file_system::is_mounted == false) return false;
-
-        File f = LittleFS.open(file_path, "r");
-        if (!f) return false;
-
-        // Filter: keep group id/type/channel + the probe/pump blocks, but
-        // NOT rules[] (skipped while streaming to keep RAM low).
-        JsonDocument filter;
-        JsonObject gf = filter["groups"].add<JsonObject>();
-        gf["id"] = true;
-        gf["type"] = true;
-        gf["channel"] = true;
-        gf["probe"] = true;
-        gf["pump"] = true;
-
-        DeserializationError err = deserializeJson(
-            out, f, DeserializationOption::Filter(filter));
-        f.close();
-
-        if (err) {
-            log_info("[config] read_groups parse error: %s", err.c_str());
-            out.clear();
-            return false;
-        }
-        return true;
-    }
+    bool config_read_groups(JsonDocument& out);
 
     // -----------------------------------------------------------------
     // On-demand read of ONE group's rules[] by group id.
@@ -145,40 +92,6 @@ namespace config
     // Returns true if the group was found (out is its rules array; may be
     // empty). Returns false on error or unknown group.
     // -----------------------------------------------------------------
-    bool config_read_group_rules(const char* group_id, JsonDocument& out)
-    {
-        out.clear();
-        if (file_system::is_mounted == false) return false;
-
-        File f = LittleFS.open(file_path, "r");
-        if (!f) return false;
-
-        // Filter: keep each group's id + rules only (probe/pump blocks skipped).
-        JsonDocument filter;
-        JsonObject gf = filter["groups"].add<JsonObject>();
-        gf["id"] = true;
-        gf["rules"] = true;
-
-        JsonDocument doc;
-        DeserializationError err = deserializeJson(
-            doc, f, DeserializationOption::Filter(filter));
-        f.close();
-
-        if (err) {
-            log_info("[config] read_group_rules parse error: %s", err.c_str());
-            return false;
-        }
-
-        JsonArray outArr = out.to<JsonArray>();
-        for (JsonObject g : doc["groups"].as<JsonArray>()) {
-            const char* id = g["id"] | "";
-            if (strcmp(id, group_id) != 0) continue;
-            for (JsonObject r : g["rules"].as<JsonArray>()) {
-                outArr.add(r);
-            }
-            return true;
-        }
-        return false;   // group not found
-    }
+    bool config_read_group_rules(const char* group_id, JsonDocument& out);
 
 } // namespace config

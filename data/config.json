@@ -5,8 +5,32 @@
   "config": {
     "guide": "cloudgauge2",
     "connection": {
-      "internet_client": "ethernet",
-      "settings": { "ethernet": { "mode": "dhcp" } }
+        "server": {
+            "local": {
+                "host": "192.168.1.183",
+                "port": 3000
+            },
+            "global": {
+                "host": "echo.websocket.org",
+                "port": 443
+            }
+        },
+
+        "internet_client": "ethernet",
+
+        "settings": {
+            "wifi": {
+                "enabled": false,
+                "ssid": "MCS_Dev",
+                "password": ""
+            },
+            "ethernet": {
+                "mode": "dhcp"
+            },
+            "bluetooth": {
+                "enabled": false
+            }
+        }
     },
     "channels": {
       "A": { "voltage": 24 },
