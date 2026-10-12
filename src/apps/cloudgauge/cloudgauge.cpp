@@ -28,6 +28,8 @@ namespace config {
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "queues.h"
+
 // Forward declaration — web_socket lives in a header-only namespace
 namespace web_socket {
     extern bool is_connected;
@@ -335,12 +337,17 @@ static void cloudgauge_task(void* param) {
         // (Was: evaluate_probe_rules(s_probes[i]) for each probe.)
 
         push_counter++;
-        if (push_counter >= PUSH_INTERVAL_S) {
+        if (web_socket::is_connected && push_counter >= PUSH_INTERVAL_S) {
             push_counter = 0;
-            if (web_socket::is_connected) {
-                String json = cloudgauge_get_all();
-                web_socket::sendMessage(json);
-                log_info("[cloudgauge] Pushed to server");
+
+            for (uint8_t i = 0; i < s_num_probes; i++) {
+                if (!s_probes[i].valid) continue;
+
+                queues::ProbeSample sample;
+                sample.id = s_probes[i].id;
+                sample.ma = s_probes[i].raw_ma;
+                sample.mm = input_to_mm(s_probes[i]);
+                queues::send_probe_sample(sample);
             }
         }
     }

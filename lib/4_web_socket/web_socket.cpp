@@ -11,6 +11,7 @@
 
 #include "my_wifi.h"
 #include "w5500.h"
+#include "queues.h"
 
 #include "function_silo.h"
 
@@ -19,7 +20,7 @@ String make_key()
     String secret = "my_secret"; // Replace with your actual secret
     String mac = wifi::make_mac();
     String key = mac + secret;
-   
+
     unsigned char hash[32];
 
     mbedtls_sha256_ret((const unsigned char *)key.c_str(), key.length(), hash, 0);
@@ -178,6 +179,38 @@ namespace web_socket
                 serializeJson(ping_doc, ping_string);
                 sendMessage(ping_string);
             }
+
+            QueueSetMemberHandle_t activeQueue = xQueueSelectFromSet(queues::queues_set, portMAX_DELAY);
+
+            if (activeQueue == queues::probe_queue) {
+                queues::ProbeSample probe_sample;
+                if (xQueueReceive(queues::probe_queue, &probe_sample, 0) == pdTRUE) {
+                    JsonDocument probe_doc;
+                    probe_doc["subject"] = "probe/" + probe_sample.id;
+                    probe_doc["data"]["ma"] = probe_sample.ma;
+                    probe_doc["data"]["mm"] = probe_sample.mm;
+                    probe_doc["data"]["timestamp"] = millis();
+
+                    String probe_string;
+                    serializeJson(probe_doc, probe_string);
+                    sendMessage(probe_string);
+
+                    // Process the probe sample here
+                }
+            }
+            else if (activeQueue == queues::pump_queue) {
+                queues::PumpSample pump_sample;
+                if (xQueueReceive(queues::pump_queue, &pump_sample, 0) == pdTRUE) {
+                    // Process the pump sample here
+                }
+            }
+
+
+
+
+
+
+
         }
     }
 }
