@@ -81,6 +81,16 @@ namespace w5500
 
         // Fallback to link-local if initialization failed
         if (init_result == 0) init_result = run_link_local();
+
+        // Store the assigned addresses so other modules (OLED info, web) can read them.
+        local_ip    = Ethernet.localIP();
+        gateway_ip  = Ethernet.gatewayIP();
+        subnet_mask = Ethernet.subnetMask();
+        connected   = true;
+
+        log_info("[w5500] IP: %s", local_ip.toString().c_str());
+        log_info("[w5500] Gateway: %s", gateway_ip.toString().c_str());
+        log_info("[w5500] Subnet: %s", subnet_mask.toString().c_str());
     }
 
     void poll()

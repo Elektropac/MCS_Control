@@ -142,9 +142,22 @@ void handle_api_request(Client &client, Request &req)
 
     client.println("HTTP/1.1 200 OK");
     client.println("Content-Type: application/json");
+    client.println("Content-Length: " + String(result.length()));
     client.println("Connection: close");
     client.println();
-    client.print(result);
+
+    // Send in chunks — W5500 TX buffer is only 2048 bytes, so a single
+    // client.print() silently truncates large payloads (e.g. selftest JSON).
+    const size_t CHUNK = 1024;
+    const char* ptr = result.c_str();
+    size_t remaining = result.length();
+    while (remaining > 0)
+    {
+        size_t n = (remaining < CHUNK) ? remaining : CHUNK;
+        client.write((const uint8_t*)ptr, n);
+        ptr += n;
+        remaining -= n;
+    }
 }
 
 void handle_page_request(Client &client, Request &req)
