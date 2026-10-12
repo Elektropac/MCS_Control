@@ -72,6 +72,14 @@ void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h);
 void oled_draw_bitmap_scaled(int x, int y, int dstW, int dstH,
                              const uint8_t* bitmap, int srcW, int srcH);
 
+// Draw a QR code (from the qrcodegen library) centered on the 128x64 panel.
+// `qrcode` is a qrcodegen output buffer. The code is drawn on a white
+// background with a quiet zone so camera scanners can lock on, and each QR
+// module is scaled up to the largest integer size that still fits the panel
+// height. Returns true if drawn, false if the code was too large to fit even
+// at 1 pixel per module. Call between oled_begin() and oled_end().
+bool oled_draw_qr(const uint8_t* qrcode);
+
 // Enable/disable display
 void oled_set_enabled(bool enabled);
 bool oled_is_enabled();

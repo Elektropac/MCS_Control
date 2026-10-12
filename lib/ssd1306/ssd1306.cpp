@@ -229,6 +229,50 @@ void oled_draw_bitmap_scaled(int x, int y, int dstW, int dstH,
     }
 }
 
+// ------------------------------------------
+// QR code rendering
+// ------------------------------------------
+#include "qrcodegen.h"
+
+bool oled_draw_qr(const uint8_t* qrcode) {
+    if (!s_oled || !qrcode) return false;
+
+    const int size = qrcodegen_getSize(qrcode);   // modules per side (21..177)
+    if (size <= 0) return false;
+
+    // Reserve a 1-module quiet zone on each side (scanners need the margin).
+    const int QUIET = 1;
+    const int total = size + 2 * QUIET;            // modules incl. quiet zone
+
+    // Largest integer scale that fits the 64px panel height (and 128 width).
+    int scale = 64 / total;
+    if (128 / total < scale) scale = 128 / total;
+    if (scale < 1) return false;                   // too big even at 1px/module
+
+    const int pxCode = total * scale;              // drawn size incl. quiet zone
+    const int originX = (DISPLAY_W - pxCode) / 2;  // center horizontally
+    const int originY = (64 - pxCode) / 2;         // center vertically
+
+    // White background behind the whole code (quiet zone included) so the QR
+    // reads correctly regardless of what was on screen before.
+    s_oled->setDrawColor(1);
+    s_oled->drawBox(originX, originY, pxCode, pxCode);
+
+    // Draw dark modules in black (draw color 0) on top of the white box.
+    s_oled->setDrawColor(0);
+    for (int y = 0; y < size; y++) {
+        for (int x = 0; x < size; x++) {
+            if (qrcodegen_getModule(qrcode, x, y)) {
+                const int px = originX + (x + QUIET) * scale;
+                const int py = originY + (y + QUIET) * scale;
+                s_oled->drawBox(px, py, scale, scale);
+            }
+        }
+    }
+    s_oled->setDrawColor(1);                        // restore default
+    return true;
+}
+
 void oled_set_enabled(bool enabled) {
     oled_lock();
     s_enabled = enabled;

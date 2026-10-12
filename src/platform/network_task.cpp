@@ -4,6 +4,7 @@
 #include "web_socket.h"
 #include "web_server.h"
 #include "platform/task_registry.h"
+#include "apps/service_ap/service_ap.h"
 
 static void network_task(void* param) {
     (void)param;
@@ -21,6 +22,7 @@ static void network_task(void* param) {
     for (;;) {
         web_server::poll();
         web_socket::poll();
+        service_ap::poll();        // captive-portal DNS (no-op when AP off)
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

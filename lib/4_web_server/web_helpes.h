@@ -6,6 +6,11 @@
 
 #include "web_files.h"
 
+// Forward declaration of the service-AP module (lives in src/apps). Used only
+// for the captive-portal redirect below; the web server has no hard dependency
+// on it beyond these two queries.
+namespace service_ap { bool is_active(); String ip(); }
+
 struct Request
 {
     String method;
@@ -172,6 +177,22 @@ void handle_page_request(Client &client, Request &req)
     }
     else
     {
+        // Captive portal: while the service AP is active, redirect any unknown
+        // path to the UI root. Phones probe fixed URLs (/generate_204,
+        // /hotspot-detect.html, /ncsi.txt, ...) to detect a captive network;
+        // answering those with a 302 to our root makes the OS auto-open the
+        // web UI. When the AP is off we keep the normal 404.
+        if (service_ap::is_active())
+        {
+            String loc = "http://" + service_ap::ip() + "/";
+            client.println("HTTP/1.1 302 Found");
+            client.println("Location: " + loc);
+            client.println("Content-Length: 0");
+            client.println("Connection: close");
+            client.println();
+            return;
+        }
+
         // File not found 
         client.println("HTTP/1.1 404 Not Found");
         client.println("Content-Type: text/plain");

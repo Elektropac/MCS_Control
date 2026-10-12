@@ -35,6 +35,14 @@ namespace web_server
         }
     }
 
+    // Start (or restart) the WiFi listener on demand. Used when the service AP
+    // is enabled at runtime so joined phones get the existing pages without a
+    // reboot. Safe to call more than once.
+    void wifi_begin()
+    {
+        wifi_server.begin();
+    }
+
     void handle_client(Client &client, Request &req)
     {
         if (req.path == "" || req.method == "") return;

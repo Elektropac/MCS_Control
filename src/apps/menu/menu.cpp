@@ -8,6 +8,8 @@
 #include "apps/pump/pump.h"
 #include "apps/product_display/product_display.h"
 #include "apps/ota/ota.h"
+#include "apps/service_ap/service_ap.h"
+#include "qrcodegen.h"
 #include "hardware/version.h"
 
 // Read-only access to Niklas' network state (same pattern as the OTA app:
@@ -30,7 +32,7 @@ namespace config {
 // it posts Button events to s_queue and menu_task applies them. This is the
 // canonical RTOS pattern: one owner, no shared mutable state, no races.
 // -----------------------------------------------------------------
-enum Section : uint8_t { SEC_HOME = 0, SEC_TANKS = 1, SEC_PUMPS = 2, SEC_UPDATE = 3, SEC_INFO = 4, SEC_COUNT = 5 };
+enum Section : uint8_t { SEC_HOME = 0, SEC_TANKS = 1, SEC_PUMPS = 2, SEC_UPDATE = 3, SEC_INFO = 4, SEC_SERVICE = 5, SEC_COUNT = 6 };
 
 static Section s_section = SEC_HOME;
 static uint8_t s_index   = 0;      // item within section
@@ -461,6 +463,51 @@ static void render_info() {
     oled_end();
 }
 
+// Service AP screen. When off: a prompt to press OK to enable. When on: the
+// WiFi-join QR fills the screen so a technician can scan it with a phone
+// camera and land on the device's web UI (served on the AP). OK toggles.
+static void render_service() {
+    s_count = 0;   // single page; UP/DOWN do nothing here
+
+    oled_begin();
+
+    if (!service_ap::is_active()) {
+        oled_draw_str_center(14, "Service Access");
+        oled_draw_line(0, 18, 127, 18);
+        oled_draw_str_center(34, "WiFi + QR for phone");
+        oled_draw_rframe(26, 46, 76, 15, 3);
+        oled_draw_str_center(57, "OK: Enable");
+        oled_end();
+        return;
+    }
+
+    // Active: render the join QR. Fill version 6 covers the ~45-char payload.
+    String payload = service_ap::qr_payload();
+    const int kMaxVer = 6;
+    uint8_t qr[qrcodegen_BUFFER_LEN_FOR_VERSION(kMaxVer)];
+    uint8_t tmp[qrcodegen_BUFFER_LEN_FOR_VERSION(kMaxVer)];
+    bool ok = qrcodegen_encodeText(
+        payload.c_str(), tmp, qr,
+        qrcodegen_Ecc_LOW, qrcodegen_VERSION_MIN, kMaxVer,
+        qrcodegen_Mask_AUTO, true);
+
+    if (ok && oled_draw_qr(qr)) {
+        // QR drawn centered. Nothing else — maximise scannable area.
+    } else {
+        // Fallback: show credentials as text if the QR won't fit.
+        oled_draw_str_center(12, "Service AP");
+        oled_draw_line(0, 16, 127, 16);
+        char l[26];
+        snprintf(l, sizeof(l), "%s", service_ap::ssid().c_str());
+        oled_draw_str_center(30, l);
+        snprintf(l, sizeof(l), "pw %s", service_ap::password().c_str());
+        oled_draw_str_center(44, l);
+        snprintf(l, sizeof(l), "%s", service_ap::ip().c_str());
+        oled_draw_str_center(58, l);
+    }
+    oled_end();
+}
+
 // -----------------------------------------------------------------
 // Alarm overlay
 //
@@ -590,6 +637,7 @@ static void render_current() {
         case SEC_PUMPS: render_pumps(); break;
         case SEC_UPDATE: render_update(); break;
         case SEC_INFO:   render_info();   break;
+        case SEC_SERVICE: render_service(); break;
         default:        render_home();  break;
     }
 }
@@ -628,6 +676,8 @@ static void apply_button(Button btn) {
                         if (v.length()) { otaSelectVersion(v); otaRequestUpdate(); }
                     }
                 }
+            } else if (s_section == SEC_SERVICE) {
+                service_ap::toggle();        // enable/disable the service AP
             }
             break;
         case BTN_RIGHT:
