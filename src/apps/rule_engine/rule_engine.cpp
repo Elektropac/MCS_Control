@@ -333,7 +333,7 @@ static void run_action(RuleGroup& g, JsonObject a) {
             n["level"]   = level;
             n["message"] = msg;
             String out; serializeJson(n, out);
-            web_socket::sendMessage(out);
+            // web_socket::sendMessage(out);
             log_info("[rules] %s: notify (%s) '%s'", g.id, level, msg);
         } else {
             log_info("[rules] %s: notify queued (offline, %s) '%s'", g.id, level, msg);
@@ -364,7 +364,7 @@ static void run_action(RuleGroup& g, JsonObject a) {
         }
         if (web_socket::is_connected) {
             String s; serializeJson(d, s);
-            web_socket::sendMessage(s);
+            // web_socket::sendMessage(s);
             log_info("[rules] %s: log sent", g.id);
         } else {
             log_info("[rules] %s: log queued (offline)", g.id);

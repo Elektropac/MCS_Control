@@ -525,7 +525,7 @@ static void run_action(const ProbeState& p, JsonObject action) {
             n["level"] = level;
             n["message"] = msg;
             String out; serializeJson(n, out);
-            web_socket::sendMessage(out);
+            // web_socket::sendMessage(out);
             log_info("[rules] %s: notify sent (%s) '%s'", p.id, level, msg);
         } else {
             log_info("[rules] %s: notify queued (offline, %s) '%s'", p.id, level, msg);

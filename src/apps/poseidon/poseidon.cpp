@@ -396,7 +396,7 @@ static void poseidon_task(void* param) {
         // Push to server if any pin triggered a report
         if (should_push && web_socket::is_connected) {
             String json = poseidon_io_get_all();
-            web_socket::sendMessage(json);
+            // web_socket::sendMessage(json);
         }
 
         // Evaluate IFTTT rules

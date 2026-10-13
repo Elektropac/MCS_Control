@@ -263,7 +263,7 @@ static void pump_task(void* param) {
         if (push_counter >= PUMP_PUSH_S * 1000UL) {
             push_counter = 0;
             if (web_socket::is_connected) {
-                web_socket::sendMessage(pump_get_all());
+                // web_socket::sendMessage(pump_get_all());
             }
         }
     }
