@@ -142,16 +142,17 @@
         const liters = parseInt(p.liters);
         const hasLut = p.has_lut;
         const rangeMm = p.range_mm || 3000;
+        const tempStr = (p.temp_c !== undefined) ? ` · ${parseFloat(p.temp_c).toFixed(1)}°C` : '';
 
         if (hasLut) {
           const pct = p.pct ? parseFloat(p.pct) : 0;
           const cap = p.capacity || 0;
           valEl.innerHTML = `${liters.toLocaleString()}<small> L</small>` + (cap > 0 ? `<small style="color:#617381;font-weight:600;"> / ${cap.toLocaleString()}</small>` : '');
-          subEl.textContent = `${p.input} · ${pct.toFixed(1)}% · ${mm} mm · ${ma.toFixed(2)} mA`;
+          subEl.textContent = `${p.input} · ${pct.toFixed(1)}% · ${mm} mm · ${ma.toFixed(2)} mA${tempStr}`;
         } else {
           const pctNoLut = Math.max(0, Math.min(100, (mm / rangeMm) * 100));
           valEl.innerHTML = `${mm}<small> mm</small>`;
-          subEl.textContent = `${p.input} · ${pctNoLut.toFixed(1)}% · ${ma.toFixed(2)} mA` + (liters > 0 ? ` · ${liters} L` : '');
+          subEl.textContent = `${p.input} · ${pctNoLut.toFixed(1)}% · ${ma.toFixed(2)} mA${tempStr}` + (liters > 0 ? ` · ${liters} L` : '');
         }
 
         const pct = hasLut && p.pct ? parseFloat(p.pct) : Math.max(0, Math.min(100, (mm / rangeMm) * 100));
