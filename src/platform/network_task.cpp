@@ -3,6 +3,7 @@
 #include "w5500.h"
 #include "my_wifi.h"
 #include "web_socket.h"
+#include "queues.h"
 #include "web_server.h"
 #include "platform/task_registry.h"
 #include "apps/service_ap/service_ap.h"
@@ -52,6 +53,7 @@ static void web_socket_task(void* param) {
     }
 
     web_socket::init();
+    queues::init();
 
     // Poll loop
     for (;;) {

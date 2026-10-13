@@ -28,13 +28,13 @@ namespace config {
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "queues.h"
+
 // Forward declaration — web_socket lives in a header-only namespace
 namespace web_socket {
     extern bool is_connected;
     void sendMessage(const String &message);
 }
-
-#include "apps/uploader/uploader.h"
 
 // --- Constants ---
 #define MAX_PROBES          8
@@ -345,32 +345,17 @@ static void cloudgauge_task(void* param) {
         // (Was: evaluate_probe_rules(s_probes[i]) for each probe.)
 
         push_counter++;
-        if (push_counter >= PUSH_INTERVAL_S) {
+        if (web_socket::is_connected && push_counter >= PUSH_INTERVAL_S) {
             push_counter = 0;
-            // Hand each probe's snapshot to the uploader queue. The uploader
-            // task batches probes + pumps into one payload and sends it via
-            // web_socket::sendMessage(). (Was: direct cloudgauge_get_all()
-            // push from here.)
+
             for (uint8_t i = 0; i < s_num_probes; i++) {
-                const ProbeState& p = s_probes[i];
-                if (!p.valid) continue;
+                if (!s_probes[i].valid) continue;
 
-                float mm = input_to_mm(p);
-                float liters = mm_to_liters(p, mm);
-                float pct = level_percent(p, mm, liters);
-                float level = level_in_unit(p, mm, liters, pct);
-
-                uploader::ProbeSample s{};
-                strlcpy(s.id, p.id, sizeof(s.id));
-                strlcpy(s.media, p.media, sizeof(s.media));
-                s.ma = p.avg_ma;
-                s.mm = (int32_t)mm;
-                s.liters = (int32_t)liters;
-                s.pct = pct;
-                strlcpy(s.state, probe_state(p, level), sizeof(s.state));
-                s.timestamp = millis();
-
-                uploader::queue_probe(s);
+                queues::ProbeSample sample;
+                sample.id = s_probes[i].id;
+                sample.ma = s_probes[i].raw_ma;
+                sample.mm = input_to_mm(s_probes[i]);
+                queues::send_probe_sample(sample);
             }
         }
     }
@@ -548,7 +533,7 @@ static void run_action(const ProbeState& p, JsonObject action) {
             n["level"] = level;
             n["message"] = msg;
             String out; serializeJson(n, out);
-            web_socket::sendMessage(out);
+            // web_socket::sendMessage(out);
             log_info("[rules] %s: notify sent (%s) '%s'", p.id, level, msg);
         } else {
             log_info("[rules] %s: notify queued (offline, %s) '%s'", p.id, level, msg);
