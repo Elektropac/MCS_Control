@@ -187,15 +187,23 @@ namespace web_socket
                 if (xQueueReceive(queues::probe_queue, &probe_sample, 0) == pdTRUE) {
                     JsonDocument probe_doc;
                     probe_doc["subject"] = "probe/" + probe_sample.id;
-                    probe_doc["data"]["ma"] = probe_sample.ma;
-                    probe_doc["data"]["mm"] = probe_sample.mm;
+                    probe_doc["data"]["type"]      = probe_sample.type;
+                    probe_doc["data"]["mm"]        = probe_sample.mm;
+                    probe_doc["data"]["liters"]    = probe_sample.liters;
                     probe_doc["data"]["timestamp"] = millis();
+
+                    if (probe_sample.type == "mcs_level_temp") {
+                        probe_doc["data"]["level_mv"] = probe_sample.level_mv;
+                        probe_doc["data"]["temp_mv"]  = probe_sample.temp_mv;
+                        probe_doc["data"]["temp_c"]   = probe_sample.temp_c;
+                        probe_doc["data"]["temp_f"]   = probe_sample.temp_f;
+                    } else {
+                        probe_doc["data"]["ma"] = probe_sample.ma;
+                    }
 
                     String probe_string;
                     serializeJson(probe_doc, probe_string);
                     sendMessage(probe_string);
-
-                    // Process the probe sample here
                 }
             }
             else if (activeQueue == queues::pump_queue) {
