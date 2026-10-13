@@ -66,8 +66,12 @@ static void setup_mcs_level(uint8_t channel) {
     input_config_set((Input)channel, SW_DIGITAL, false);
 }
 
-// mcs_level_temp: 0-5V, 2 inputs, needs 5V, analog only (no shunt)
+// mcs_level_temp: ratiometric 0-5V (10-90% of supply), 2 inputs, needs 5V.
+// Level signal: analog voltage only (no shunt — it's a voltage output, not current).
+// Temp signal: same setup on the second channel.
+// U_IN is measured by briefly reading the supply pin — handled in read_all_probes.
 static void setup_mcs_level_temp(uint8_t channel) {
+    // Level channel: analog on, shunt off (voltage read, not current)
     input_config_set((Input)channel, SW_ANALOG, false);
     input_config_set((Input)channel, SW_SHUNT, false);
     input_config_set((Input)channel, SW_PULLUP, false);
@@ -93,11 +97,18 @@ struct ProbeState {
     char id[16];                // from config (e.g. "tank_1")
     char group_id[24];          // config group id (for on-demand rules lookup)
     char input[4];              // physical input name ("A1", "B3")
+    char temp_input[4];         // temp signal input ("A4") — mcs_level_temp only
     char type[20];              // MCS type name
     char media[16];             // liquid name ("Diesel", "AdBlue", "Water", ...)
-    uint8_t channel;            // ADC/input channel index 0-7
+    uint8_t channel;            // ADC/input channel index 0-7 (level signal)
+    int8_t  temp_channel;       // ADC channel for temp signal (-1 = none)
     const ProbeTypeDef* type_def; // pointer to type definition
     float range_mm;             // measurement range in mm (from config or type default)
+    // Ratiometric support (mcs_level_temp): U_IN is the live supply voltage
+    // measured on the same channel with analog+shunt OFF (pure voltage read).
+    // Cached each cycle so level + temp use the same U_IN sample.
+    float u_in_mv;              // last measured supply voltage in mV (0 = not used)
+    float temp_c;               // last measured temperature in °C (NaN = not available)
     float density;              // liquid density (1.0=water, 0.84=diesel, 0.75=petrol)
     float low_level;            // low-level alarm threshold (in alarm_unit; 0 = off)
     float overfill;             // overfill alarm threshold (in alarm_unit; 0 = off)
@@ -181,17 +192,36 @@ static Voltage voltage_from_config(int v) {
 
 // --- Helpers ---
 
-// Convert a given mA reading to a density-compensated mm level.
+// Convert a given mA (or V) reading to a density-compensated mm level.
+// For mcs_level (4-20mA): linear interpolation between input_min and input_max.
+// For mcs_level_temp (ratiometric): uses live U_IN to normalise the signal.
+//   Formula (from Huba 712.9F datasheet):
+//     mm = (U_TS - 0.1·U_IN) / (0.8·U_IN) · range_mm
+//   Then density-compensated: actual_mm = mm / density
 static float ma_to_mm(const ProbeState& p, float val) {
     if (!p.type_def) return 0.0f;
-    float min = p.type_def->input_min;
-    float max = p.type_def->input_max;
-    if (val <= min) return 0.0f;
-    if (val >= max) return p.range_mm;
-    float raw_mm = ((val - min) / (max - min)) * p.range_mm;
-    // Compensate for liquid density: probe measures pressure (water-calibrated)
-    // Lighter liquid (diesel 0.84) produces less pressure → probe reads low
-    // Actual mm = raw_mm / density
+
+    float ratio;
+    if (strcmp(p.type, "mcs_level_temp") == 0 && p.u_in_mv > 100.0f) {
+        // Ratiometric: val is U_TS in mV, u_in_mv is live supply voltage in mV.
+        float u_ts = val;
+        float u_in = p.u_in_mv;
+        float zero  = 0.1f * u_in;   // 10% of supply = zero point
+        float span  = 0.8f * u_in;   // 80% of supply = full span
+        if (u_ts <= zero) return 0.0f;
+        if (u_ts >= zero + span) return p.range_mm / p.density;
+        ratio = (u_ts - zero) / span;
+    } else {
+        // Linear (4-20mA standard probe)
+        float min = p.type_def->input_min;
+        float max = p.type_def->input_max;
+        if (val <= min) return 0.0f;
+        if (val >= max) return p.range_mm / p.density;
+        ratio = (val - min) / (max - min);
+    }
+
+    float raw_mm = ratio * p.range_mm;
+    // Density compensation: probe is water-calibrated, lighter liquid reads low.
     return raw_mm / p.density;
 }
 
@@ -291,8 +321,63 @@ static void read_all_probes() {
     if (!s_first_round) {
         adc_read_mv((AdcInput)s_probes[current].channel);  // discard (MUX settle)
         int32_t mv = adc_read_mv((AdcInput)s_probes[current].channel);
-        float ma = mv / 200.0f;
-        add_sample(s_probes[current], ma);
+
+        if (strcmp(s_probes[current].type, "mcs_level_temp") == 0) {
+            // Ratiometric probe (Huba 712.9F):
+            //
+            // U_IN measurement: SW_PULLUP=on, SW_SHUNT=on, SW_ANALOG=off
+            //   Pullup (5kΩ) connects to supply, shunt (200Ω) to GND.
+            //   ADC reads voltage over shunt: U_shunt = U_IN · 200/(5000+200)
+            //   → U_IN = ADC_mv · (5000+200)/200 = ADC_mv · 26
+            //
+            // U_TS measurement: SW_ANALOG=on, SW_SHUNT=off, SW_PULLUP=off
+            //   Probe output connected directly to ADC — read voltage.
+
+            // Step 1: measure U_IN
+            input_config_set((Input)s_probes[current].channel, SW_ANALOG,  false);
+            input_config_set((Input)s_probes[current].channel, SW_SHUNT,   true);
+            input_config_set((Input)s_probes[current].channel, SW_PULLUP,  true);
+            input_config_set((Input)s_probes[current].channel, SW_DIGITAL, false);
+            adc_read_mv((AdcInput)s_probes[current].channel);  // settle
+            int32_t shunt_mv = adc_read_mv((AdcInput)s_probes[current].channel);
+            float u_in_mv = (float)shunt_mv * 26.0f;  // (5000+200)/200
+            s_probes[current].u_in_mv = u_in_mv;
+
+            // Step 2: measure U_TS (level signal voltage)
+            input_config_set((Input)s_probes[current].channel, SW_ANALOG,  true);
+            input_config_set((Input)s_probes[current].channel, SW_SHUNT,   false);
+            input_config_set((Input)s_probes[current].channel, SW_PULLUP,  false);
+            adc_read_mv((AdcInput)s_probes[current].channel);  // settle
+            int32_t u_ts_mv = adc_read_mv((AdcInput)s_probes[current].channel);
+            add_sample(s_probes[current], (float)u_ts_mv);
+
+            // Step 3: measure temp channel (same voltage-read method as U_TS)
+            if (s_probes[current].temp_channel >= 0) {
+                input_config_set((Input)s_probes[current].temp_channel, SW_ANALOG,  true);
+                input_config_set((Input)s_probes[current].temp_channel, SW_SHUNT,   false);
+                input_config_set((Input)s_probes[current].temp_channel, SW_PULLUP,  false);
+                input_config_set((Input)s_probes[current].temp_channel, SW_DIGITAL, false);
+                adc_read_mv((AdcInput)s_probes[current].temp_channel);  // settle
+                int32_t temp_mv = adc_read_mv((AdcInput)s_probes[current].temp_channel);
+                input_config_set((Input)s_probes[current].temp_channel, SW_ANALOG, false);
+                // Temp ratiometric: T°C = (U_temp - 0.1·U_IN) / (0.8·U_IN) · 90 - 10
+                if (u_in_mv > 100.0f) {
+                    float zero = 0.1f * u_in_mv;
+                    float span = 0.8f * u_in_mv;
+                    float t = ((float)temp_mv - zero) / span;
+                    s_probes[current].temp_c = t * 90.0f - 10.0f;
+                }
+            }
+
+            // Restore level channel to idle (switches off)
+            input_config_set((Input)s_probes[current].channel, SW_ANALOG,  false);
+            input_config_set((Input)s_probes[current].channel, SW_SHUNT,   false);
+            input_config_set((Input)s_probes[current].channel, SW_PULLUP,  false);
+        } else {
+            // Standard 4-20mA probe: shunt read → mA = mV/200
+            float ma = mv / 200.0f;
+            add_sample(s_probes[current], ma);
+        }
     }
 
     // Turn OFF current probe
@@ -471,6 +556,10 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["low"] = (strcmp(state, "low_level") == 0);
     obj["overfill_alarm"] = (strcmp(state, "overfill") == 0);
     obj["fault"] = (strcmp(state, "fault") == 0);
+    // Temperature (mcs_level_temp only)
+    if (p.temp_channel >= 0) {
+        obj["temp_c"] = serialized(String(p.temp_c, 1));
+    }
 }
 
 // =======================================================
@@ -670,6 +759,29 @@ void cloudgauge_init() {
             p.channel = (uint8_t)ch;
             p.type_def = typeDef;
             p.range_mm = probe["range_mm"] | typeDef->default_range_mm;
+
+            // temp_input (mcs_level_temp only): second channel for temperature signal
+            p.temp_channel = -1;
+            p.temp_input[0] = '\0';
+            p.u_in_mv = 0.0f;
+            p.temp_c = 0.0f;
+            const char* temp_in = probe["temp_input"] | "";
+            if (temp_in && temp_in[0]) {
+                int8_t tch = input_name_to_channel(temp_in);
+                if (tch >= 0) {
+                    p.temp_channel = tch;
+                    strncpy(p.temp_input, temp_in, sizeof(p.temp_input) - 1);
+                    p.temp_input[sizeof(p.temp_input) - 1] = '\0';
+                    // Configure temp channel as analog voltage (no shunt)
+                    input_config_set((Input)tch, SW_ANALOG, false);
+                    input_config_set((Input)tch, SW_SHUNT, false);
+                    input_config_set((Input)tch, SW_PULLUP, false);
+                    input_config_set((Input)tch, SW_DIGITAL, false);
+                    log_info("[cloudgauge] Probe '%s' temp input: %s (ch %d)", id, temp_in, tch);
+                } else {
+                    log_error("[cloudgauge] Probe '%s' invalid temp_input '%s'", id, temp_in);
+                }
+            }
 
             // Media drives density (option B): look up density from the media
             // name; fall back to the config "density" value for Custom/unknown.
