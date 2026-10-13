@@ -546,7 +546,13 @@ static void probe_to_json(JsonObject obj, const ProbeState& p) {
     obj["input"] = p.input;
     obj["type"] = p.type;
     obj["media"] = p.media;
-    obj["ma"] = serialized(String(p.avg_ma, 2));
+    // Signal value: mA for standard probe, mV for ratiometric
+    if (strcmp(p.type, "mcs_level_temp") == 0) {
+        obj["level_mv"] = serialized(String(p.avg_ma, 1));   // avg_ma holds mV for this type
+        obj["temp_mv"]  = serialized(String(p.raw_temp_mv, 1));
+    } else {
+        obj["ma"] = serialized(String(p.avg_ma, 2));
+    }
     obj["mm"] = (int)mm;
     obj["range_mm"] = (int)p.range_mm;
     obj["liters"] = (int)liters;
