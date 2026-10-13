@@ -109,6 +109,7 @@ struct ProbeState {
     // Cached each cycle so level + temp use the same U_IN sample.
     float u_in_mv;              // last measured supply voltage in mV (0 = not used)
     float temp_c;               // last measured temperature in °C (NaN = not available)
+    float raw_temp_mv;          // last raw temp signal in mV (mcs_level_temp only)
     float density;              // liquid density (1.0=water, 0.84=diesel, 0.75=petrol)
     float low_level;            // low-level alarm threshold (in alarm_unit; 0 = off)
     float overfill;             // overfill alarm threshold (in alarm_unit; 0 = off)
@@ -347,6 +348,7 @@ static void read_all_probes() {
                 adc_read_mv((AdcInput)s_probes[current].temp_channel);  // settle
                 int32_t temp_mv = adc_read_mv((AdcInput)s_probes[current].temp_channel);
                 input_config_set((Input)s_probes[current].temp_channel, SW_ANALOG, false);
+                s_probes[current].raw_temp_mv = (float)temp_mv;
                 // Temp ratiometric: T°C = (U_temp - 0.1·U_IN) / (0.8·U_IN) · 90 - 10
                 float u_in = s_probes[current].u_in_mv;  // set at init from config
                 if (u_in > 100.0f) {
@@ -421,10 +423,28 @@ static void cloudgauge_task(void* param) {
             for (uint8_t i = 0; i < s_num_probes; i++) {
                 if (!s_probes[i].valid) continue;
 
+                float mm      = input_to_mm(s_probes[i]);
+                float liters  = mm_to_liters(s_probes[i], mm);
+
                 queues::ProbeSample sample;
-                sample.id = s_probes[i].id;
-                sample.ma = s_probes[i].raw_ma;
-                sample.mm = input_to_mm(s_probes[i]);
+                sample.id      = s_probes[i].id;
+                sample.type    = s_probes[i].type;
+                sample.mm      = mm;
+                sample.liters  = liters;
+
+                if (strcmp(s_probes[i].type, "mcs_level_temp") == 0) {
+                    sample.ma       = 0.0f;
+                    sample.level_mv = s_probes[i].raw_ma;   // raw_ma holds mV for this type
+                    sample.temp_mv  = s_probes[i].raw_temp_mv;
+                    sample.temp_c   = s_probes[i].temp_c;
+                    sample.temp_f   = s_probes[i].temp_c * 9.0f / 5.0f + 32.0f;
+                } else {
+                    sample.ma       = s_probes[i].raw_ma;
+                    sample.level_mv = 0.0f;
+                    sample.temp_mv  = 0.0f;
+                    sample.temp_c   = 0.0f;
+                    sample.temp_f   = 0.0f;
+                }
                 queues::send_probe_sample(sample);
             }
         }

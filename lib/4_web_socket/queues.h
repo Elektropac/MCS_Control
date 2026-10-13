@@ -11,8 +11,17 @@ namespace queues
     struct ProbeSample
     {
         String id;
-        float ma; // measurement in milliamperes
-        float mm; // measurement in millimeters
+        String type;        // "mcs_level" or "mcs_level_temp"
+        // mcs_level: raw current signal
+        float ma;           // raw signal in milliamperes (mcs_level)
+        // mcs_level_temp: raw voltage signals
+        float level_mv;     // raw level signal in millivolts (mcs_level_temp)
+        float temp_mv;      // raw temp signal in millivolts (mcs_level_temp)
+        // Converted values (both types)
+        float mm;           // level in millimeters
+        float liters;       // level in liters (via LUT, 0 if no LUT)
+        float temp_c;       // temperature in °C (mcs_level_temp only, 0 otherwise)
+        float temp_f;       // temperature in °F (mcs_level_temp only, 0 otherwise)
     };
 
 
