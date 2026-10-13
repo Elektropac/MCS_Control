@@ -323,35 +323,22 @@ static void read_all_probes() {
         int32_t mv = adc_read_mv((AdcInput)s_probes[current].channel);
 
         if (strcmp(s_probes[current].type, "mcs_level_temp") == 0) {
-            // Ratiometric probe (Huba 712.9F):
-            //
-            // U_IN measurement: SW_PULLUP=on, SW_SHUNT=on, SW_ANALOG=off
-            //   Pullup (5kΩ) connects to supply, shunt (200Ω) to GND.
-            //   ADC reads voltage over shunt: U_shunt = U_IN · 200/(5000+200)
-            //   → U_IN = ADC_mv · (5000+200)/200 = ADC_mv · 26
-            //
-            // U_TS measurement: SW_ANALOG=on, SW_SHUNT=off, SW_PULLUP=off
-            //   Probe output connected directly to ADC — read voltage.
+            // Ratiometric voltage probe (Huba 712.9F):
+            // Output is a voltage signal (not current) — read directly with
+            // SW_ANALOG only. No shunt, no pullup.
+            // U_IN = channel supply voltage from config (5V = 5000 mV).
+            // We do NOT measure U_IN live — the supply is regulated and stable.
 
-            // Step 1: measure U_IN
-            input_config_set((Input)s_probes[current].channel, SW_ANALOG,  false);
-            input_config_set((Input)s_probes[current].channel, SW_SHUNT,   true);
-            input_config_set((Input)s_probes[current].channel, SW_PULLUP,  true);
-            input_config_set((Input)s_probes[current].channel, SW_DIGITAL, false);
-            adc_read_mv((AdcInput)s_probes[current].channel);  // settle
-            int32_t shunt_mv = adc_read_mv((AdcInput)s_probes[current].channel);
-            float u_in_mv = (float)shunt_mv * 26.0f;  // (5000+200)/200
-            s_probes[current].u_in_mv = u_in_mv;
-
-            // Step 2: measure U_TS (level signal voltage)
+            // Level signal (U_TS): direct voltage read on level channel
             input_config_set((Input)s_probes[current].channel, SW_ANALOG,  true);
             input_config_set((Input)s_probes[current].channel, SW_SHUNT,   false);
             input_config_set((Input)s_probes[current].channel, SW_PULLUP,  false);
+            input_config_set((Input)s_probes[current].channel, SW_DIGITAL, false);
             adc_read_mv((AdcInput)s_probes[current].channel);  // settle
             int32_t u_ts_mv = adc_read_mv((AdcInput)s_probes[current].channel);
             add_sample(s_probes[current], (float)u_ts_mv);
 
-            // Step 3: measure temp channel (same voltage-read method as U_TS)
+            // Temp signal: direct voltage read on temp channel
             if (s_probes[current].temp_channel >= 0) {
                 input_config_set((Input)s_probes[current].temp_channel, SW_ANALOG,  true);
                 input_config_set((Input)s_probes[current].temp_channel, SW_SHUNT,   false);
@@ -361,18 +348,16 @@ static void read_all_probes() {
                 int32_t temp_mv = adc_read_mv((AdcInput)s_probes[current].temp_channel);
                 input_config_set((Input)s_probes[current].temp_channel, SW_ANALOG, false);
                 // Temp ratiometric: T°C = (U_temp - 0.1·U_IN) / (0.8·U_IN) · 90 - 10
-                if (u_in_mv > 100.0f) {
-                    float zero = 0.1f * u_in_mv;
-                    float span = 0.8f * u_in_mv;
+                float u_in = s_probes[current].u_in_mv;  // set at init from config
+                if (u_in > 100.0f) {
+                    float zero = 0.1f * u_in;
+                    float span = 0.8f * u_in;
                     float t = ((float)temp_mv - zero) / span;
                     s_probes[current].temp_c = t * 90.0f - 10.0f;
                 }
             }
 
-            // Restore level channel to idle (switches off)
-            input_config_set((Input)s_probes[current].channel, SW_ANALOG,  false);
-            input_config_set((Input)s_probes[current].channel, SW_SHUNT,   false);
-            input_config_set((Input)s_probes[current].channel, SW_PULLUP,  false);
+            // Leave level channel on — next cycle reads it (prepare/read pattern)
         } else {
             // Standard 4-20mA probe: shunt read → mA = mV/200
             float ma = mv / 200.0f;
@@ -763,7 +748,11 @@ void cloudgauge_init() {
             // temp_input (mcs_level_temp only): second channel for temperature signal
             p.temp_channel = -1;
             p.temp_input[0] = '\0';
-            p.u_in_mv = 0.0f;
+            // U_IN = channel supply voltage from config (stable regulated supply).
+            // For 5V channel: 5000 mV. Set once at init — no live measurement needed.
+            float chan_mv = (chan_volt == VOLTAGE_5V) ? 5000.0f :
+                            (chan_volt == VOLTAGE_12V) ? 12000.0f : 24000.0f;
+            p.u_in_mv = chan_mv;
             p.temp_c = 0.0f;
             const char* temp_in = probe["temp_input"] | "";
             if (temp_in && temp_in[0]) {
