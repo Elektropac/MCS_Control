@@ -2,7 +2,6 @@
 #include "ssd1306.h"
 #include "logging.h"
 #include "apps/product_display/control_oled_128x64_bitmaps.h"
-#include "apps/product_display/mcs_logo_crop.h"
 #include "apps/product_display/mcs_logo_vert.h"
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/pump/pump.h"
@@ -42,11 +41,6 @@ static bool    s_detail  = false;  // detail page open for current item
 // UPDATE section: which release in the list is highlighted for install.
 static uint8_t s_ota_sel = 0;
 
-// HOME logo-zoom animation: millis() when HOME was last entered. The logo
-// shrinks from full-screen into the top-left corner, then the guide name
-// appears centered. 0 = not animating (show the settled HOME).
-static uint32_t s_home_anim_start = 0;
-
 // Alarm snooze: a button press while an alarm is showing dismisses the overlay
 // for this long so the user can use the menu. It re-pops when the time elapses
 // (as long as the alarm is still active).
@@ -84,32 +78,9 @@ static void render_home() {
     s_count = 0;
     String name = guide_display_name();
 
-    // Animation: shrink through three real logo sizes (crisp, no scaling),
-    // easing toward the left edge, then settle to the vertical logo + name.
-    const uint32_t T1 = 350, T2 = 650, T3 = 900;
-    uint32_t t = (s_home_anim_start == 0) ? T3 : (millis() - s_home_anim_start);
-
     oled_begin();
 
-    if (t < T1) {
-        oled_draw_bitmap((128 - mcs_logo_full_w) / 2, (64 - mcs_logo_full_h) / 2,
-                         mcs_logo_full, mcs_logo_full_w, mcs_logo_full_h);
-        oled_end(); return;
-    }
-    if (t < T2) {
-        float p = (float)(t - T1) / (T2 - T1);
-        int cx = (128 - mcs_logo_mid_w) / 2, cy = (64 - mcs_logo_mid_h) / 2;
-        int x = cx + (int)((2 - cx) * p);        // ease toward left
-        oled_draw_bitmap(x, cy, mcs_logo_mid, mcs_logo_mid_w, mcs_logo_mid_h);
-        oled_end(); return;
-    }
-    if (t < T3) {
-        oled_draw_bitmap(2, (64 - mcs_logo_small_h) / 2,
-                         mcs_logo_small, mcs_logo_small_w, mcs_logo_small_h);
-        oled_end(); return;
-    }
-
-    // --- Settled: vertical MCS logo down the LEFT edge, guide name filling the
+    // --- Vertical MCS logo down the LEFT edge, guide name filling the
     // rest of the screen (full height), centered in that region. The vertical
     // logo frees the whole height so even 3-line names fit comfortably. ---
     oled_draw_bitmap(1, (64 - mcs_logo_vert_h) / 2,
@@ -711,13 +682,8 @@ static void apply_button(Button btn) {
 static void menu_task(void*) {
     uint8_t  alarm_idx = 0;
     uint32_t alarm_cycle_ms = 0;
-    Section prev_section = (Section)255;   // force first HOME to animate
     for (;;) {
-        // While the HOME logo-zoom plays, redraw fast (~40ms) for smoothness;
-        // otherwise the normal 250ms refresh is plenty.
-        bool home_animating = (s_section == SEC_HOME && s_home_anim_start != 0 &&
-                               (millis() - s_home_anim_start) < 700);
-        TickType_t wait = home_animating ? pdMS_TO_TICKS(40) : pdMS_TO_TICKS(250);
+        TickType_t wait = pdMS_TO_TICKS(250);
 
         Button btn;
         if (xQueueReceive(s_queue, &btn, wait) == pdTRUE) {
@@ -731,12 +697,6 @@ static void menu_task(void*) {
         } else if (s_want_home) {
             s_want_home = false; s_section = SEC_HOME; s_index = 0; s_detail = false;
         }
-
-        // Trigger the HOME zoom animation whenever we newly arrive at HOME.
-        if (s_section == SEC_HOME && prev_section != SEC_HOME) {
-            s_home_anim_start = millis();
-        }
-        prev_section = s_section;
 
         // --- Alarm handling (checked BEFORE the panel-sleep guard so an alarm
         // can wake a sleeping screen). Overlay takes over unless the user
