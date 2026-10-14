@@ -123,11 +123,29 @@ namespace web_socket
     {
         if (is_connected && web_socket_client)
         {
+            if (message.length() > WS_TX_BUFFER_SIZE)
+            {
+                log_error("[web_socket] Message too large to send (%u bytes; limit is %u).",
+                          static_cast<unsigned int>(message.length()),
+                          static_cast<unsigned int>(WS_TX_BUFFER_SIZE));
+                return;
+            }
+
             lastMessageMillis = millis();
 
-            web_socket_client->beginMessage(TYPE_TEXT);
-            web_socket_client->write((const uint8_t *)message.c_str(), message.length());
-            web_socket_client->endMessage();
+            if (web_socket_client->beginMessage(TYPE_TEXT) != 0)
+            {
+                log_error("[web_socket] Failed to begin WebSocket message.");
+                return;
+            }
+
+            size_t bytes_written = web_socket_client->write(
+                reinterpret_cast<const uint8_t *>(message.c_str()), message.length());
+            int end_result = web_socket_client->endMessage();
+            if (bytes_written != message.length() || end_result != 0)
+            {
+                log_error("[web_socket] Failed to send complete WebSocket message.");
+            }
         }
         else
             log_error("[web_socket] WebSocket is not connected. Cannot send message.");
@@ -150,6 +168,7 @@ namespace web_socket
             if (message_size > 0)
             {
                 lastMessageMillis = millis();
+                log_info("[web_socket] Received WebSocket message.");
 
                 String data_string = web_socket_client->readString();
                 JsonDocument data;
@@ -180,35 +199,47 @@ namespace web_socket
                 sendMessage(ping_string);
             }
 
-            QueueSetMemberHandle_t activeQueue = xQueueSelectFromSet(queues::queues_set, portMAX_DELAY);
+            // Do not block the network task when there is no queued telemetry.
+            // The poll loop needs to keep servicing WebSocket traffic and timers.
+            QueueSetMemberHandle_t activeQueue = xQueueSelectFromSet(queues::queues_set, 0);
 
-            if (activeQueue == queues::probe_queue) {
-                queues::ProbeSample probe_sample;
-                if (xQueueReceive(queues::probe_queue, &probe_sample, 0) == pdTRUE) {
+            if (activeQueue == queues::probe_level) {
+                queue_types::Probe_level probe_data;
+                if (xQueueReceive(queues::probe_level, &probe_data, 0) == pdTRUE) {
                     JsonDocument probe_doc;
-                    probe_doc["subject"] = "probe/" + probe_sample.id;
-                    probe_doc["data"]["type"]      = probe_sample.type;
-                    probe_doc["data"]["mm"]        = probe_sample.mm;
-                    probe_doc["data"]["liters"]    = probe_sample.liters;
-                    probe_doc["data"]["timestamp"] = millis();
-
-                    if (probe_sample.type == "mcs_level_temp") {
-                        probe_doc["data"]["level_mv"] = probe_sample.level_mv;
-                        probe_doc["data"]["temp_mv"]  = probe_sample.temp_mv;
-                        probe_doc["data"]["temp_c"]   = probe_sample.temp_c;
-                        probe_doc["data"]["temp_f"]   = probe_sample.temp_f;
-                    } else {
-                        probe_doc["data"]["ma"] = probe_sample.ma;
-                    }
+                    probe_doc["subject"] = "probe/" + probe_data.id;
+                    probe_doc["data"]["type"] = "probe_level";
+                    probe_doc["data"]["ma"] = probe_data.ma;
+                    probe_doc["data"]["mm"] = probe_data.mm;
+                    probe_doc["data"]["liters"] = probe_data.liters;
 
                     String probe_string;
                     serializeJson(probe_doc, probe_string);
                     sendMessage(probe_string);
                 }
             }
-            else if (activeQueue == queues::pump_queue) {
-                queues::PumpSample pump_sample;
-                if (xQueueReceive(queues::pump_queue, &pump_sample, 0) == pdTRUE) {
+            else if (activeQueue == queues::probe_level_temp) {
+                queue_types::Probe_level_temp probe_data;
+                if (xQueueReceive(queues::probe_level_temp, &probe_data, 0) == pdTRUE) {
+                    // Process the probe level temp data here
+                    JsonDocument probe_doc;
+                    probe_doc["subject"] = "probe/" + probe_data.id;
+                    probe_doc["data"]["type"] = "probe_level_temp";
+                    probe_doc["data"]["mm"] = probe_data.mm;
+                    probe_doc["data"]["liters"] = probe_data.liters;
+                    probe_doc["data"]["level_mv"] = probe_data.level_mv;
+                    probe_doc["data"]["temp_mv"] = probe_data.temp_mv;
+                    probe_doc["data"]["temp_c"] = probe_data.temp_c;
+                    probe_doc["data"]["temp_f"] = probe_data.temp_f;
+
+                    String probe_string;
+                    serializeJson(probe_doc, probe_string);
+                    sendMessage(probe_string);
+                }
+            }
+            else if (activeQueue == queues::pump) {
+                queue_types::PumpSample pump_sample;
+                if (xQueueReceive(queues::pump, &pump_sample, 0) == pdTRUE) {
                     // Process the pump sample here
                 }
             }

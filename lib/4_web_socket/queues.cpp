@@ -1,34 +1,47 @@
 #include "queues.h"
 
+namespace queue_sizes {
+    int probe_level = 8;
+    int probe_level_temp = 4;
+    int pump = 2;
+}
+
 namespace queues
 {
     QueueSetHandle_t queues_set = nullptr;
 
-    int probe_queue_length = 10;
-    QueueHandle_t probe_queue = nullptr;
+    QueueHandle_t probe_level = nullptr;
 
-    int pump_queue_length = 10;
-    QueueHandle_t pump_queue = nullptr;
+    QueueHandle_t probe_level_temp = nullptr;
+
+    QueueHandle_t pump = nullptr;
 
     void init()
     {
-        probe_queue = xQueueCreate(probe_queue_length, sizeof(ProbeSample));
-        pump_queue = xQueueCreate(pump_queue_length, sizeof(PumpSample));
+        probe_level = xQueueCreate(queue_sizes::probe_level, sizeof(queue_types::Probe_level));
+        probe_level_temp = xQueueCreate(queue_sizes::probe_level_temp, sizeof(queue_types::Probe_level_temp));
+        pump = xQueueCreate(queue_sizes::pump, sizeof(queue_types::PumpSample));
 
-        int queues_set_length = probe_queue_length + pump_queue_length;
+        int queues_set_length = queue_sizes::probe_level + queue_sizes::probe_level_temp + queue_sizes::pump;
         queues_set = xQueueCreateSet(queues_set_length);
 
-        xQueueAddToSet(probe_queue, queues_set);
-        xQueueAddToSet(pump_queue, queues_set);
+        xQueueAddToSet(probe_level, queues_set);
+        xQueueAddToSet(probe_level_temp, queues_set);
+        xQueueAddToSet(pump, queues_set);
     }
 
-    void send_probe_sample(const ProbeSample &data)
+    void send_probe_level(const queue_types::Probe_level &data)
     {
-        xQueueSend(probe_queue, &data, portMAX_DELAY);
+        xQueueSend(probe_level, &data, portMAX_DELAY);
     }
 
-    void send_pump_sample(const PumpSample &data)
+    void send_probe_level_temp(const queue_types::Probe_level_temp &data)
     {
-        xQueueSend(pump_queue, &data, portMAX_DELAY);
+        xQueueSend(probe_level_temp, &data, portMAX_DELAY);
+    }
+
+    void send_pump_sample(const queue_types::PumpSample &data)
+    {
+        xQueueSend(pump, &data, portMAX_DELAY);
     }
 } // namespace queues

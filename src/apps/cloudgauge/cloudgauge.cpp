@@ -27,6 +27,7 @@ namespace config {
 #include "logging.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <ArduinoJson.h>
 
 #include "queues.h"
 
@@ -426,26 +427,29 @@ static void cloudgauge_task(void* param) {
                 float mm      = input_to_mm(s_probes[i]);
                 float liters  = mm_to_liters(s_probes[i], mm);
 
-                queues::ProbeSample sample;
-                sample.id      = s_probes[i].id;
-                sample.type    = s_probes[i].type;
-                sample.mm      = mm;
-                sample.liters  = liters;
-
                 if (strcmp(s_probes[i].type, "mcs_level_temp") == 0) {
-                    sample.ma       = 0.0f;
-                    sample.level_mv = s_probes[i].raw_ma;   // raw_ma holds mV for this type
-                    sample.temp_mv  = s_probes[i].raw_temp_mv;
-                    sample.temp_c   = s_probes[i].temp_c;
-                    sample.temp_f   = s_probes[i].temp_c * 9.0f / 5.0f + 32.0f;
-                } else {
-                    sample.ma       = s_probes[i].raw_ma;
-                    sample.level_mv = 0.0f;
-                    sample.temp_mv  = 0.0f;
-                    sample.temp_c   = 0.0f;
-                    sample.temp_f   = 0.0f;
+                    queue_types::Probe_level_temp probe_data;
+                    probe_data.id     = s_probes[i].id;
+                    probe_data.mm     = mm;
+                    probe_data.liters = liters;
+
+                    probe_data.level_mv = s_probes[i].raw_ma;   // raw_ma holds mV for this type
+                    probe_data.temp_mv  = s_probes[i].raw_temp_mv;
+                    probe_data.temp_c   = s_probes[i].temp_c;
+                    probe_data.temp_f   = s_probes[i].temp_c * 9.0f / 5.0f + 32.0f;
+
+                    queues::send_probe_level_temp(probe_data);
                 }
-                queues::send_probe_sample(sample);
+                else if (strcmp(s_probes[i].type, "mcs_level") == 0) {
+                    queue_types::Probe_level probe_data;
+                    probe_data.id     = s_probes[i].id;
+                    probe_data.mm     = mm;
+                    probe_data.liters = liters;
+
+                    probe_data.ma = s_probes[i].raw_ma;   // raw_ma holds mV for this type
+
+                    queues::send_probe_level(probe_data);
+                }
             }
         }
     }

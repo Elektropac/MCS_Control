@@ -129,6 +129,7 @@ namespace function_silo
 
         else if (function_name == "reboot")
         {
+            log_info("Rebooting system...");
             ESP.restart();
             return "{\"result\": \"Rebooting...\"}";
         }
