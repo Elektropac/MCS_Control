@@ -1,0 +1,96 @@
+Reference,Value,Symbol,Footprint,Status
+J300,PoE transformer centre taps,PORT4,,Prototype; excluded from PCB
+U300,LT4321IUF,LT4321,,Prototype; excluded from PCB
+D300,MMSZ5252BS / 24V,D_Zener,,Prototype; excluded from PCB
+R300,0R,R,,Prototype; excluded from PCB
+C300,47nF / 100V,C,,Prototype; excluded from PCB
+Q311,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q312,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q313,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q314,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q315,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q316,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q317,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+Q318,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+D301,PTVS58VS1UR,D_TVS,,Prototype; excluded from PCB
+Q301,PSMN040-100MSE,NMOS8,,Prototype; excluded from PCB
+R306,3.3k,R,,Prototype; excluded from PCB
+C310,10nF / 100V,C,,Prototype; excluded from PCB
+C306,22uF / 100V,C_Polarized,,Prototype; excluded from PCB
+L302,4.7uH / 744316470,L,,Prototype; excluded from PCB
+C307,2.2uF / 100V,C,,Prototype; excluded from PCB
+C329,2.2uF / 100V,C,,Prototype; excluded from PCB
+T301,750316231,750316231,,Prototype; excluded from PCB
+R303,51R / 0.75W,R,,Prototype; excluded from PCB
+R304,51R / 0.75W,R,,Prototype; excluded from PCB
+C309,220pF / 630V,C,,Prototype; excluded from PCB
+Q304,BSC190N15NS3 / 150V,NMOS8,,Prototype; excluded from PCB
+R314,15mR / 1% / 0.75W,R,,Prototype; excluded from PCB
+L305,1uH / 744316100,L,,Prototype; excluded from PCB
+C302,10uF / 50V,C,,Prototype; excluded from PCB
+C304,47uF / 35V,C_Polarized,,Prototype; excluded from PCB
+Q302,BSC320N20NS3 / 200V,NMOS8,,Prototype; excluded from PCB
+C308,330pF / 630V,C,,Prototype; excluded from PCB
+R308,36R / 0.75W,R,,Prototype; excluded from PCB
+R309,36R / 0.75W,R,,Prototype; excluded from PCB
+U301,LT4295IUFD,LT4295xUFD,,Prototype; excluded from PCB
+R319,64.9R 1%,R,,Prototype; excluded from PCB
+R320,80.6R 1%,R,,Prototype; excluded from PCB
+R322,107k 1%,R,,Prototype; excluded from PCB
+C324,100nF / 25V,C,,Prototype; excluded from PCB
+R311,5.23k 1%,R,,Prototype; excluded from PCB
+R323,36k,R,,Prototype; excluded from PCB
+R310,3.65k 1%,R,,Prototype; excluded from PCB
+R317,2k 1%,R,,Prototype; excluded from PCB
+C325,330pF / 25V,C,,Prototype; excluded from PCB
+C322,3.3nF / 25V,C,,Prototype; excluded from PCB
+R324,51k,R,,Prototype; excluded from PCB
+R305,8.2R,R,,Prototype; excluded from PCB
+C312,47nF / 100V,C,,Prototype; excluded from PCB
+D316,PTVS58VS1UR,D_TVS,,Prototype; excluded from PCB
+D319,PTVS58VS1UR,D_TVS,,Prototype; excluded from PCB
+Q307,FMMT723,Q_PNP_BEC,,Prototype; excluded from PCB
+R307,20R,R,,Prototype; excluded from PCB
+D315,BAV19WS,D,,Prototype; excluded from PCB
+L304,100uH DO1608C-104,L,,Prototype; excluded from PCB
+C313,10uF / 10V,C,,Prototype; excluded from PCB
+D317,PMEG1020EA,D,,Prototype; excluded from PCB
+T303,PE-68386NL,PE68386NL,,Prototype; excluded from PCB
+R313,100R,R,,Prototype; excluded from PCB
+C317,1uF / 25V,C,,Prototype; excluded from PCB
+C320,2.2nF / 25V,C,,Prototype; excluded from PCB
+R315,15R,R,,Prototype; excluded from PCB
+R318,10k,R,,Prototype; excluded from PCB
+D313,BAT46WJ,D,,Prototype; excluded from PCB
+Q305,PBSS5140T,Q_PNP_BEC,,Prototype; excluded from PCB
+Q306,PBSS4140T,Q_NPN_BEC,,Prototype; excluded from PCB
+C316,100nF / 50V,C,,Prototype; excluded from PCB
+U302,TLP291 (GR),TLP291,,Prototype; excluded from PCB
+R326,4.7k,R,,Prototype; excluded from PCB
+U350,LMR33620ADDA / 400kHz,LMR33620ADDA,,Prototype; excluded from PCB
+C350,10uF / 50V,C,,Prototype; excluded from PCB
+C351,220nF / 50V,C,,Prototype; excluded from PCB
+C352,1uF / 16V,C,,Prototype; excluded from PCB
+C353,100nF / 16V,C,,Prototype; excluded from PCB
+L350,10uH / Isat >= 5A,L,,Prototype; excluded from PCB
+C354,22uF / 16V,C,,Prototype; excluded from PCB
+C355,22uF / 16V,C,,Prototype; excluded from PCB
+C356,22uF / 16V,C,,Prototype; excluded from PCB
+C357,22uF / 16V,C,,Prototype; excluded from PCB
+R350,100k 1%,R,,Prototype; excluded from PCB
+R351,24.9k 1%,R,,Prototype; excluded from PCB
+U351,LMR33620ADDA / 400kHz,LMR33620ADDA,,Prototype; excluded from PCB
+C360,10uF / 50V,C,,Prototype; excluded from PCB
+C361,220nF / 50V,C,,Prototype; excluded from PCB
+C362,1uF / 16V,C,,Prototype; excluded from PCB
+C363,100nF / 16V,C,,Prototype; excluded from PCB
+L351,27uH / Isat >= 5A,L,,Prototype; excluded from PCB
+C364,22uF / 25V,C,,Prototype; excluded from PCB
+C365,22uF / 25V,C,,Prototype; excluded from PCB
+C366,22uF / 25V,C,,Prototype; excluded from PCB
+C367,22uF / 25V,C,,Prototype; excluded from PCB
+R360,100k 1%,R,,Prototype; excluded from PCB
+R361,9.09k 1%,R,,Prototype; excluded from PCB
+J350,Outputs / >= 2A contacts,PORT4,,Prototype; excluded from PCB
+J351,Host status,PORT2,,Prototype; excluded from PCB
+R375,10k,R,,Prototype; excluded from PCB

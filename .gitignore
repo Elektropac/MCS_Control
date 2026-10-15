@@ -3,3 +3,14 @@
 .cache
 compile_commands.json
 .DS_Store
+
+# VS Code local history
+.history/
+
+# KiCad auto-generated / lock / backup files
+*.lck
+*-backups/
+fp-info-cache
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*~

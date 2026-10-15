@@ -1,0 +1,2084 @@
+(kicad_sch (version 20250114) (generator "eeschema") (uuid "26364c62-798c-4dd9-a3f3-821a44de4372") (paper "A2") (title_block (title "PoE - 5V / 2A") (date "2026-09-28") (rev "B - prototype") (comment 1 "Based on TI PMP7355; PCB excluded")) (lib_symbols (symbol "MCS_PoE5:R"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "R"
+			(at 2.032 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "R"
+			(at 0 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -1.778 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "R res resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "R_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "R_0_1"
+			(rectangle
+				(start -1.016 -2.54)
+				(end 1.016 2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "R_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:C"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "C"
+			(at 0.635 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C"
+			(at 0.635 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0.9652 -3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "cap capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "C_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "C_0_1"
+			(polyline
+				(pts
+					(xy -2.032 0.762) (xy 2.032 0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -2.032 -0.762) (xy 2.032 -0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "C_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:C_Polarized"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "C"
+			(at 0.635 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C_Polarized"
+			(at 0.635 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0.9652 -3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "cap capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "CP_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "C_Polarized_0_1"
+			(rectangle
+				(start -2.286 0.508)
+				(end 2.286 1.016)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.778 2.286) (xy -0.762 2.286)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.27 2.794) (xy -1.27 1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(rectangle
+				(start 2.286 -0.508)
+				(end -2.286 -1.016)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+		)
+		(symbol "C_Polarized_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:L"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "L"
+			(at -1.27 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "L"
+			(at 1.905 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Inductor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "inductor choke coil reactor magnetic"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "L_0_1"
+			(arc
+				(start 0 2.54)
+				(mid 0.6323 1.905)
+				(end 0 1.27)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 1.27)
+				(mid 0.6323 0.635)
+				(end 0 0)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 0)
+				(mid 0.6323 -0.635)
+				(end 0 -1.27)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 -1.27)
+				(mid 0.6323 -1.905)
+				(end 0 -2.54)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "L_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:D"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "D"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "D"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "D_0_1"
+			(polyline
+				(pts
+					(xy -1.27 1.27) (xy -1.27 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "D_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:D_Schottky"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "D_Schottky"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Schottky diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode Schottky"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "D_Schottky_0_1"
+			(polyline
+				(pts
+					(xy -1.905 0.635) (xy -1.905 1.27) (xy -1.27 1.27) (xy -1.27 -1.27) (xy -0.635 -1.27) (xy -0.635 -0.635)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "D_Schottky_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:D_TVS"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "D_TVS"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Bidirectional transient-voltage-suppression diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode TVS thyrector"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "D_TVS_0_1"
+			(polyline
+				(pts
+					(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 1.27) (xy 2.54 -1.27) (xy -2.54 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.508 1.27) (xy 0 1.27) (xy 0 -1.27) (xy -0.508 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "D_TVS_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "A1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:FerriteBead"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "FB"
+			(at -3.81 0.635 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "FerriteBead"
+			(at 3.81 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -1.778 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Ferrite bead"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "L ferrite bead inductor filter"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "Inductor_* L_* *Ferrite*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "FerriteBead_0_1"
+			(polyline
+				(pts
+					(xy -2.7686 0.4064) (xy -1.7018 2.2606) (xy 2.7686 -0.3048) (xy 1.6764 -2.159) (xy -2.7686 0.4064)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 1.27) (xy 0 1.2954)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 -1.27) (xy 0 -1.2192)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "FerriteBead_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.54)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.54)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:PWR_FLAG"
+		(power global)
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "#FLG"
+			(at 0 1.905 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 0 3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "flag power"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "PWR_FLAG_0_0"
+			(pin power_out line
+				(at 0 0 90)
+				(length 0)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(symbol "PWR_FLAG_0_1"
+			(polyline
+				(pts
+					(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE5:FDS2582" (pin_names (offset 0) (hide yes)) (in_bom yes) (on_board yes) (property "Reference" "Q" (at 0 0 0) (effects (font (size 1.27 1.27)))) (property "Value" "FDS2582" (at 0 0 0) (effects (font (size 1.27 1.27)))) (symbol "FDS2582_0_1"
+			(polyline
+				(pts
+					(xy 0.254 1.905) (xy 0.254 -1.905)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.254 0) (xy -2.54 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.762 2.286) (xy 0.762 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.762 0.508) (xy 0.762 -0.508)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.762 -1.27) (xy 0.762 -2.286)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.762 -1.778) (xy 3.302 -1.778) (xy 3.302 1.778) (xy 0.762 1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.016 0) (xy 2.032 0.381) (xy 2.032 -0.381) (xy 1.016 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+			(circle
+				(center 1.651 0)
+				(radius 2.794)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 2.54 2.54) (xy 2.54 1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(circle
+				(center 2.54 1.778)
+				(radius 0.254)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+			(circle
+				(center 2.54 -1.778)
+				(radius 0.254)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+			(polyline
+				(pts
+					(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 2.921 0.381) (xy 3.683 0.381)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 3.302 0.381) (xy 2.921 -0.254) (xy 3.683 -0.254) (xy 3.302 0.381)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)(symbol "FDS2582_1_1"
+			(pin input line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "G"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "4"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "5"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "7"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "8"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)))(symbol "MCS_PoE5:TPS23753A" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "U" (at 0 69.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "TPS23753A" (at 0 -69.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "TPS23753A_0_1" (rectangle (start -29.92 65.0) (end 29.92 -65.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "TPS23753A_1_1" (pin power_in line (at -35 50 0) (length 5.08) (name "VDD" (effects (font (size 1.016 1.016)))) (number "9" (effects (font (size 1.016 1.016)))))(pin power_in line (at -35 40 0) (length 5.08) (name "VDD1" (effects (font (size 1.016 1.016)))) (number "8" (effects (font (size 1.016 1.016)))))(pin passive line (at -35 30 0) (length 5.08) (name "DEN" (effects (font (size 1.016 1.016)))) (number "10" (effects (font (size 1.016 1.016)))))(pin passive line (at -35 20 0) (length 5.08) (name "CLS" (effects (font (size 1.016 1.016)))) (number "11" (effects (font (size 1.016 1.016)))))(pin passive line (at -35 10 0) (length 5.08) (name "APD" (effects (font (size 1.016 1.016)))) (number "12" (effects (font (size 1.016 1.016)))))(pin passive line (at -35 0 0) (length 5.08) (name "BLNK" (effects (font (size 1.016 1.016)))) (number "13" (effects (font (size 1.016 1.016)))))(pin passive line (at -35 -10 0) (length 5.08) (name "FRS" (effects (font (size 1.016 1.016)))) (number "14" (effects (font (size 1.016 1.016)))))(pin passive line (at 35 50 180) (length 5.08) (name "VC" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin output line (at 35 30 180) (length 5.08) (name "GATE" (effects (font (size 1.016 1.016)))) (number "5" (effects (font (size 1.016 1.016)))))(pin passive line (at 35 10 180) (length 5.08) (name "CS" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin output line (at 35 -10 180) (length 5.08) (name "VB" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at 35 -30 180) (length 5.08) (name "CTL" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 35 -50 180) (length 5.08) (name "RTN" (effects (font (size 1.016 1.016)))) (number "6" (effects (font (size 1.016 1.016)))))(pin passive line (at 35 -60 180) (length 5.08) (name "VSS" (effects (font (size 1.016 1.016)))) (number "7" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:HD01" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "D" (at 0 16.5 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "HD01" (at 0 -16.5 0) (effects (font (size 1.27 1.27))))
+      (symbol "HD01_0_1" (rectangle (start -10.0 12.5) (end 10.0 -12.5) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "HD01_1_1" (pin passive line (at -15.08 5 0) (length 5.08) (name "AC" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.08 -5 0) (length 5.08) (name "AC" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at 15.08 8 180) (length 5.08) (name "+" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 15.08 -8 180) (length 5.08) (name "-" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:PoE_Taps" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 24.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "PoE_Taps" (at 0 -24.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "PoE_Taps_0_1" (rectangle (start -7.5 20.0) (end 7.5 -20.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "PoE_Taps_1_1" (pin passive line (at 12.58 15 180) (length 5.08) (name "CT 1/2" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 12.58 5 180) (length 5.08) (name "CT 3/6" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at 12.58 -5 180) (length 5.08) (name "PAIR 4/5" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at 12.58 -15 180) (length 5.08) (name "PAIR 7/8" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:OUT_5V" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 14.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "OUT_5V" (at 0 -14.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "OUT_5V_0_1" (rectangle (start -7.5 10.0) (end 7.5 -10.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "OUT_5V_1_1" (pin passive line (at -12.58 5 0) (length 5.08) (name "5V" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -12.58 -5 0) (length 5.08) (name "GND" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:POE13P_50L" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "T" (at 0 34.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "POE13P_50L" (at 0 -34.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "POE13P_50L_0_1" (rectangle (start -12.42 30.0) (end 12.42 -30.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "POE13P_50L_1_1" (pin passive line (at -17.5 15 0) (length 5.08) (name "PRI dot" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at -17.5 0 0) (length 5.08) (name "PRI" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at -17.5 -10 0) (length 5.08) (name "AUX dot" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at -17.5 -25 0) (length 5.08) (name "AUX" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 17.5 15 180) (length 5.08) (name "SEC dot" (effects (font (size 1.016 1.016)))) (number "7" (effects (font (size 1.016 1.016)))))(pin passive line (at 17.5 15 180) (length 5.08) (name "SEC dot" (effects (font (size 1.016 1.016)))) (number "8" (effects (font (size 1.016 1.016)))))(pin passive line (at 17.5 0 180) (length 5.08) (name "SEC" (effects (font (size 1.016 1.016)))) (number "9" (effects (font (size 1.016 1.016)))))(pin passive line (at 17.5 0 180) (length 5.08) (name "SEC" (effects (font (size 1.016 1.016)))) (number "10" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:TCMT1107" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "U" (at 0 14.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "TCMT1107" (at 0 -14.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "TCMT1107_0_1" (rectangle (start -12.5 10.0) (end 12.5 -10.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "TCMT1107_1_1" (pin passive line (at -17.58 5 0) (length 5.08) (name "C" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at -17.58 -5 0) (length 5.08) (name "E" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at 17.58 5 180) (length 5.08) (name "A" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 17.58 -5 180) (length 5.08) (name "K" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:TLV431A_DBV" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "U" (at 0 14.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "TLV431A_DBV" (at 0 -14.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "TLV431A_DBV_0_1" (rectangle (start -7.5 10.0) (end 7.5 -10.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "TLV431A_DBV_1_1" (pin passive line (at 0 15.08 270) (length 5.08) (name "K" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at 12.58 0 180) (length 5.08) (name "REF" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -15.08 90) (length 5.08) (name "A" (effects (font (size 1.016 1.016)))) (number "5" (effects (font (size 1.016 1.016)))))(pin passive line (at -12.58 5 0) (length 5.08) (name "NC" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -12.58 -5 0) (length 5.08) (name "SUB" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:BAT54S" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "D" (at 0 14.0 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "BAT54S" (at 0 -14.0 0) (effects (font (size 1.27 1.27))))
+      (symbol "BAT54S_0_1" (rectangle (start -7.5 10.0) (end 7.5 -10.0) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "BAT54S_1_1" (pin passive line (at 0 15.08 270) (length 5.08) (name "K2" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at -12.58 0 0) (length 5.08) (name "K1/A2" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -15.08 90) (length 5.08) (name "A1" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE5:BAS16"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "BAS16"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BAS16"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "BAS16"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "BAS16_0_1"
+			(polyline
+				(pts
+					(xy -1.27 1.27) (xy -1.27 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "BAS16_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	(symbol "BAS16_0_0" (pin no_connect line (at 0 -7.62 90) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))))))(text "PoE -> 5 V / 2 A" (at 15 14 0) (effects (font (size 3.81 3.81)) (justify left top)) (uuid "46b74ddd-a064-43a2-82a9-89ad56968113"))(text "MCS-Control | Eget kredsloeb efter TI PMP7355 Rev. B | Kun diagram - ikke tilfoejet PCB | Rev. B" (at 15 24 0) (effects (font (size 1.524 1.524)) (justify left top)) (uuid "50e1a766-e986-43a5-94e0-29f066f0c9f9"))(text "01  PoE-indgang / polaritetsbroer" (at 15 40 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "52e37641-a464-4c30-86b9-0d39645cd491"))(text "02  Isoleret flyback - energivejen fra venstre mod hoejre" (at 220 40 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "167cba89-cea1-432d-94cc-2af1348ffbad"))(text "03  PoE-detektion og styring" (at 20 195 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "f693ffaa-1f46-415d-a4af-3e844ba63498"))(text "04  Tilbagekobling af 5 V gennem optokobler" (at 385 195 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "c1ee0e2f-70a8-4ea0-8d2c-11da9c52306a"))(symbol (lib_id "MCS_PoE5:PoE_Taps") (at 27.5 95 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "a1909474-81ed-45db-b187-00681887a92a")
+      (property "Reference" "J400" (at 27.5 70 0) (effects (font (size 1.27 1.27))  ))(property "Value" "Fra Ethernet / PoE" (at 27.5 74 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 27.5 95 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 27.5 95 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "J0" (at 27.5 95 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "3fd9f22d-43d8-4a04-8854-3332060c425a"))(pin "2" (uuid "c6c5f203-4104-4c99-80ce-3524dbe7c1d1"))(pin "3" (uuid "93173a3f-87d7-48c3-9dbf-9ef23b854848"))(pin "4" (uuid "40879a95-3cdf-4bd1-b0fb-e3ee4ba15430")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "J400") (unit 1)))))(symbol (lib_id "MCS_PoE5:HD01") (at 85 78 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "4ad7211d-ac83-47d1-9eaf-068e4e6b13dc")
+      (property "Reference" "D402" (at 85 60 0) (effects (font (size 1.27 1.27))  ))(property "Value" "HD01" (at 85 64 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 85 78 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 85 78 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D2" (at 85 78 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "3" (uuid "4499fc02-f4ba-422d-aa61-787523369912"))(pin "4" (uuid "1fe9a5f4-c8a6-4aa2-ae8c-c9ab68d35160"))(pin "1" (uuid "8540cb9b-a119-4f30-a210-4b855dea2c9f"))(pin "2" (uuid "a49718f2-c815-4485-9c73-af54483bbdd7")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D402") (unit 1)))))(symbol (lib_id "MCS_PoE5:HD01") (at 85 133 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "9eb71eeb-4824-4c0d-bf70-485ab8803555")
+      (property "Reference" "D403" (at 85 115 0) (effects (font (size 1.27 1.27))  ))(property "Value" "HD01" (at 85 119 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 85 133 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 85 133 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D3" (at 85 133 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "3" (uuid "046ca42e-be50-4618-8423-0cf7abea646d"))(pin "4" (uuid "c90cb2c3-b79d-49ff-b52e-06ed93cfa840"))(pin "1" (uuid "d28fe6ae-0e99-4837-8768-3aabaa540d56"))(pin "2" (uuid "439176ee-b507-4af5-a0b5-0453bceeb0ef")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D403") (unit 1)))))(wire (pts (xy 40.08 80) (xy 52 80)) (stroke (width 0) (type default)) (uuid "51abf640-eef9-42f0-9378-847864c5a01d"))(wire (pts (xy 52 80) (xy 52 73)) (stroke (width 0) (type default)) (uuid "0e2af502-48b2-46b2-95c6-5023d108bd33"))(wire (pts (xy 52 73) (xy 69.92 73)) (stroke (width 0) (type default)) (uuid "51b8e9f4-1217-4549-9a99-859011f06736"))(wire (pts (xy 40.08 90) (xy 58 90)) (stroke (width 0) (type default)) (uuid "e2c9e4ea-490a-412c-a1b4-8383a62310ff"))(wire (pts (xy 58 90) (xy 58 83)) (stroke (width 0) (type default)) (uuid "24881846-3ad3-4376-af66-ac01908ccaba"))(wire (pts (xy 58 83) (xy 69.92 83)) (stroke (width 0) (type default)) (uuid "90485fe5-aa48-4577-bffc-60e5193fc242"))(wire (pts (xy 40.08 100) (xy 52 100)) (stroke (width 0) (type default)) (uuid "0e1b892d-bddd-40b8-9795-a9c044f2570b"))(wire (pts (xy 52 100) (xy 52 128)) (stroke (width 0) (type default)) (uuid "f4f3acad-ed5e-4d61-bd49-6bd57dcf82d3"))(wire (pts (xy 52 128) (xy 69.92 128)) (stroke (width 0) (type default)) (uuid "1f9ed450-e1ec-4f62-9f3a-1a0bec6830e1"))(wire (pts (xy 40.08 110) (xy 58 110)) (stroke (width 0) (type default)) (uuid "034b3dce-98df-4690-ae01-b5abf8a0e579"))(wire (pts (xy 58 110) (xy 58 138)) (stroke (width 0) (type default)) (uuid "3b0dd6c4-f572-46ad-91d3-6011b88575eb"))(wire (pts (xy 58 138) (xy 69.92 138)) (stroke (width 0) (type default)) (uuid "23f03665-e9f3-4d5d-ae7a-0b53226e6013"))(wire (pts (xy 100.08 70) (xy 112 70)) (stroke (width 0) (type default)) (uuid "c971131e-b7d7-4208-b55c-d9edaf0a9074"))(wire (pts (xy 112 70) (xy 112 125)) (stroke (width 0) (type default)) (uuid "9c1fd1d2-310c-4a33-80b5-e15d1dec8294"))(wire (pts (xy 112 125) (xy 100.08 125)) (stroke (width 0) (type default)) (uuid "61763f1b-05db-429d-b952-a8f21aa3a556"))(wire (pts (xy 100.08 86) (xy 105 86)) (stroke (width 0) (type default)) (uuid "e5342c36-5ac8-4b98-8e83-e252489df2a3"))(wire (pts (xy 105 86) (xy 105 141)) (stroke (width 0) (type default)) (uuid "006ff8ec-8630-435d-948a-576c8b213a33"))(wire (pts (xy 105 141) (xy 100.08 141)) (stroke (width 0) (type default)) (uuid "3b08c571-cb75-4667-ae91-fcf58fdb0ee9"))(symbol (lib_id "MCS_PoE5:FerriteBead") (at 135 70 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "e8a6d5e4-d55b-4e46-a494-016f7214d86b")
+      (property "Reference" "FB401" (at 135 64 90) (effects (font (size 1.27 1.27))  ))(property "Value" "220R @ 100MHz" (at 135 68 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 135 70 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 135 70 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "F1" (at 135 70 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "53d42646-87b7-4f65-b5fb-189a8997edc3"))(pin "2" (uuid "4e7bdb29-d929-42f1-8d00-e419069f2146")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "FB401") (unit 1)))))(symbol (lib_id "MCS_PoE5:FerriteBead") (at 135 165 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "b2733748-5698-46e8-a3e5-eb6fce209997")
+      (property "Reference" "FB402" (at 135 159 90) (effects (font (size 1.27 1.27))  ))(property "Value" "220R @ 100MHz" (at 135 163 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 135 165 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 135 165 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "F2" (at 135 165 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "30cb64b7-a34e-4b84-87ab-05bba812f5d8"))(pin "2" (uuid "d52af8a1-4b6a-40e2-942d-77366de831b3")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "FB402") (unit 1)))))(wire (pts (xy 112 70) (xy 131.19 70)) (stroke (width 0) (type default)) (uuid "b5dd910f-1bff-42cd-b8b5-b816926b448b"))(wire (pts (xy 105 141) (xy 105 165)) (stroke (width 0) (type default)) (uuid "20bb3757-2f4e-4cc4-99d8-e514fd89273a"))(wire (pts (xy 105 165) (xy 131.19 165)) (stroke (width 0) (type default)) (uuid "8ddf0d67-af1a-4d07-bb0b-1f4b87f46dc7"))(symbol (lib_id "MCS_PoE5:C") (at 120 115 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "0a45fbf0-82d2-4d78-befa-3eb8cbc62df2")
+      (property "Reference" "C424" (at 129 113 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1nF / 100V" (at 129 117 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 120 115 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 120 115 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C24" (at 120 115 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "56a33c56-1fd6-4d3b-aa3a-de660c8fb38e"))(pin "2" (uuid "7f389906-8702-41f4-ac81-067db3e75c7a")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C424") (unit 1)))))(wire (pts (xy 120 111.19) (xy 120 70)) (stroke (width 0) (type default)) (uuid "209d73a9-5d95-4684-bc05-f16e7611f3f8"))(wire (pts (xy 120 70) (xy 112 70)) (stroke (width 0) (type default)) (uuid "c8fb9c93-6793-4d00-9f48-f8107c35d883"))(wire (pts (xy 120 118.81) (xy 120 165)) (stroke (width 0) (type default)) (uuid "8836cf9e-8686-4b24-a7c3-92649f81d1af"))(wire (pts (xy 120 165) (xy 105 165)) (stroke (width 0) (type default)) (uuid "d4175619-93d3-4b9d-99ff-eb8568a538f9"))(symbol (lib_id "MCS_PoE5:C") (at 150 115 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "4dba32f7-4685-487a-ba14-57f41555cf2c")
+      (property "Reference" "C417" (at 159 113 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1nF / 100V" (at 159 117 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 150 115 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 150 115 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C17" (at 150 115 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "1e03c144-5613-4420-b2a5-06552ade8d0d"))(pin "2" (uuid "d3154ea0-fb05-461e-a863-cefb3598e1ac")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C417") (unit 1)))))(wire (pts (xy 138.81 70) (xy 150 70)) (stroke (width 0) (type default)) (uuid "18da6e84-dbc2-40a0-a845-5c798b994eff"))(wire (pts (xy 150 70) (xy 190 70)) (stroke (width 0) (type default)) (uuid "056d7fc4-65eb-4aab-8d16-5985b89732ec"))(wire (pts (xy 138.81 165) (xy 150 165)) (stroke (width 0) (type default)) (uuid "bec0b427-ca5c-4eb6-9830-2855b3666124"))(wire (pts (xy 150 165) (xy 150 300)) (stroke (width 0) (type default)) (uuid "5235654c-ac56-49f7-90ef-8f792f630795"))(wire (pts (xy 150 111.19) (xy 150 70)) (stroke (width 0) (type default)) (uuid "b1de20c6-4b36-46b0-b19c-6c202d99a3bc"))(wire (pts (xy 150 118.81) (xy 150 165)) (stroke (width 0) (type default)) (uuid "16053c65-4516-4687-a825-12fec164ef90"))(symbol (lib_id "MCS_PoE5:D_TVS") (at 170 145 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "4c62dfa6-8584-40e2-9c6c-babf522ce27a")
+      (property "Reference" "D401" (at 178 143 90) (effects (font (size 1.27 1.27))  ))(property "Value" "SMAJ58A" (at 178 147 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 170 145 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 170 145 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D1" (at 170 145 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "c9fdc246-9543-4ee1-8617-eea0d8d08ebc"))(pin "2" (uuid "b13179df-7411-4494-87d7-702fcf2f8fcf")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D401") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 195 145 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "e848eab0-2522-4821-b72a-b2c35b7846e3")
+      (property "Reference" "C423" (at 204 143 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100nF / 100V" (at 204 147 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 195 145 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 195 145 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C23" (at 195 145 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "da57afd4-0363-4881-8dc1-7b06af347cf5"))(pin "2" (uuid "399c3aad-dd4b-43af-9b71-8965cc6a30a2")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C423") (unit 1)))))(wire (pts (xy 170 148.81) (xy 170 70)) (stroke (width 0) (type default)) (uuid "f29cc532-23d2-45af-b8dc-990749140922"))(wire (pts (xy 195 141.19) (xy 195 70)) (stroke (width 0) (type default)) (uuid "6e36d525-7f4e-413a-b44d-b68db3284e19"))(wire (pts (xy 170 141.19) (xy 170 300)) (stroke (width 0) (type default)) (uuid "201c7e70-f5a0-46ec-b2b4-694a2cd3ae6d"))(wire (pts (xy 170 300) (xy 150 300)) (stroke (width 0) (type default)) (uuid "f7740c6b-b192-4c59-bc56-ed8852380ae1"))(wire (pts (xy 195 148.81) (xy 195 300)) (stroke (width 0) (type default)) (uuid "d494a814-26cf-494a-b125-b19855046218"))(wire (pts (xy 195 300) (xy 170 300)) (stroke (width 0) (type default)) (uuid "8504dd5a-9af7-4b21-850c-dbddb8eee49a"))(symbol (lib_id "MCS_PoE5:L") (at 255 70 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "d9628090-d5f8-4505-bb98-3cd7b890201a")
+      (property "Reference" "L401" (at 255 64 90) (effects (font (size 1.27 1.27))  ))(property "Value" "10uH LPS4012-103ML" (at 255 68 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 255 70 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 255 70 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "L1" (at 255 70 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "9ea585ff-3857-4b95-8950-aeaf3cc1cd95"))(pin "2" (uuid "b34c60e3-a4a7-4f95-9798-7745d3402b88")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "L401") (unit 1)))))(symbol (lib_id "MCS_PoE5:C_Polarized") (at 225 108 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "7875fedf-c4fe-4e9f-b37f-ec8aa11ffc75")
+      (property "Reference" "C408" (at 234 106 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 100V" (at 234 110 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 225 108 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 225 108 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C8" (at 225 108 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "2fcb0e91-4788-4bb7-9604-345c10cafe80"))(pin "2" (uuid "94188f7b-c8bd-4c6e-b8da-2b38855473af")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C408") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 275 108 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "3c67dd31-d9ea-4205-8b5e-e5707114c2a5")
+      (property "Reference" "C409" (at 284 106 0) (effects (font (size 1.27 1.27))  ))(property "Value" "2.2uF / 100V" (at 284 110 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 275 108 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 275 108 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C9" (at 275 108 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "b2a7ae92-9762-4d22-83b2-6a51fd36bade"))(pin "2" (uuid "b182c794-1b7b-4f24-a504-97417719ed43")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C409") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 300 108 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "140a1f26-608b-4e83-84ad-ea87fd3a3424")
+      (property "Reference" "C410" (at 309 106 0) (effects (font (size 1.27 1.27))  ))(property "Value" "2.2uF / 100V" (at 309 110 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 300 108 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 300 108 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C10" (at 300 108 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "2a515fde-476b-4642-aac9-56ce26062904"))(pin "2" (uuid "88d29052-a40d-4383-9cc9-373c624385dd")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C410") (unit 1)))))(wire (pts (xy 190 70) (xy 251.19 70)) (stroke (width 0) (type default)) (uuid "1344d918-3126-4195-8759-9083814e1e51"))(wire (pts (xy 225 104.19) (xy 225 70)) (stroke (width 0) (type default)) (uuid "bdb6328d-e1f6-42f6-a2de-47ba32c4e532"))(symbol (lib_id "MCS_PoE5:POE13P_50L") (at 365 85 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "10016be5-9666-4fa8-90cb-b378c1360a0b")
+      (property "Reference" "T402" (at 365 119 0) (effects (font (size 1.27 1.27))  ))(property "Value" "POE13P-50L" (at 365 123 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 365 85 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 365 85 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "T2" (at 365 85 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "3" (uuid "90abed45-c9dd-45a6-be5a-e31638e39887"))(pin "4" (uuid "56ace065-f110-425b-bb4e-3c76aecb2e18"))(pin "2" (uuid "02000a57-1121-4db6-93c6-3c58bd443ab6"))(pin "1" (uuid "bd003129-f38e-4adc-af1a-0096a9a91274"))(pin "7" (uuid "4ded232f-d82a-459d-8dac-775f26e28376"))(pin "8" (uuid "53673835-ef1b-4967-90ce-6aee819314e3"))(pin "9" (uuid "3d698793-70d9-45ac-bfa6-bbd293789d5c"))(pin "10" (uuid "8e8597ad-1a20-490a-948b-5c8e4376588a")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "T402") (unit 1)))))(wire (pts (xy 258.81 70) (xy 275 70)) (stroke (width 0) (type default)) (uuid "670ecfa4-bfdd-4c55-99ca-235d3e8d6369"))(wire (pts (xy 275 70) (xy 300 70)) (stroke (width 0) (type default)) (uuid "b7ea423a-288a-43c1-b8e6-db9212e5e15e"))(wire (pts (xy 300 70) (xy 330 70)) (stroke (width 0) (type default)) (uuid "1ec7a736-dd36-4c7c-ba7a-e49905bd9a42"))(wire (pts (xy 330 70) (xy 347.5 70)) (stroke (width 0) (type default)) (uuid "156301c1-1966-4ee0-b520-f4a1f42b4fa5"))(wire (pts (xy 275 104.19) (xy 275 70)) (stroke (width 0) (type default)) (uuid "4d5644a3-d7f8-4c1e-ac88-ed32b7a5a5b3"))(wire (pts (xy 300 104.19) (xy 300 70)) (stroke (width 0) (type default)) (uuid "7763b75d-e111-4982-b20c-5ec1790fae13"))(wire (pts (xy 225 111.81) (xy 225 128)) (stroke (width 0) (type default)) (uuid "f9a05261-73e8-401f-8c31-2c2595aa1afa"))(wire (pts (xy 275 111.81) (xy 275 128)) (stroke (width 0) (type default)) (uuid "fc5213a3-7c97-4f34-aeb9-cf11450866ab"))(wire (pts (xy 300 111.81) (xy 300 128)) (stroke (width 0) (type default)) (uuid "a5a2785f-54dd-4c7c-b734-dbe9d97a79b4"))(wire (pts (xy 215 128) (xy 225 128)) (stroke (width 0) (type default)) (uuid "6c6a52df-98f9-4e19-bd2a-2eed9e4f8e1c"))(wire (pts (xy 225 128) (xy 275 128)) (stroke (width 0) (type default)) (uuid "e4e1a41b-10e3-4008-ac06-f9ad161732a4"))(wire (pts (xy 275 128) (xy 300 128)) (stroke (width 0) (type default)) (uuid "66581507-d23b-477d-b155-9a6a13e3dedd"))(wire (pts (xy 300 128) (xy 305 128)) (stroke (width 0) (type default)) (uuid "c5d23e6b-ff71-4429-81e8-814461fb87df"))(label "RTN" (at 215 128 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "7b95a98e-450d-4ea3-8a72-70196ef8498a"))(symbol (lib_id "MCS_PoE5:R") (at 320 93 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "c6a55522-a420-472a-9395-d7f254427ed1")
+      (property "Reference" "R406" (at 329 91 0) (effects (font (size 1.27 1.27))  ))(property "Value" "39k / 0.1W" (at 329 95 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0805_2012Metric" (at 320 93 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 320 93 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R6" (at 320 93 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "858e9aee-ac77-41fe-a05d-79f26a2afa04"))(pin "2" (uuid "5818f49e-c922-4cc9-8c35-5998a90e86f0")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R406") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 340 93 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "30fc8109-4711-41b8-877a-46120392f075")
+      (property "Reference" "C411" (at 349 91 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100nF / 100V" (at 349 95 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 340 93 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 340 93 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C11" (at 340 93 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "8bed6277-3df8-42a9-98dc-405d4b409d68"))(pin "2" (uuid "e74fd56f-ec97-4fac-bb3d-b619c9ff4d16")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C411") (unit 1)))))(wire (pts (xy 320 89.19) (xy 320 70)) (stroke (width 0) (type default)) (uuid "30892ddb-f215-4761-8bc6-173949e173f6"))(wire (pts (xy 340 89.19) (xy 340 70)) (stroke (width 0) (type default)) (uuid "71fd469c-3479-4518-b150-c864d112bb78"))(wire (pts (xy 320 96.81) (xy 320 113)) (stroke (width 0) (type default)) (uuid "a67f5de6-95ba-4911-b9f8-f5e76565ed49"))(wire (pts (xy 340 96.81) (xy 340 113)) (stroke (width 0) (type default)) (uuid "d3aec9ac-4146-4258-a89c-1ae4a9360158"))(wire (pts (xy 320 113) (xy 340 113)) (stroke (width 0) (type default)) (uuid "baa7e940-3c71-42be-be41-29eda39e0099"))(label "CLAMP" (at 320 113 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "4d5c4214-c15b-4b01-b846-51822e9f844c"))(symbol (lib_id "MCS_PoE5:D") (at 330 133 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "b0c50498-a718-4a5d-8bd1-838871adad45")
+      (property "Reference" "D408" (at 338 131 90) (effects (font (size 1.27 1.27))  ))(property "Value" "MURA120" (at 338 135 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 330 133 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 330 133 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D8" (at 330 133 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "bd9822f3-f354-4fe2-b2f6-ee9794f46855"))(pin "2" (uuid "eda6ecbd-3ee2-4f27-9d34-3982fea7e652")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D408") (unit 1)))))(wire (pts (xy 330 136.81) (xy 330 113)) (stroke (width 0) (type default)) (uuid "971f02ce-141e-460a-8e33-707796baac0b"))(wire (pts (xy 330 129.19) (xy 330 153)) (stroke (width 0) (type default)) (uuid "5837b09b-49f4-46b0-92b5-bc6385ca177c"))(wire (pts (xy 330 153) (xy 355.08 153)) (stroke (width 0) (type default)) (uuid "ca299c5e-439d-4f1f-a68a-389cefa36e01"))(symbol (lib_id "MCS_PoE5:FDS2582") (at 350 170 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "6e384d5f-7e6b-496f-b429-2bf1806e8f3c")
+      (property "Reference" "Q402" (at 359 168 0) (effects (font (size 1.27 1.27))  ))(property "Value" "FDS2582 / 150V" (at 359 172 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 350 170 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 350 170 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "Q2" (at 350 170 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "4" (uuid "ac93876c-99e9-4c40-a6e3-92ee40172dfe"))(pin "5" (uuid "13fa0741-5688-4bf3-9a01-d46c9f0b6781"))(pin "6" (uuid "ad43401b-33b5-4861-95a9-02f0f6ee9955"))(pin "7" (uuid "36fa734e-ae1d-4f5f-b22d-5120d672dab9"))(pin "8" (uuid "aa1a0f1b-8c6c-4e9f-8ac6-053ec0dca188"))(pin "1" (uuid "16bdf36f-cf8a-469c-be61-74a68bfb50d3"))(pin "2" (uuid "c818b4b1-248b-4098-884e-6dcfc1c9c295"))(pin "3" (uuid "4445c804-a33c-445c-a8ba-e22d29d273aa")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "Q402") (unit 1)))))(wire (pts (xy 347.5 85) (xy 355.08 85)) (stroke (width 0) (type default)) (uuid "58c44bf0-9aef-4f36-a715-7a87c404a1f6"))(wire (pts (xy 355.08 85) (xy 355.08 153)) (stroke (width 0) (type default)) (uuid "a253a897-9f7b-47f6-81d1-b2d16cac026e"))(wire (pts (xy 355.08 153) (xy 352.54 153)) (stroke (width 0) (type default)) (uuid "8e4d5213-08a8-4e5a-b70e-50a38adc31fb"))(wire (pts (xy 352.54 153) (xy 352.54 164.92)) (stroke (width 0) (type default)) (uuid "971fd37e-a83c-41bf-a2a8-2dccd293891c"))(symbol (lib_id "MCS_PoE5:R") (at 352.54 220 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "79e9ab3e-eeaf-4ac4-942a-d41b9a21e1fb")
+      (property "Reference" "R418" (at 361.54 218 0) (effects (font (size 1.27 1.27))  ))(property "Value" "0.39R / 0.5W" (at 361.54 222 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_2010_5025Metric" (at 352.54 220 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 352.54 220 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R18" (at 352.54 220 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "2da83ffc-80fd-4605-aa46-d38d9ef47503"))(pin "2" (uuid "9938ea46-1e5c-4e36-b3d0-0b660772bfce")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R418") (unit 1)))))(wire (pts (xy 352.54 175.08) (xy 352.54 210)) (stroke (width 0) (type default)) (uuid "a58386e3-dea6-4a1e-afe8-fb53d6bcc516"))(wire (pts (xy 352.54 210) (xy 352.54 216.19)) (stroke (width 0) (type default)) (uuid "7bac77f2-7fea-4291-9aa0-e6596065982c"))(wire (pts (xy 352.54 223.81) (xy 352.54 340)) (stroke (width 0) (type default)) (uuid "b04b4ac2-037c-4266-b1c1-e9e4d90d09aa"))(wire (pts (xy 347.5 95) (xy 345 95)) (stroke (width 0) (type default)) (uuid "eef08661-21a7-434d-b8a1-ee992e5f2abf"))(wire (pts (xy 345 95) (xy 345 145)) (stroke (width 0) (type default)) (uuid "35cf9706-2856-4c5a-81e3-91a25d3a8442"))(wire (pts (xy 345 145) (xy 305 145)) (stroke (width 0) (type default)) (uuid "2e9ad002-ae40-4313-b3ad-c106cfcead55"))(wire (pts (xy 305 145) (xy 305 128)) (stroke (width 0) (type default)) (uuid "d1c9259b-534f-445f-a25f-4302d307a838"))(symbol (lib_id "MCS_PoE5:R") (at 320 150 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "292d949c-9557-4715-899c-e73a627a4c6c")
+      (property "Reference" "R409" (at 320 144 90) (effects (font (size 1.27 1.27))  ))(property "Value" "10R" (at 320 148 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0805_2012Metric" (at 320 150 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 320 150 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R9" (at 320 150 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "f63850a2-ca3b-4007-8c8d-c2d98e680a1d"))(pin "2" (uuid "244683df-25bb-4ab2-a57e-587767ed6e33")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R409") (unit 1)))))(symbol (lib_id "MCS_PoE5:BAS16") (at 290 150 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "af93ff72-9d2c-4099-8326-70e40fc182a2")
+      (property "Reference" "D410" (at 299 148 0) (effects (font (size 1.27 1.27))  ))(property "Value" "BAS16" (at 299 152 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 290 150 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 290 150 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D10" (at 290 150 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "3" (uuid "db2e1f0a-2400-49e8-b1ec-7d3a956b1d76"))(pin "1" (uuid "eb9c1961-2c53-42b7-9aab-c14caa26f3b1"))(pin "2" (uuid "6c622d34-c342-4696-8310-b38119db7124")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D410") (unit 1)))))(no_connect (at 290 157.62) (uuid "a78a781b-dbec-4820-ab9e-0909b803caaf"))(wire (pts (xy 347.5 110) (xy 342 110)) (stroke (width 0) (type default)) (uuid "3e42a17b-f4dd-4730-8ec4-b4f90881e376"))(wire (pts (xy 342 110) (xy 342 150)) (stroke (width 0) (type default)) (uuid "9b633dbc-48ee-43e5-9c1c-064f8a9d1875"))(wire (pts (xy 342 150) (xy 323.81 150)) (stroke (width 0) (type default)) (uuid "be0c4170-e6d6-4819-b0ff-f2fa5d6be5cd"))(wire (pts (xy 316.19 150) (xy 293.81 150)) (stroke (width 0) (type default)) (uuid "fb9abbe2-0e7d-467f-9182-1a2431e8dfe7"))(symbol (lib_id "MCS_PoE5:C") (at 295 175 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "55cafbe4-dcab-4b7b-83b0-b9d7eebe6dd1")
+      (property "Reference" "C415" (at 304 173 0) (effects (font (size 1.27 1.27))  ))(property "Value" "220nF / 25V" (at 304 177 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 295 175 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 295 175 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C15" (at 295 175 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "14fdb5bb-31b2-43cf-818e-ac0f31bd2aa7"))(pin "2" (uuid "214afc27-1f5e-4965-ba2a-622f91262ca5")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C415") (unit 1)))))(symbol (lib_id "MCS_PoE5:C_Polarized") (at 320 175 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "3a2b66cd-153d-4861-ac2c-35a4e809d547")
+      (property "Reference" "C416" (at 329 173 0) (effects (font (size 1.27 1.27))  ))(property "Value" "10uF / 25V" (at 329 177 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 320 175 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 320 175 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C16" (at 320 175 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "c4e70e6c-08a0-4d3a-8aa1-e5e6acd87a44"))(pin "2" (uuid "63356445-f8b5-498b-823e-2c9f069ac008")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C416") (unit 1)))))(wire (pts (xy 286.19 150) (xy 280 150)) (stroke (width 0) (type default)) (uuid "b4cc7b24-e99b-4c50-824b-c60ed716459c"))(wire (pts (xy 280 150) (xy 280 158)) (stroke (width 0) (type default)) (uuid "28473119-1930-4f23-84c2-22fc0b6bd95b"))(wire (pts (xy 280 158) (xy 295 158)) (stroke (width 0) (type default)) (uuid "0613d214-d107-4cf2-9eaf-2be7267d75ae"))(wire (pts (xy 295 158) (xy 320 158)) (stroke (width 0) (type default)) (uuid "b09acdca-857f-41fc-91be-f8d56390196e"))(wire (pts (xy 295 171.19) (xy 295 158)) (stroke (width 0) (type default)) (uuid "cae70acb-d23a-427f-bdc9-8dd759f9929b"))(wire (pts (xy 320 171.19) (xy 320 158)) (stroke (width 0) (type default)) (uuid "9da2b810-e24e-46ba-85ff-6dbc59f2d90a"))(wire (pts (xy 295 178.81) (xy 295 183)) (stroke (width 0) (type default)) (uuid "90f96d69-0ef4-4c09-b58c-3c852d4fa383"))(wire (pts (xy 320 178.81) (xy 320 183)) (stroke (width 0) (type default)) (uuid "f45ccebb-0b35-4f8a-a12c-57abb91b9cd3"))(wire (pts (xy 285 183) (xy 295 183)) (stroke (width 0) (type default)) (uuid "c32860b7-36a8-4d48-97cf-9d6277bd80b6"))(wire (pts (xy 295 183) (xy 320 183)) (stroke (width 0) (type default)) (uuid "16b5dc1e-28b4-48f1-93b0-a5283270cbdc"))(wire (pts (xy 320 183) (xy 325 183)) (stroke (width 0) (type default)) (uuid "457533c7-9e92-4bea-b633-0aee2ee132c0"))(label "RTN" (at 285 183 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "77ff3840-151c-4a5f-9192-fb654095dd35"))(wire (pts (xy 325 183) (xy 325 340)) (stroke (width 0) (type default)) (uuid "eadcf337-0c6c-4dbd-80e0-1e0b87b7770d"))(symbol (lib_id "MCS_PoE5:D_Schottky") (at 410 120 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "9122e558-0124-4065-877d-719e86bc0166")
+      (property "Reference" "D404" (at 418 118 90) (effects (font (size 1.27 1.27))  ))(property "Value" "B540 / 5A 40V" (at 418 122 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 410 120 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 410 120 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D4" (at 410 120 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "6f0f854b-1d66-4891-8389-8613c25ed21f"))(pin "2" (uuid "eb111271-8ce6-4d36-8b89-076b7a1f50e4")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D404") (unit 1)))))(wire (pts (xy 382.5 70) (xy 410 70)) (stroke (width 0) (type default)) (uuid "6c126087-97a2-4497-8107-a251c7aef965"))(wire (pts (xy 410 70) (xy 410 123.81)) (stroke (width 0) (type default)) (uuid "4501f0c2-1b18-4c7e-84b4-2047ce32cd78"))(symbol (lib_id "MCS_PoE5:R") (at 390 110 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "7dc6165b-ab57-4deb-a105-64d900ca58bf")
+      (property "Reference" "R405" (at 399 108 0) (effects (font (size 1.27 1.27))  ))(property "Value" "20R / 0.5W" (at 399 112 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_2010_5025Metric" (at 390 110 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 390 110 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R5" (at 390 110 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "f6325543-289f-46ae-ac40-110bd4fbce0c"))(pin "2" (uuid "f1993bef-2cf3-41ec-aafe-9736010826a7")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R405") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 390 138 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "bf0e3c62-c944-4516-a4bd-58a60c28072c")
+      (property "Reference" "C407" (at 399 136 0) (effects (font (size 1.27 1.27))  ))(property "Value" "680pF / 50V" (at 399 140 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 390 138 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 390 138 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C7" (at 390 138 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "c2dc187f-010a-47b8-980b-b97b2b01d34e"))(pin "2" (uuid "5bff348a-8cb3-4335-9286-f8a4ab185872")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C407") (unit 1)))))(wire (pts (xy 390 106.19) (xy 390 70)) (stroke (width 0) (type default)) (uuid "6e43ad74-569a-41f6-89db-e61d0fc7582f"))(wire (pts (xy 390 70) (xy 410 70)) (stroke (width 0) (type default)) (uuid "f987bd07-87e6-4d8f-97cf-6968316cc0f2"))(wire (pts (xy 390 113.81) (xy 390 134.19)) (stroke (width 0) (type default)) (uuid "3b28a6ec-8d3b-45ca-aac0-37ff14f0d09a"))(symbol (lib_id "MCS_PoE5:L") (at 490 85 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "d3020994-6a02-4bb7-b91d-9736c0a8fecf")
+      (property "Reference" "L402" (at 490 79 90) (effects (font (size 1.27 1.27))  ))(property "Value" "1uH LPS4012-102NL" (at 490 83 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 490 85 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 490 85 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "L2" (at 490 85 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "094febe6-0bbf-4e2a-a74c-c73636fba7f3"))(pin "2" (uuid "74318d9b-0595-4169-aaa4-017256cc020e")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "L402") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 440 118 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "c162986e-3cd6-4d00-8677-f45b23c3e7b1")
+      (property "Reference" "C412" (at 449 116 0) (effects (font (size 1.27 1.27))  ))(property "Value" "47uF / 10V" (at 449 120 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 440 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 440 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C12" (at 440 118 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "6e36bda3-fbc7-46bc-b036-1dab80a3dc43"))(pin "2" (uuid "4688ffe9-70ff-49f5-b81c-9a959acf05be")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C412") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 468 118 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "23083c37-3aca-41c3-819f-3312b23ddad1")
+      (property "Reference" "C413" (at 477 116 0) (effects (font (size 1.27 1.27))  ))(property "Value" "47uF / 10V" (at 477 120 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 468 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 468 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C13" (at 468 118 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "a0001c6e-36cc-4f0a-84c1-dd8de295b6ea"))(pin "2" (uuid "ccd7cc74-8670-46a0-bb59-a0dfed21adaa")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C413") (unit 1)))))(symbol (lib_id "MCS_PoE5:C_Polarized") (at 518 118 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "2744fceb-7a6c-4366-b3e7-0f169b87778d")
+      (property "Reference" "C414" (at 527 116 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100uF / 6.3V" (at 527 120 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 518 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 518 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C14" (at 518 118 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "2b868f53-5288-4922-8da1-455b15238cef"))(pin "2" (uuid "61faa81b-b675-437b-99e0-230eef822ed0")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C414") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 550 118 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "8819c029-4467-439d-8e33-dd282d4dae36")
+      (property "Reference" "C428" (at 559 116 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1uF / 10V" (at 559 120 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 550 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 550 118 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C28" (at 550 118 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "110f4a8c-79cf-41bb-bf24-07b591591c8d"))(pin "2" (uuid "830a961b-5259-4ca1-81e6-354dc2612d48")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C428") (unit 1)))))(wire (pts (xy 382.5 85) (xy 425 85)) (stroke (width 0) (type default)) (uuid "b4608ec7-4205-462e-bbfc-19192f0d47b4"))(wire (pts (xy 425 85) (xy 440 85)) (stroke (width 0) (type default)) (uuid "9905f2eb-70c4-49a3-971d-22a231247606"))(wire (pts (xy 440 85) (xy 468 85)) (stroke (width 0) (type default)) (uuid "d586de89-ceb7-433d-8d21-005f64cfb6bd"))(wire (pts (xy 468 85) (xy 486.19 85)) (stroke (width 0) (type default)) (uuid "461d632a-1e97-4f87-8a3d-c3adc678979a"))(wire (pts (xy 440 114.19) (xy 440 85)) (stroke (width 0) (type default)) (uuid "4574f594-bd3c-4344-9584-6e552f5bb90c"))(wire (pts (xy 468 114.19) (xy 468 85)) (stroke (width 0) (type default)) (uuid "b2889d4e-36e7-4097-80d2-bd7c3066aa00"))(symbol (lib_id "MCS_PoE5:OUT_5V") (at 572.58 90 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "24e79853-74d0-4db5-a550-2d38cff22ab6")
+      (property "Reference" "J403" (at 572.58 74 0) (effects (font (size 1.27 1.27))  ))(property "Value" "5 V / 2 A" (at 572.58 107 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 572.58 90 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 572.58 90 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "J3" (at 572.58 90 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "1f11f8c9-60b1-43c3-9144-eeadb7efc5c6"))(pin "2" (uuid "4249cb86-d9ef-46dd-b42e-f4e7891f293d")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "J403") (unit 1)))))(wire (pts (xy 493.81 85) (xy 518 85)) (stroke (width 0) (type default)) (uuid "e88a4e16-efe9-40da-80e7-898c9cadec04"))(wire (pts (xy 518 85) (xy 550 85)) (stroke (width 0) (type default)) (uuid "c9c6929d-0367-47c7-9eb9-da7b7f322993"))(wire (pts (xy 550 85) (xy 560 85)) (stroke (width 0) (type default)) (uuid "b55130c2-247c-406b-9f86-51eea4b71e96"))(wire (pts (xy 518 114.19) (xy 518 85)) (stroke (width 0) (type default)) (uuid "afb1215d-c452-4517-9a16-49a9e5f9c314"))(wire (pts (xy 550 114.19) (xy 550 85)) (stroke (width 0) (type default)) (uuid "6702df44-833b-4053-b46f-a4a05cf08d6d"))(wire (pts (xy 410 116.19) (xy 410 160)) (stroke (width 0) (type default)) (uuid "eee3d5a7-516c-4a1b-bce1-b59b8c8396f3"))(wire (pts (xy 390 141.81) (xy 390 160)) (stroke (width 0) (type default)) (uuid "b2dd7886-bd48-4f21-9415-c9d5a4a10e59"))(wire (pts (xy 440 121.81) (xy 440 160)) (stroke (width 0) (type default)) (uuid "8b562bce-8c8e-40cd-b1db-715b5a9b5a9d"))(wire (pts (xy 468 121.81) (xy 468 160)) (stroke (width 0) (type default)) (uuid "88c9f29a-b985-42f8-807d-d3274783447f"))(wire (pts (xy 518 121.81) (xy 518 160)) (stroke (width 0) (type default)) (uuid "d112eb7e-7d16-4eda-851e-688ac2be0989"))(wire (pts (xy 550 121.81) (xy 550 160)) (stroke (width 0) (type default)) (uuid "ea0b6022-9eff-4366-87fb-8b6db0023cf0"))(wire (pts (xy 560 95) (xy 560 160)) (stroke (width 0) (type default)) (uuid "77543614-ba02-42bb-bad0-de04983878d7"))(wire (pts (xy 380 160) (xy 390 160)) (stroke (width 0) (type default)) (uuid "582ee401-1712-4632-ae7c-fbf88380094f"))(wire (pts (xy 390 160) (xy 410 160)) (stroke (width 0) (type default)) (uuid "95bacb54-d4a5-4a05-848b-0e56eccef277"))(wire (pts (xy 410 160) (xy 440 160)) (stroke (width 0) (type default)) (uuid "83e870c5-8929-4b0d-aa20-d3580394aaf4"))(wire (pts (xy 440 160) (xy 468 160)) (stroke (width 0) (type default)) (uuid "687b80d6-d815-4fe8-a660-f193cdb66eb9"))(wire (pts (xy 468 160) (xy 518 160)) (stroke (width 0) (type default)) (uuid "c506aa5d-781d-43da-b20e-4925b24bfb0f"))(wire (pts (xy 518 160) (xy 550 160)) (stroke (width 0) (type default)) (uuid "6bdf6d59-4fb4-4c61-871a-08f8e6cabc1c"))(wire (pts (xy 550 160) (xy 560 160)) (stroke (width 0) (type default)) (uuid "631a308b-bbf1-4f62-a5b9-3bcc6086c89f"))(label "POE_GND" (at 380 160 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "bfbd4b87-c965-44c4-a0cc-2bf214d25623"))(symbol (lib_id "MCS_PoE5:C") (at 365 145 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "d663f44c-ddab-4f18-9d5c-c7de7b91f165")
+      (property "Reference" "C406" (at 365 139 90) (effects (font (size 1.27 1.27))  ))(property "Value" "2.2nF / Y-rated*" (at 365 143 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 365 145 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 365 145 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C6" (at 365 145 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "9b0ec476-ae23-4d38-b1c4-b69abb2b3207"))(pin "2" (uuid "4e4c9eb4-8b0a-441b-8566-8555341ce67e")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C406") (unit 1)))))(wire (pts (xy 361.19 145) (xy 345 145)) (stroke (width 0) (type default)) (uuid "05d5fa91-fe2c-47bc-9728-57a8ce76c9f6"))(wire (pts (xy 368.81 145) (xy 380 145)) (stroke (width 0) (type default)) (uuid "dbffe246-bafb-438c-822d-c46883d038e0"))(wire (pts (xy 380 145) (xy 380 160)) (stroke (width 0) (type default)) (uuid "df750c0f-4376-4328-8d00-a3cd77504f81"))(symbol (lib_id "MCS_PoE5:C") (at 365 55 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "d893530b-26aa-4364-9d21-5daffa39a6e2")
+      (property "Reference" "C427" (at 365 49 90) (effects (font (size 1.27 1.27))  ))(property "Value" "2.2nF / Y-rated*" (at 365 53 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 365 55 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 365 55 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C27" (at 365 55 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "adf985f8-c223-4d33-8cd2-c4da23cecf52"))(pin "2" (uuid "346054f9-c6a8-4839-a86f-da8c23e46c6c")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C427") (unit 1)))))(wire (pts (xy 361.19 55) (xy 345 55)) (stroke (width 0) (type default)) (uuid "d88d5abf-a141-4cf8-9975-d231a835e5f5"))(wire (pts (xy 345 55) (xy 345 70)) (stroke (width 0) (type default)) (uuid "1da363fd-775f-4bcb-9e7c-5671b7aaa69f"))(wire (pts (xy 368.81 55) (xy 580 55)) (stroke (width 0) (type default)) (uuid "af99feec-4272-4009-901b-f47bb737fe28"))(wire (pts (xy 580 55) (xy 580 160)) (stroke (width 0) (type default)) (uuid "182e4e49-af2e-40fa-8abe-8889793b88bf"))(wire (pts (xy 580 160) (xy 560 160)) (stroke (width 0) (type default)) (uuid "39092498-cdeb-4116-ac5f-b49659a05a8f"))(symbol (lib_id "MCS_PoE5:TPS23753A") (at 240 220 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "9834ad9c-c52f-459a-a0a6-fe1da021a6ec")
+      (property "Reference" "U401" (at 249 218 0) (effects (font (size 1.27 1.27))  ))(property "Value" "TPS23753APW" (at 249 222 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Package_SO:TSSOP-14_4.4x5mm_P0.65mm" (at 240 220 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 240 220 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "U1" (at 240 220 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "9" (uuid "78e97b62-c3cd-459e-9b01-e3258d86d039"))(pin "8" (uuid "862d0269-4722-4ae0-90f9-0ca8ccfdea82"))(pin "10" (uuid "76c004d0-83aa-40ce-819f-1d10b7ba6136"))(pin "11" (uuid "ca3f627c-f17f-44a0-ae41-242ad91ff8fa"))(pin "12" (uuid "cffd887c-5bcf-4437-bea4-ab744ab3c7bc"))(pin "13" (uuid "15533e9a-9500-49d2-9b35-27d1351af80b"))(pin "14" (uuid "facb605b-9f1e-40e9-9923-fdea1bcacad8"))(pin "4" (uuid "281899ab-f2be-4ce1-8f24-7bc8c3f1ac26"))(pin "5" (uuid "a0a42a91-4a3c-42cb-9f6f-8fe9f987cffc"))(pin "3" (uuid "57fa1836-f990-44ae-a460-5b61697824af"))(pin "2" (uuid "d859e3e2-9e25-4ebe-95d7-61716c96ad7d"))(pin "1" (uuid "677d9ed7-69d1-4370-a340-08aea37de2d6"))(pin "6" (uuid "fdb9b888-845a-431b-bee2-eee1d8dba681"))(pin "7" (uuid "22980ce8-e0ad-4588-b06a-4cf13122cccb")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "U401") (unit 1)))))(wire (pts (xy 205 170) (xy 200 170)) (stroke (width 0) (type default)) (uuid "2850b54a-cafe-4a7b-98ad-e4c130191e47"))(wire (pts (xy 200 170) (xy 200 70)) (stroke (width 0) (type default)) (uuid "aa4067ba-5d92-47fb-be9a-0deecce5b51b"))(wire (pts (xy 205 180) (xy 200 180)) (stroke (width 0) (type default)) (uuid "a7c78b66-a03d-45bc-934b-1306ac934c0b"))(wire (pts (xy 200 180) (xy 200 170)) (stroke (width 0) (type default)) (uuid "9bd6bb69-a49a-48d1-9bdb-95b559eea3fd"))(symbol (lib_id "MCS_PoE5:R") (at 180 110 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "ca8d0d55-922c-48a4-ba74-a6872c680f90")
+      (property "Reference" "R407" (at 189 108 0) (effects (font (size 1.27 1.27))  ))(property "Value" "24.9k 1%" (at 189 112 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 180 110 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 180 110 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R7" (at 180 110 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "076ac34e-5ed8-494d-8fc7-a44ee820c17d"))(pin "2" (uuid "2e04a433-8ced-413b-81b6-be8a587b814f")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R407") (unit 1)))))(wire (pts (xy 180 106.19) (xy 180 70)) (stroke (width 0) (type default)) (uuid "d6bf0b7e-2f39-49d1-8c6e-b09df0664074"))(wire (pts (xy 180 113.81) (xy 180 190)) (stroke (width 0) (type default)) (uuid "3c6b0c80-349d-41d8-8287-a34d9d3f435c"))(wire (pts (xy 180 190) (xy 205 190)) (stroke (width 0) (type default)) (uuid "521873b9-c672-4d7c-93ed-56a6f16d4998"))(symbol (lib_id "MCS_PoE5:R") (at 160 235 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "5de907d3-b40e-4ddc-97c3-3099850f5205")
+      (property "Reference" "R412" (at 169 233 0) (effects (font (size 1.27 1.27))  ))(property "Value" "90.9R 1% / Class 3" (at 169 237 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 160 235 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 160 235 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R12" (at 160 235 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "ad7f54f6-8549-447a-9ee5-7219c7dcab6a"))(pin "2" (uuid "04a19603-ec4a-4c65-9a45-ab19ca17e6c0")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R412") (unit 1)))))(wire (pts (xy 205 200) (xy 160 200)) (stroke (width 0) (type default)) (uuid "3822d951-3ae3-45d1-8418-2cbac9eb60da"))(wire (pts (xy 160 200) (xy 160 231.19)) (stroke (width 0) (type default)) (uuid "348cae52-70fe-4dc1-bd92-185c7bd9382f"))(wire (pts (xy 160 238.81) (xy 160 300)) (stroke (width 0) (type default)) (uuid "004c8dba-723a-43f5-89fe-04d3c45e8f38"))(wire (pts (xy 275 280) (xy 280 280)) (stroke (width 0) (type default)) (uuid "c7f56bfc-183d-4092-8a44-e72daf40815d"))(wire (pts (xy 280 280) (xy 280 300)) (stroke (width 0) (type default)) (uuid "6c9dc54d-3f56-495a-8ed2-c142f9219a4a"))(wire (pts (xy 280 300) (xy 195 300)) (stroke (width 0) (type default)) (uuid "6878c7fa-6b25-4429-8722-75e991c5959f"))(wire (pts (xy 195 300) (xy 160 300)) (stroke (width 0) (type default)) (uuid "165424f0-b2ba-49dd-a1a9-113beaa5cb05"))(wire (pts (xy 160 300) (xy 150 300)) (stroke (width 0) (type default)) (uuid "f5a48773-861f-409c-bdaa-2b6f39005f73"))(wire (pts (xy 275 270) (xy 285 270)) (stroke (width 0) (type default)) (uuid "061b60cc-51c2-431d-9338-3a6785bd6b7a"))(wire (pts (xy 285 270) (xy 285 340)) (stroke (width 0) (type default)) (uuid "a416e4f3-20c0-4d5e-834b-91b64bdb48ce"))(wire (pts (xy 205 210) (xy 175 210)) (stroke (width 0) (type default)) (uuid "ff817474-522a-4d19-84ba-82757608ba9f"))(wire (pts (xy 175 210) (xy 175 340)) (stroke (width 0) (type default)) (uuid "5596eadf-72b7-4b39-b0bc-be48b68c170d"))(symbol (lib_id "MCS_PoE5:R") (at 125 265 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "7805b7fb-2234-46b1-a1cf-12f3a172b4c2")
+      (property "Reference" "R411" (at 134 263 0) (effects (font (size 1.27 1.27))  ))(property "Value" "80.6k 1%" (at 134 267 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 125 265 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 125 265 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R11" (at 125 265 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "15ff78b8-b3d1-4fde-8629-ffca6ce5cc05"))(pin "2" (uuid "23244e9f-c75c-4f86-b879-3a7c805defca")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R411") (unit 1)))))(symbol (lib_id "MCS_PoE5:R") (at 90 265 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "d65bba5f-0e08-4944-ae5e-5384e09833aa")
+      (property "Reference" "R410" (at 99 263 0) (effects (font (size 1.27 1.27))  ))(property "Value" "59k 1% / 250kHz" (at 99 267 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 90 265 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 90 265 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R10" (at 90 265 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "659d0c34-619d-48f5-9f37-ca6fcf7a31d9"))(pin "2" (uuid "d081ec19-ef7a-49f3-9e34-8413a60dd79a")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R410") (unit 1)))))(wire (pts (xy 205 220) (xy 125 220)) (stroke (width 0) (type default)) (uuid "d44ed039-43bb-4772-b796-f15155021cce"))(wire (pts (xy 125 220) (xy 125 261.19)) (stroke (width 0) (type default)) (uuid "f6b4401e-9d2e-4666-b996-a9b32d576398"))(wire (pts (xy 205 230) (xy 90 230)) (stroke (width 0) (type default)) (uuid "44829469-65ab-4258-9252-34c990227238"))(wire (pts (xy 90 230) (xy 90 261.19)) (stroke (width 0) (type default)) (uuid "a537b5d2-157d-426b-99b6-0213196357b2"))(wire (pts (xy 125 268.81) (xy 125 340)) (stroke (width 0) (type default)) (uuid "3b1043b8-0c08-4e2a-a7b1-ce57f08527ec"))(wire (pts (xy 90 268.81) (xy 90 340)) (stroke (width 0) (type default)) (uuid "66cb0f6c-d551-43ea-963d-3ccfb00ae73e"))(wire (pts (xy 215 128) (xy 215 150)) (stroke (width 0) (type default)) (uuid "2656e42d-3460-48d8-b301-681de1ff136f"))(wire (pts (xy 215 150) (xy 185 150)) (stroke (width 0) (type default)) (uuid "9ac33bb0-2106-4aa2-bae1-864af1ac7974"))(wire (pts (xy 185 150) (xy 185 340)) (stroke (width 0) (type default)) (uuid "02e2773d-4298-44d8-b5b4-cee9444d10b3"))(wire (pts (xy 275 170) (xy 280 170)) (stroke (width 0) (type default)) (uuid "53b81565-54ab-45be-8fe5-53eaea4e7a86"))(wire (pts (xy 280 170) (xy 280 158)) (stroke (width 0) (type default)) (uuid "54b7beb0-6574-4712-9ae3-a79a146d1efa"))(symbol (lib_id "MCS_PoE5:R") (at 310 190 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "b1bf3cc0-bbda-42fd-a8d9-bf385b41c5e8")
+      (property "Reference" "R413" (at 310 184 90) (effects (font (size 1.27 1.27))  ))(property "Value" "10R" (at 310 188 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 310 190 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 310 190 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R13" (at 310 190 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "e8566b0e-0c32-4a81-8380-1ea55b23b7a7"))(pin "2" (uuid "466afe15-e792-421d-8b4e-fbe6e58baa20")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R413") (unit 1)))))(wire (pts (xy 275 190) (xy 306.19 190)) (stroke (width 0) (type default)) (uuid "eae97c53-1a84-47f3-b314-d3fd78e36712"))(wire (pts (xy 313.81 190) (xy 335 190)) (stroke (width 0) (type default)) (uuid "030b5149-299e-4141-83e8-3b90a2df0e47"))(wire (pts (xy 335 190) (xy 335 170)) (stroke (width 0) (type default)) (uuid "8a53246e-ada7-46d4-838c-3700cf76682d"))(wire (pts (xy 335 170) (xy 344.92 170)) (stroke (width 0) (type default)) (uuid "df938cac-1d54-4f73-90ac-3997ecdcddb4"))(symbol (lib_id "MCS_PoE5:R") (at 310 210 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "536be7fb-cf9b-4499-a209-40b18ceeb83a")
+      (property "Reference" "R420" (at 310 204 90) (effects (font (size 1.27 1.27))  ))(property "Value" "1k" (at 310 208 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 310 210 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 310 210 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R20" (at 310 210 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "e6a32be4-a8f8-453c-8681-e8e9cb97214e"))(pin "2" (uuid "8c0a76ed-150d-4ebb-87db-ca7c43bc130c")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R420") (unit 1)))))(wire (pts (xy 275 210) (xy 306.19 210)) (stroke (width 0) (type default)) (uuid "6fefd326-d5c6-450a-9194-86c24d0fec21"))(wire (pts (xy 313.81 210) (xy 352.54 210)) (stroke (width 0) (type default)) (uuid "ad76cfa8-12ca-4724-ab4d-92aa40493972"))(symbol (lib_id "MCS_PoE5:C") (at 295 262 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "0b432923-f1fb-4b34-a6b7-8be78d459c7d")
+      (property "Reference" "C420" (at 304 260 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100nF / 16V" (at 304 264 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 295 262 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 295 262 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C20" (at 295 262 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "f11545f2-4d20-42ed-8eee-459fd3d15984"))(pin "2" (uuid "ecda6221-6bae-499c-b880-63f4aea885ad")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C420") (unit 1)))))(symbol (lib_id "MCS_PoE5:R") (at 330 283 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "fd50c38b-3179-4400-9a08-b46047d577a7")
+      (property "Reference" "R423" (at 339 281 0) (effects (font (size 1.27 1.27))  ))(property "Value" "2k" (at 339 285 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 330 283 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 330 283 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R23" (at 330 283 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "42a6fe45-2dc4-4fae-82ea-491e41b97194"))(pin "2" (uuid "e9001f37-fddf-4b20-b85f-76be12de1d9b")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R423") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 355 266 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "c09d0e6f-aca2-4344-b573-cd58ed9e9627")
+      (property "Reference" "C421" (at 364 264 0) (effects (font (size 1.27 1.27))  ))(property "Value" "47nF / 16V" (at 364 268 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 355 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 355 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C21" (at 355 266 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "b2b62338-0043-4428-a362-7e10a5f100e8"))(pin "2" (uuid "3a6b5193-50d7-41ec-9dfa-43c5376fe164")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C421") (unit 1)))))(symbol (lib_id "MCS_PoE5:R") (at 355 300 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "bbe83d40-b43e-437c-a117-40a1f9bd853d")
+      (property "Reference" "R428" (at 364 298 0) (effects (font (size 1.27 1.27))  ))(property "Value" "402R" (at 364 302 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 355 300 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 355 300 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R28" (at 355 300 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "b2c60889-94f9-4c2c-9d4a-cf1b5dda2005"))(pin "2" (uuid "1a71e34e-1c22-40ed-b03b-05ab2b12080b")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R428") (unit 1)))))(wire (pts (xy 275 230) (xy 295 230)) (stroke (width 0) (type default)) (uuid "afe95e31-76d4-44c9-bfd1-2d247e4449e6"))(wire (pts (xy 295 230) (xy 330 230)) (stroke (width 0) (type default)) (uuid "e46ceab1-03af-40a1-b787-d3b356a629ae"))(wire (pts (xy 330 230) (xy 355 230)) (stroke (width 0) (type default)) (uuid "13b0790e-1520-478b-9be8-156493b41316"))(wire (pts (xy 295 258.19) (xy 295 230)) (stroke (width 0) (type default)) (uuid "5b39f2aa-e87a-436b-815f-7a2e88076824"))(wire (pts (xy 330 279.19) (xy 330 230)) (stroke (width 0) (type default)) (uuid "508c37a8-4174-4814-a6f7-e59b2c431b45"))(wire (pts (xy 355 262.19) (xy 355 230)) (stroke (width 0) (type default)) (uuid "c5a699dc-d457-4893-9bcd-dcdf9466db7d"))(wire (pts (xy 295 265.81) (xy 295 340)) (stroke (width 0) (type default)) (uuid "4651d7ab-8315-4fa9-a09b-538667dded46"))(wire (pts (xy 355 269.81) (xy 355 296.19)) (stroke (width 0) (type default)) (uuid "11ca3dbf-45a8-4a2e-89a8-b398e946cb46"))(symbol (lib_id "MCS_PoE5:TCMT1107") (at 390 315 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "69b91d2e-6a80-4a31-9783-d5bf2b9e32cd")
+      (property "Reference" "U402" (at 390 330 0) (effects (font (size 1.27 1.27))  ))(property "Value" "TCMT1107" (at 390 334 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 390 315 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 390 315 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "U2" (at 390 315 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "4" (uuid "baf8f677-2029-430c-bcff-f50652a07c62"))(pin "3" (uuid "5a28ab2c-26c3-4591-9660-263634aca227"))(pin "1" (uuid "4c71066f-349c-4bdf-b7b5-0ab1664f4b60"))(pin "2" (uuid "f71e14e1-595e-43b6-85db-dbe4a7719015")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "U402") (unit 1)))))(wire (pts (xy 275 250) (xy 282 250)) (stroke (width 0) (type default)) (uuid "ac0076c2-36dd-4071-b2aa-f94598615676"))(wire (pts (xy 282 250) (xy 282 320)) (stroke (width 0) (type default)) (uuid "579e895a-4d77-482b-9ddb-3cdffe04fc1c"))(wire (pts (xy 282 320) (xy 330 320)) (stroke (width 0) (type default)) (uuid "4d6b4a66-383c-4d24-a4ac-2529cfbdad21"))(wire (pts (xy 330 320) (xy 355 320)) (stroke (width 0) (type default)) (uuid "6e799fb0-57b1-4968-8f0c-922d4310bc63"))(wire (pts (xy 355 320) (xy 365 320)) (stroke (width 0) (type default)) (uuid "c868fd11-72e2-4657-90f3-9ccff004198c"))(wire (pts (xy 365 320) (xy 365 310)) (stroke (width 0) (type default)) (uuid "aadf1be4-a48f-4fe9-85a5-c8e386412805"))(wire (pts (xy 365 310) (xy 372.42 310)) (stroke (width 0) (type default)) (uuid "1ca879e2-9031-4409-87f3-c8234cd842a3"))(wire (pts (xy 330 286.81) (xy 330 320)) (stroke (width 0) (type default)) (uuid "799167bb-1a47-45d6-b8ec-70827d2685a4"))(wire (pts (xy 355 303.81) (xy 355 320)) (stroke (width 0) (type default)) (uuid "e95131d6-79cc-4818-9133-62be9a357382"))(wire (pts (xy 372.42 320) (xy 372.42 340)) (stroke (width 0) (type default)) (uuid "f7799c0c-529f-4b55-9283-1329d3bae852"))(wire (pts (xy 372.42 340) (xy 365 340)) (stroke (width 0) (type default)) (uuid "3ac53c84-fc9e-497b-a1fc-0eb232693323"))(wire (pts (xy 80 340) (xy 365 340)) (stroke (width 0) (type default)) (uuid "10915f33-0115-4ba8-94cf-2c376d72f4f9"))(label "RTN" (at 80 340 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "482912ff-e509-467b-b91d-7350b614fd35"))(symbol (lib_id "MCS_PoE5:R") (at 540 190 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "d1bb3bc8-83ba-4cbc-9011-aec2da5656ba")
+      (property "Reference" "R414" (at 549 188 0) (effects (font (size 1.27 1.27))  ))(property "Value" "0R" (at 549 192 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 540 190 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 540 190 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R14" (at 540 190 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "ab080091-64a3-4bbe-9c3f-3c1b64086933"))(pin "2" (uuid "27b5663b-b1e6-4dcd-b913-3477d1a40809")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R414") (unit 1)))))(wire (pts (xy 540 186.19) (xy 540 85)) (stroke (width 0) (type default)) (uuid "3ad81a3b-120c-49ca-bb27-edfdb9ea892e"))(wire (pts (xy 540 193.81) (xy 540 220)) (stroke (width 0) (type default)) (uuid "7b5536eb-4c89-4521-81ec-3f93fcf60ecd"))(wire (pts (xy 540 220) (xy 435 220)) (stroke (width 0) (type default)) (uuid "e3303caf-27e9-4dd1-a708-e846877e9a96"))(symbol (lib_id "MCS_PoE5:R") (at 425 275 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "ba0baf5d-eadc-4c92-92f6-4e46205d4aa5")
+      (property "Reference" "R422" (at 434 273 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1k" (at 434 277 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 425 275 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 425 275 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R22" (at 425 275 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "ceb1e1b9-673e-4951-9ab5-c758046a5039"))(pin "2" (uuid "67f37249-3787-4b29-aeb6-3aae1f8254ae")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R422") (unit 1)))))(wire (pts (xy 425 271.19) (xy 425 220)) (stroke (width 0) (type default)) (uuid "e6024b80-83b3-4e60-9bac-13b1295968fe"))(wire (pts (xy 425 220) (xy 435 220)) (stroke (width 0) (type default)) (uuid "11fb17d9-dfa8-4635-b2f8-9be68e32b273"))(wire (pts (xy 425 278.81) (xy 425 310)) (stroke (width 0) (type default)) (uuid "ffa33576-4201-4715-b318-d3f8eff28f9a"))(wire (pts (xy 425 310) (xy 407.58 310)) (stroke (width 0) (type default)) (uuid "49b495f6-6fb2-4422-9bf8-e706c210baaa"))(symbol (lib_id "MCS_PoE5:R") (at 455 245 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "97717f06-2800-4546-978b-9adce4e5bb7b")
+      (property "Reference" "R416" (at 464 243 0) (effects (font (size 1.27 1.27))  ))(property "Value" "10k" (at 464 247 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 455 245 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 455 245 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R16" (at 455 245 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "8868ef17-1519-4db7-9d79-730e10aa59fb"))(pin "2" (uuid "6c2f5e1a-d0ae-42e9-a468-6aceaabac839")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R416") (unit 1)))))(wire (pts (xy 455 241.19) (xy 455 220)) (stroke (width 0) (type default)) (uuid "69679960-726f-4446-91e6-1dab72346eb8"))(symbol (lib_id "MCS_PoE5:BAT54S") (at 480 260 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "baf1154b-b169-482f-8f70-2af0a5b3df19")
+      (property "Reference" "D412" (at 489 258 0) (effects (font (size 1.27 1.27))  ))(property "Value" "BAT54S" (at 489 262 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 480 260 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 480 260 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "D12" (at 480 260 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "2" (uuid "83e6c25b-e566-45a8-9d1d-4a347c280255"))(pin "3" (uuid "ec101acf-8f6a-4d22-a518-becd713061a9"))(pin "1" (uuid "a970cdfd-8705-4ef5-a08f-289e98d18b49")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "D412") (unit 1)))))(wire (pts (xy 480 244.92) (xy 480 220)) (stroke (width 0) (type default)) (uuid "ae121f96-c268-4b62-b6bd-075617c9ab16"))(wire (pts (xy 455 248.81) (xy 455 260)) (stroke (width 0) (type default)) (uuid "9bb99d1e-c8c0-4df7-a37d-9545e491a2e7"))(wire (pts (xy 455 260) (xy 467.42 260)) (stroke (width 0) (type default)) (uuid "12604e6b-b953-4cc0-82c4-c0d06156e227"))(symbol (lib_id "MCS_PoE5:C") (at 455 320 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "4610852b-f884-4f13-a839-f3cf30a224dc")
+      (property "Reference" "C422" (at 464 318 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1uF / 10V" (at 464 322 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 455 320 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 455 320 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C22" (at 455 320 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "616a913e-0cc3-4943-975a-a4194d1e4f7c"))(pin "2" (uuid "39e52c11-8ea3-40b8-98e1-835d21ff0aed")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C422") (unit 1)))))(wire (pts (xy 455 316.19) (xy 455 260)) (stroke (width 0) (type default)) (uuid "a626b58a-9c40-400b-9198-2a56bd028b1b"))(symbol (lib_id "MCS_PoE5:TLV431A_DBV") (at 490 335 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "40f6f2bd-e0a8-4a2e-8870-dcc166e80fbd")
+      (property "Reference" "U403" (at 490 356 0) (effects (font (size 1.27 1.27))  ))(property "Value" "TLV431ACDBVR" (at 490 360 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5" (at 490 335 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 490 335 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "U3" (at 490 335 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "3" (uuid "3396713c-6913-4484-bc4a-e1c949a7b0ba"))(pin "4" (uuid "55e785ef-e305-431a-9efd-ee222320a7fa"))(pin "5" (uuid "400424a5-500e-4d2d-a438-3bab613bf768"))(pin "1" (uuid "4087d2ce-7e4b-487e-a226-81db14f5f7ee"))(pin "2" (uuid "d50f3c52-482c-4399-b648-825d1ffb3710")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "U403") (unit 1)))))(no_connect (at 477.42 330) (uuid "636c58e7-7a2e-4137-93e1-0cb31f24987a"))(no_connect (at 477.42 340) (uuid "ac1ad2a4-c3af-4cfd-92e8-1600b5194f6c"))(wire (pts (xy 480 275.08) (xy 480 290)) (stroke (width 0) (type default)) (uuid "3ad7672b-33b6-452b-9d74-c51086a31836"))(wire (pts (xy 480 290) (xy 435 290)) (stroke (width 0) (type default)) (uuid "59219e30-6618-4c61-956a-82ab9f04e9e7"))(wire (pts (xy 435 290) (xy 435 320)) (stroke (width 0) (type default)) (uuid "bc25bad7-9417-477c-9edc-5c3ddc233ccb"))(wire (pts (xy 435 320) (xy 407.58 320)) (stroke (width 0) (type default)) (uuid "b32d8d06-c984-4433-b779-8f0d1f337212"))(wire (pts (xy 490 319.92) (xy 490 290)) (stroke (width 0) (type default)) (uuid "07db0eaf-bc03-44c6-92aa-22bd9c15ac9a"))(wire (pts (xy 490 290) (xy 480 290)) (stroke (width 0) (type default)) (uuid "6100db23-4c9b-4d40-91c8-dc9714a3986a"))(symbol (lib_id "MCS_PoE5:R") (at 550 272 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "838eed99-93e6-4ab6-bfde-e98bd801635f")
+      (property "Reference" "R419" (at 559 270 0) (effects (font (size 1.27 1.27))  ))(property "Value" "44.2k 1%" (at 559 274 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 550 272 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 550 272 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R19" (at 550 272 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "a3073e02-9f4b-4478-a5f3-47766a4e7bc2"))(pin "2" (uuid "bd848651-dbd7-4a86-b57d-6c706bb57602")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R419") (unit 1)))))(symbol (lib_id "MCS_PoE5:R") (at 550 348 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "c5bba942-ecc3-4cfa-9a12-549f11075509")
+      (property "Reference" "R424" (at 559 346 0) (effects (font (size 1.27 1.27))  ))(property "Value" "14.3k 1%" (at 559 350 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 550 348 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 550 348 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R24" (at 550 348 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "0c3671ee-1ca4-4bee-94d2-606cda626d21"))(pin "2" (uuid "07f143aa-7861-469a-a0ef-0c07daaf0290")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R424") (unit 1)))))(wire (pts (xy 550 268.19) (xy 550 220)) (stroke (width 0) (type default)) (uuid "5201a259-0ded-41ef-8ffd-decab70aa63c"))(wire (pts (xy 550 220) (xy 540 220)) (stroke (width 0) (type default)) (uuid "4e1045f3-1089-47a2-8027-5c7ec75fa88c"))(wire (pts (xy 550 275.81) (xy 550 305)) (stroke (width 0) (type default)) (uuid "8b9cbaff-b44f-4914-bb93-54f480b60e67"))(wire (pts (xy 550 305) (xy 550 335)) (stroke (width 0) (type default)) (uuid "241c2e8b-8bf3-4050-8e7f-15c7e18ee24b"))(wire (pts (xy 550 335) (xy 502.58 335)) (stroke (width 0) (type default)) (uuid "1d70b905-023a-4aee-90b8-d684a399ce7b"))(wire (pts (xy 550 344.19) (xy 550 335)) (stroke (width 0) (type default)) (uuid "0dca06da-e72c-4626-8c78-f3060dc616e0"))(symbol (lib_id "MCS_PoE5:C") (at 518 287 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "14520134-4d89-4d2b-907d-4525f3b5cca2")
+      (property "Reference" "C418" (at 518 281 90) (effects (font (size 1.27 1.27))  ))(property "Value" "100pF / 16V" (at 518 285 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 518 287 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 518 287 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C18" (at 518 287 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "aab3a73b-01c5-482e-8442-023dd839a033"))(pin "2" (uuid "a31109d4-f897-462a-b829-b4adf9d4240e")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C418") (unit 1)))))(symbol (lib_id "MCS_PoE5:R") (at 500 305 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "1e8bf9ff-e5aa-4ab8-af10-7fb7469d0f4b")
+      (property "Reference" "R421" (at 500 299 90) (effects (font (size 1.27 1.27))  ))(property "Value" "10k" (at 500 303 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 500 305 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 500 305 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "R21" (at 500 305 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "9695b229-bbb5-464c-a88d-b240caf2734e"))(pin "2" (uuid "b72bd0ac-58f3-44d8-bca7-9e40833c1c3c")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "R421") (unit 1)))))(symbol (lib_id "MCS_PoE5:C") (at 530 305 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "e183c5db-914d-47a2-bb2c-0fbef2c0a0a2")
+      (property "Reference" "C419" (at 530 299 90) (effects (font (size 1.27 1.27))  ))(property "Value" "6.8nF / 16V" (at 530 303 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 530 305 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 530 305 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "C19" (at 530 305 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "8e34a316-da4a-4792-b486-92e05b822d9d"))(pin "2" (uuid "e5b8b986-5d07-4bd7-8cfc-6219c15cc742")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "C419") (unit 1)))))(wire (pts (xy 514.19 287) (xy 490 287)) (stroke (width 0) (type default)) (uuid "010e2b61-28da-4fd1-906c-d22f90e78538"))(wire (pts (xy 490 287) (xy 490 290)) (stroke (width 0) (type default)) (uuid "3cbeeea9-1c79-4487-8469-6600c0019a53"))(wire (pts (xy 521.81 287) (xy 550 287)) (stroke (width 0) (type default)) (uuid "88d84677-9825-4b97-aefd-eaae1b0b7b23"))(wire (pts (xy 496.19 305) (xy 470 305)) (stroke (width 0) (type default)) (uuid "a0d8a5b1-812a-4d00-b91e-63d23939561e"))(wire (pts (xy 470 305) (xy 470 290)) (stroke (width 0) (type default)) (uuid "91de4c8f-78c0-48aa-ad22-1450ea2fa155"))(wire (pts (xy 503.81 305) (xy 526.19 305)) (stroke (width 0) (type default)) (uuid "e2d7d78a-ad8c-4efc-93f3-c6656cf9ca85"))(wire (pts (xy 533.81 305) (xy 550 305)) (stroke (width 0) (type default)) (uuid "ba54d4cd-ce27-4326-a7a5-792b9bb66d41"))(wire (pts (xy 455 323.81) (xy 455 375)) (stroke (width 0) (type default)) (uuid "f5f51bc2-d4b1-4e61-b540-2fb396e9db72"))(wire (pts (xy 490 350.08) (xy 490 375)) (stroke (width 0) (type default)) (uuid "0e15b450-fdd0-4b39-a02a-942ca368c312"))(wire (pts (xy 550 351.81) (xy 550 375)) (stroke (width 0) (type default)) (uuid "12f88f6e-f88e-4b76-979c-d2e13fef71c8"))(wire (pts (xy 420 375) (xy 455 375)) (stroke (width 0) (type default)) (uuid "f1f76be2-3aab-447e-ba4d-009522ef2d72"))(wire (pts (xy 455 375) (xy 490 375)) (stroke (width 0) (type default)) (uuid "043b00b6-f3f2-46a8-a81f-0cbcfda5cc2b"))(wire (pts (xy 490 375) (xy 550 375)) (stroke (width 0) (type default)) (uuid "f4fa2061-038d-42cd-a5e3-c48ae40675f8"))(wire (pts (xy 550 375) (xy 565 375)) (stroke (width 0) (type default)) (uuid "86e17b7c-5384-455c-bf4a-b1582aae1c97"))(label "POE_GND" (at 420 375 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "dd017002-d9e4-40ea-8d52-3849fabf3040"))(wire (pts (xy 565 375) (xy 565 160)) (stroke (width 0) (type default)) (uuid "4db4ad2c-34f9-4070-a893-192a644b5402"))(wire (pts (xy 565 160) (xy 560 160)) (stroke (width 0) (type default)) (uuid "4d147a87-420d-4f53-a05a-7a90b8021d21"))(label "VDD" (at 190 70 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "8157a6ef-2a89-47fe-bd88-77168b7dbfdb"))(label "VSS" (at 150 300 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "a756439a-fa72-40e0-80e9-0d9e1648cc5f"))(label "POE_5V" (at 550 85 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "9978b258-c848-49fe-bdfb-09cca654d24a"))(label "POE_GND" (at 560 160 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "48a7b370-1e85-41ba-8f56-fcdbb3033d6a"))(text "VSS og RTN er forskellige net!\nDen interne PoE-switch sidder imellem dem." (at 25 307 0) (effects (font (size 1.524 1.524)) (justify left top)) (uuid "93f66643-6eaa-4c93-a123-b8536df3d01f"))(text "Kun 5 V. Maal: 1 A kontinuerligt, op til 2 A.\n10 W ved fuld last; IEEE 802.3af / Type 1, Class 3.\nKraever PoE-egnede Ethernet-magnetics og DC-blokeret\nterminering foer J400; endnu ikke koblet til Sheet_3." (at 20 352 0) (effects (font (size 1.524 1.524)) (justify left top)) (uuid "a4812936-70ce-473e-9ba2-949a0e7fc6a6"))(text "* Isolationskondensatorer: vaelg certificeret type og\nkontroller isolation / laekstroem foer fremstilling.\nPrototype: 2 A, termik og EMC skal efterproeves." (at 210 365 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "606a243e-f399-4ba2-8caa-88d993eecf0b"))(symbol (lib_id "MCS_PoE5:PWR_FLAG") (at 190 70 0) (unit 1)
+      (in_bom no) (on_board no) (dnp no) (uuid "fc27d8d6-9174-4a1a-b5b8-81a378a744dc")
+      (property "Reference" "#FLG400" (at 199 68 0) (effects (font (size 1.27 1.27))  ))(property "Value" "" (at 199 72 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 190 70 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 190 70 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 190 70 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "39917416-d47b-4fea-a68b-6dfd02c2c12e")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "#FLG400") (unit 1)))))(symbol (lib_id "MCS_PoE5:PWR_FLAG") (at 150 300 0) (unit 1)
+      (in_bom no) (on_board no) (dnp no) (uuid "34bedb9b-398c-4038-8f29-a69beb65e9f0")
+      (property "Reference" "#FLG401" (at 159 298 0) (effects (font (size 1.27 1.27))  ))(property "Value" "" (at 159 302 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 150 300 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 150 300 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 150 300 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "2b0c2235-d88f-437d-807b-a6edca97cf37")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "#FLG401") (unit 1)))))(symbol (lib_id "MCS_PoE5:PWR_FLAG") (at 90 340 0) (unit 1)
+      (in_bom no) (on_board no) (dnp no) (uuid "14f71096-0234-4877-ba25-98130cdffa66")
+      (property "Reference" "#FLG402" (at 99 338 0) (effects (font (size 1.27 1.27))  ))(property "Value" "" (at 99 342 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 90 340 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.ti.com/lit/pdf/SLVRB20" (at 90 340 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 90 340 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "98b71b49-2dc4-4fa3-b067-3a29c5f70dd3")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/6022496e-80b3-4cc1-b3d7-e16628f09091" (reference "#FLG402") (unit 1)))))(junction (at 490 290) (diameter 0) (color 0 0 0 0) (uuid "1a7b0af6-9c14-44d9-b9fc-c9b3c34f20aa"))(junction (at 470 290) (diameter 0) (color 0 0 0 0) (uuid "3328864d-822d-4ffe-ba6f-559b113e2238"))(junction (at 480 290) (diameter 0) (color 0 0 0 0) (uuid "bbebf668-1239-4437-918e-566d65fe862f"))(junction (at 340 70) (diameter 0) (color 0 0 0 0) (uuid "c0888a0f-098d-4003-8479-058d0c0b3356"))(junction (at 345 70) (diameter 0) (color 0 0 0 0) (uuid "9c87aa7c-7aab-42e6-be40-6ad43c8dcc62"))(junction (at 300 70) (diameter 0) (color 0 0 0 0) (uuid "2fb9d266-f743-47a3-8556-097265136201"))(junction (at 320 70) (diameter 0) (color 0 0 0 0) (uuid "8c1f655b-65b5-476e-a9c5-67ddd684fe7f"))(junction (at 275 70) (diameter 0) (color 0 0 0 0) (uuid "57cfd5ba-d47f-4c6a-84b8-b76636335e58"))(junction (at 105 141) (diameter 0) (color 0 0 0 0) (uuid "a90f155a-0def-4644-8cf8-23b3834f0430"))(junction (at 120 165) (diameter 0) (color 0 0 0 0) (uuid "ff3ccea6-f23e-41ce-8e87-d6cd0d1d813a"))(junction (at 105 165) (diameter 0) (color 0 0 0 0) (uuid "1aa4a60d-f42b-466b-8d9b-d5e4a0c60325"))(junction (at 295 230) (diameter 0) (color 0 0 0 0) (uuid "0a48a8f6-08e1-4081-b978-4c0236e33901"))(junction (at 330 230) (diameter 0) (color 0 0 0 0) (uuid "a2178097-f47b-4908-9080-94ff4c7a630c"))(junction (at 455 220) (diameter 0) (color 0 0 0 0) (uuid "2a95b6ef-f8f6-4f24-88c3-ff860d3641d8"))(junction (at 480 220) (diameter 0) (color 0 0 0 0) (uuid "7d32c3fd-5b70-440c-9fb0-e696972f279a"))(junction (at 540 220) (diameter 0) (color 0 0 0 0) (uuid "618b718c-0cab-4ed1-852e-a199e04194a8"))(junction (at 390 70) (diameter 0) (color 0 0 0 0) (uuid "03886a74-01c0-415d-bf4f-c333d1f33e8b"))(junction (at 410 70) (diameter 0) (color 0 0 0 0) (uuid "167297d2-d251-4a3c-b99c-c1d141134c90"))(junction (at 550 287) (diameter 0) (color 0 0 0 0) (uuid "5dadd4a5-995b-43f3-b1e8-49aefe380c05"))(junction (at 550 335) (diameter 0) (color 0 0 0 0) (uuid "eb45d10a-0b2d-4b54-8952-6798477b03c2"))(junction (at 550 305) (diameter 0) (color 0 0 0 0) (uuid "29ab45dd-f627-48f0-b7f1-32479dbc0e27"))(junction (at 518 160) (diameter 0) (color 0 0 0 0) (uuid "a048ebe9-5364-499c-bcf6-6d26a67fdbfb"))(junction (at 390 160) (diameter 0) (color 0 0 0 0) (uuid "ef1bef47-b520-4b6e-bfd4-35e700609769"))(junction (at 455 375) (diameter 0) (color 0 0 0 0) (uuid "37730600-7930-4a6a-a1fe-3706c8ad2468"))(junction (at 490 375) (diameter 0) (color 0 0 0 0) (uuid "dd6e584e-f9af-42e7-88b9-34ce0bbe7c83"))(junction (at 440 160) (diameter 0) (color 0 0 0 0) (uuid "d4296cbb-7329-4bca-8e39-f40e3c7efb01"))(junction (at 550 160) (diameter 0) (color 0 0 0 0) (uuid "a55dfb17-fecd-459d-98fb-bd77cc979530"))(junction (at 565 160) (diameter 0) (color 0 0 0 0) (uuid "9ae192b5-4a0f-401b-ab8d-9a8ffc3e4e63"))(junction (at 468 160) (diameter 0) (color 0 0 0 0) (uuid "786995d1-f092-4aa3-b210-cb203f9acbf2"))(junction (at 560 160) (diameter 0) (color 0 0 0 0) (uuid "cb9d2035-bf02-49e7-a822-3f7295590a7b"))(junction (at 550 375) (diameter 0) (color 0 0 0 0) (uuid "c4fd118b-3529-4497-9b2c-7cfc329e2771"))(junction (at 410 160) (diameter 0) (color 0 0 0 0) (uuid "f0606acc-7db9-47f4-9c39-1650fcb65439"))(junction (at 280 158) (diameter 0) (color 0 0 0 0) (uuid "c1d37aa8-fd33-48f0-b563-2ac61b2aabca"))(junction (at 295 158) (diameter 0) (color 0 0 0 0) (uuid "52dc5ef2-9ada-4562-8262-847317da265a"))(junction (at 352.54 153) (diameter 0) (color 0 0 0 0) (uuid "3a81aabc-b1e4-47ca-9715-fb21243864ed"))(junction (at 355.08 153) (diameter 0) (color 0 0 0 0) (uuid "f51a8245-0e1d-467b-a23b-625773795844"))(junction (at 455 260) (diameter 0) (color 0 0 0 0) (uuid "7dc7e44d-8733-495d-8683-16b04d429fb7"))(junction (at 352.54 210) (diameter 0) (color 0 0 0 0) (uuid "b6f9d562-0882-45ab-9c61-9f1c539eae03"))(junction (at 160 300) (diameter 0) (color 0 0 0 0) (uuid "23c72032-27ae-4b85-a6fd-6bdefbc1012d"))(junction (at 150 300) (diameter 0) (color 0 0 0 0) (uuid "40fad3ad-2cf4-448c-b5a9-f011008b9b75"))(junction (at 150 165) (diameter 0) (color 0 0 0 0) (uuid "e51227ac-7210-4671-8a61-a716f393fd98"))(junction (at 195 300) (diameter 0) (color 0 0 0 0) (uuid "472dd544-11e8-4632-a64e-e44b0c1f1f1c"))(junction (at 170 300) (diameter 0) (color 0 0 0 0) (uuid "5f19b865-39a0-4fa6-b0d0-60460d5d70b5"))(junction (at 518 85) (diameter 0) (color 0 0 0 0) (uuid "2414f610-89a0-4796-a5a2-b37c7b24d609"))(junction (at 550 85) (diameter 0) (color 0 0 0 0) (uuid "2b850121-fdb3-4c95-86fd-769dc6610e5c"))(junction (at 540 85) (diameter 0) (color 0 0 0 0) (uuid "222e8921-508b-44c2-8c85-9667169fd3d3"))(junction (at 180 70) (diameter 0) (color 0 0 0 0) (uuid "5023f5c1-aa50-4f79-b8c7-17aa4a7c61ab"))(junction (at 170 70) (diameter 0) (color 0 0 0 0) (uuid "080e04fd-1264-49a9-a289-61a047c0a1a0"))(junction (at 150 70) (diameter 0) (color 0 0 0 0) (uuid "a9e36cbc-f759-4211-8899-407a5a863500"))(junction (at 225 70) (diameter 0) (color 0 0 0 0) (uuid "3d3c94a2-e250-4638-9e5d-4b6736d41f93"))(junction (at 200 170) (diameter 0) (color 0 0 0 0) (uuid "9df451d7-ca02-46b0-9896-6becc2031f60"))(junction (at 200 70) (diameter 0) (color 0 0 0 0) (uuid "a16da182-8b53-46d2-9263-ca19279f6c94"))(junction (at 195 70) (diameter 0) (color 0 0 0 0) (uuid "e4baca25-baf5-48e2-9f7e-7d79ca894e9b"))(junction (at 330 113) (diameter 0) (color 0 0 0 0) (uuid "1411a604-10bc-4c10-91de-cce862ef642a"))(junction (at 355 320) (diameter 0) (color 0 0 0 0) (uuid "96bd6ff3-1849-4420-a7e8-9e9e232e06a3"))(junction (at 330 320) (diameter 0) (color 0 0 0 0) (uuid "15807f2f-b948-469e-9138-f9ba9f75a82b"))(junction (at 120 70) (diameter 0) (color 0 0 0 0) (uuid "0a9b3e69-77b2-4998-8d9f-fbd6951ab71e"))(junction (at 112 70) (diameter 0) (color 0 0 0 0) (uuid "52b1ce9e-cd9c-4322-840f-78adb717f807"))(junction (at 185 340) (diameter 0) (color 0 0 0 0) (uuid "b515ee72-c06b-4a1e-ae33-2580c21bfa4e"))(junction (at 295 340) (diameter 0) (color 0 0 0 0) (uuid "e2b4ecad-c23d-4ed9-abe4-565c03d97c50"))(junction (at 320 183) (diameter 0) (color 0 0 0 0) (uuid "e353e0c5-412a-4f4c-8c30-066bbbc0fd69"))(junction (at 90 340) (diameter 0) (color 0 0 0 0) (uuid "25ca8a1a-97c5-4785-8687-faba22b7cf4b"))(junction (at 352.54 340) (diameter 0) (color 0 0 0 0) (uuid "d3cc4a90-7183-4f56-ada2-a11ab6d6731f"))(junction (at 345 145) (diameter 0) (color 0 0 0 0) (uuid "8e494104-36db-4266-bc0a-4af8423054b7"))(junction (at 300 128) (diameter 0) (color 0 0 0 0) (uuid "f1785f98-60a8-4c41-b152-efa36b023252"))(junction (at 125 340) (diameter 0) (color 0 0 0 0) (uuid "9f030210-c279-4db2-826a-b92c4fe6dee8"))(junction (at 225 128) (diameter 0) (color 0 0 0 0) (uuid "ddf9a457-ca73-48b1-9228-cc3acacb5b00"))(junction (at 325 340) (diameter 0) (color 0 0 0 0) (uuid "83235fab-2182-4a6a-af52-b1cec8239eed"))(junction (at 285 340) (diameter 0) (color 0 0 0 0) (uuid "0fd28974-4615-4a7e-9f7a-50685476cfa0"))(junction (at 295 183) (diameter 0) (color 0 0 0 0) (uuid "daa0fdef-c4b8-4d2b-980c-b04e0678eaa3"))(junction (at 175 340) (diameter 0) (color 0 0 0 0) (uuid "48c9ee54-a443-411f-af14-aae73c85a305"))(junction (at 275 128) (diameter 0) (color 0 0 0 0) (uuid "4aeae967-9f5f-4ef6-a207-ea27610bcf87"))(junction (at 468 85) (diameter 0) (color 0 0 0 0) (uuid "caffac3f-f7c1-4cf6-87f7-a9b1a07f4f44"))(junction (at 440 85) (diameter 0) (color 0 0 0 0) (uuid "6ffa6c8a-73ef-4421-97ff-0f1337d939ce")))

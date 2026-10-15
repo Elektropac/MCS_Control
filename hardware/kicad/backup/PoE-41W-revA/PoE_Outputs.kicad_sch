@@ -1,0 +1,2904 @@
+(kicad_sch (version 20250114) (generator "eeschema") (uuid "25ca4b6f-1445-437f-83d6-d2d5f5ef3e02") (paper "A2") (title_block (title "PoE_Outputs") (date "2026-09-28") (rev "A - prototype") (comment 1 "Not released for manufacture")) (lib_symbols (symbol "MCS_PoE:R"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "R"
+			(at 2.032 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "R"
+			(at 0 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -1.778 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "R res resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "R_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "R_0_1"
+			(rectangle
+				(start -1.016 -2.54)
+				(end 1.016 2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "R_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:C"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "C"
+			(at 0.635 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C"
+			(at 0.635 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0.9652 -3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "cap capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "C_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "C_0_1"
+			(polyline
+				(pts
+					(xy -2.032 0.762) (xy 2.032 0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -2.032 -0.762) (xy 2.032 -0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "C_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:C_Polarized"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "C"
+			(at 0.635 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C_Polarized"
+			(at 0.635 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0.9652 -3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "cap capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "CP_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "C_Polarized_0_1"
+			(rectangle
+				(start -2.286 0.508)
+				(end 2.286 1.016)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.778 2.286) (xy -0.762 2.286)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.27 2.794) (xy -1.27 1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(rectangle
+				(start 2.286 -0.508)
+				(end -2.286 -1.016)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+		)
+		(symbol "C_Polarized_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:L"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "L"
+			(at -1.27 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "L"
+			(at 1.905 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Inductor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "inductor choke coil reactor magnetic"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "L_0_1"
+			(arc
+				(start 0 2.54)
+				(mid 0.6323 1.905)
+				(end 0 1.27)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 1.27)
+				(mid 0.6323 0.635)
+				(end 0 0)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 0)
+				(mid 0.6323 -0.635)
+				(end 0 -1.27)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 -1.27)
+				(mid 0.6323 -1.905)
+				(end 0 -2.54)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "L_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:D"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "D"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "D"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "D_0_1"
+			(polyline
+				(pts
+					(xy -1.27 1.27) (xy -1.27 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "D_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:D_Zener"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "D_Zener"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Zener diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "D_Zener_0_1"
+			(polyline
+				(pts
+					(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "D_Zener_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:D_TVS"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "D_TVS"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Bidirectional transient-voltage-suppression diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "diode TVS thyrector"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "D_TVS_0_1"
+			(polyline
+				(pts
+					(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 1.27) (xy 2.54 -1.27) (xy -2.54 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.508 1.27) (xy 0 1.27) (xy 0 -1.27) (xy -0.508 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 0) (xy -1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "D_TVS_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "A1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:LED"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LED"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Light emitting diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "LED diode"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "LED_0_1"
+			(polyline
+				(pts
+					(xy -3.048 -0.762) (xy -4.572 -2.286) (xy -3.81 -2.286) (xy -4.572 -2.286) (xy -4.572 -1.524)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.778 -0.762) (xy -3.302 -2.286) (xy -2.54 -2.286) (xy -3.302 -2.286) (xy -3.302 -1.524)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.27 0) (xy 1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.27 -1.27) (xy -1.27 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "LED_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:Q_NPN_BEC"
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "Q"
+			(at 5.08 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Q_NPN_BEC"
+			(at 5.08 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 5.08 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "NPN transistor, base/emitter/collector"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "NPN"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=B 2=E 3=C"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "BJT"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "Q_NPN_BEC_0_1"
+			(polyline
+				(pts
+					(xy -2.54 0) (xy 0.635 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.635 1.905) (xy 0.635 -1.905)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(circle
+				(center 1.27 0)
+				(radius 2.8194)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "Q_NPN_BEC_1_1"
+			(polyline
+				(pts
+					(xy 0.635 0.635) (xy 2.54 2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.635 -0.635) (xy 2.54 -2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 -1.778) (xy 1.778 -1.27) (xy 2.286 -2.286) (xy 1.27 -1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+			(pin input line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "B"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "E"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "C"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:Q_PNP_BEC"
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "Q"
+			(at 5.08 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Q_PNP_BEC"
+			(at 5.08 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 5.08 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "PNP transistor, base/emitter/collector"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" "PNP"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Pins" "1=B 2=E 3=C"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "BJT"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "Q_PNP_BEC_0_1"
+			(polyline
+				(pts
+					(xy -2.54 0) (xy 0.635 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.635 1.905) (xy 0.635 -1.905)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.635 0.635) (xy 2.54 2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0.635 -0.635) (xy 2.54 -2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(circle
+				(center 1.27 0)
+				(radius 2.8194)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 2.286 -1.778) (xy 1.778 -2.286) (xy 1.27 -1.27) (xy 2.286 -1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+		)
+		(symbol "Q_PNP_BEC_1_1"
+			(pin input line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "B"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "E"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "C"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:LT4295xUFD"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "U"
+			(at -12.7 19.05 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "LT4295xUFD"
+			(at 3.81 19.05 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_DFN_QFN:QFN-28-1EP_4x5mm_P0.5mm_EP2.65x3.65mm"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/data-sheets/LT4295.pdf"
+			(at 0 24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "IEEE 802.3bt PD Interface with Forward/Flyback Controller, QFN-28"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "LTPoE++ IEEE 802.3af IEEE 802.3at IEEE 802.3bt"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "QFN*1EP*4x5mm*P0.5mm*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "LT4295xUFD_0_1"
+			(rectangle
+				(start -12.7 17.78)
+				(end 12.7 -17.78)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "LT4295xUFD_1_1"
+			(pin power_in line
+				(at 0 -20.32 90)
+				(length 2.54)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -15.24 -2.54 0)
+				(length 2.54)
+				(name "AUX"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 15.24 -15.24 180)
+				(length 2.54)
+				(name "RCLASS++"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 15.24 -12.7 180)
+				(length 2.54)
+				(name "RCLASS"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "4"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin open_collector line
+				(at 15.24 0 180)
+				(length 2.54)
+				(name "T2P"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "5"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_in line
+				(at 0 20.32 270)
+				(length 2.54)
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 20.32 270)
+				(length 2.54)
+				(hide yes)
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "7"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 20.32 270)
+				(length 2.54)
+				(hide yes)
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "8"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 20.32 270)
+				(length 2.54)
+				(hide yes)
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "9"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -15.24 -7.62 0)
+				(length 2.54)
+				(name "ROSC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "10"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -15.24 -10.16 0)
+				(length 2.54)
+				(name "SFST"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "11"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -15.24 15.24 0)
+				(length 2.54)
+				(name "FSSDLY"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "12"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 15.24 -5.08 180)
+				(length 2.54)
+				(name "ITHB"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "13"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 15.24 -7.62 180)
+				(length 2.54)
+				(name "FB31"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "14"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -15.24 -12.7 0)
+				(length 2.54)
+				(name "RLDCMP"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "15"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 15.24 10.16 180)
+				(length 2.54)
+				(name "ISEN-"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "16"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 15.24 12.7 180)
+				(length 2.54)
+				(name "ISEN+"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "17"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at 15.24 5.08 180)
+				(length 2.54)
+				(name "SG"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "18"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -20.32 90)
+				(length 2.54)
+				(hide yes)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "19"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at 15.24 15.24 180)
+				(length 2.54)
+				(name "PG"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "20"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_in line
+				(at -2.54 20.32 270)
+				(length 2.54)
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "21"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at -12.7 -15.24 0)
+				(length 2.54)
+				(hide yes)
+				(name "DNC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "22"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at -15.24 12.7 0)
+				(length 2.54)
+				(name "SWVCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "23"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_in line
+				(at 2.54 20.32 270)
+				(length 2.54)
+				(name "VIN"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "24"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -15.24 7.62 0)
+				(length 2.54)
+				(name "HSSRC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "25"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at -15.24 5.08 0)
+				(length 2.54)
+				(name "HSGATE"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "26"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin no_connect line
+				(at -12.7 -17.78 0)
+				(length 2.54)
+				(hide yes)
+				(name "NC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "27"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -15.24 0 0)
+				(length 2.54)
+				(name "VPORT"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "28"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -20.32 90)
+				(length 2.54)
+				(hide yes)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "29"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:PWR_FLAG"
+		(power global)
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "#FLG"
+			(at 0 1.905 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 0 3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "flag power"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "PWR_FLAG_0_0"
+			(pin power_out line
+				(at 0 0 90)
+				(length 0)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(symbol "PWR_FLAG_0_1"
+			(polyline
+				(pts
+					(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:LMR33620ADDA"
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "U"
+			(at 0 11.43 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LMR33620ADDA"
+			(at 0 8.89 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:Texas_HSOP-8-1EP_3.9x4.9mm_P1.27mm_ThermalVias"
+			(at 0 -20.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lmr33640.pdf"
+			(at 0 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Simple Switcher Synchronous Buck Regulator, Vin=3.8-36V, Iout=4A, F=400kHz, Adjustable output voltage, HSOP-8"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "simple-switcher synchronous buck step-down voltage-regulator"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "Texas*HSOP*1EP*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "LMR33620ADDA_0_1"
+			(rectangle
+				(start -7.62 7.62)
+				(end 7.62 -7.62)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+		)
+		(symbol "LMR33620ADDA_1_1"
+			(pin power_in line
+				(at 0 -10.16 90)
+				(length 2.54)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_in line
+				(at -10.16 5.08 0)
+				(length 2.54)
+				(name "VIN"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -10.16 0 0)
+				(length 2.54)
+				(name "EN"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin open_collector line
+				(at 10.16 -5.08 180)
+				(length 2.54)
+				(name "PG"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "4"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 10.16 -2.54 180)
+				(length 2.54)
+				(name "FB"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "5"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin power_out line
+				(at -10.16 -5.08 0)
+				(length 2.54)
+				(name "VCC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 10.16 5.08 180)
+				(length 2.54)
+				(name "BOOT"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "7"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin output line
+				(at 10.16 2.54 180)
+				(length 2.54)
+				(name "SW"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "8"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -10.16 90)
+				(length 2.54)
+				(hide yes)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "9"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)(symbol "MCS_PoE:NMOS8" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "Q" (at 0 11.620000000000001 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "NMOS8" (at 0 -11.620000000000001 0) (effects (font (size 1.27 1.27))))
+      (symbol "NMOS8_0_1" (rectangle (start -7.62 7.62) (end 7.62 -7.62) (stroke (width 0.254) (type default)) (fill (type background))) (text "N-MOS" (at 0 0 0) (effects (font (size 1.27 1.27)))))
+      (symbol "NMOS8_1_1" (pin passive line (at -12.7 0 0) (length 5.08) (name "G" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 12.7 270) (length 5.08) (name "D" (effects (font (size 1.016 1.016)))) (number "5" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 12.7 270) (length 5.08) (name "D" (effects (font (size 1.016 1.016)))) (number "6" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 12.7 270) (length 5.08) (name "D" (effects (font (size 1.016 1.016)))) (number "7" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 12.7 270) (length 5.08) (name "D" (effects (font (size 1.016 1.016)))) (number "8" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -12.7 90) (length 5.08) (name "S" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -12.7 90) (length 5.08) (name "S" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -12.7 90) (length 5.08) (name "S" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE:LT4321" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "U" (at 0 33.21 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "LT4321" (at 0 -33.21 0) (effects (font (size 1.27 1.27))))
+      (symbol "LT4321_0_1" (rectangle (start -17.78 29.21) (end 17.78 -29.21) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "LT4321_1_1" (pin passive line (at -22.86 22.86 0) (length 5.08) (name "IN12" (effects (font (size 1.016 1.016)))) (number "15" (effects (font (size 1.016 1.016)))))(pin passive line (at -22.86 7.62 0) (length 5.08) (name "IN36" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at -22.86 -7.62 0) (length 5.08) (name "IN45" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at -22.86 -22.86 0) (length 5.08) (name "IN78" (effects (font (size 1.016 1.016)))) (number "6" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 25.4 180) (length 5.08) (name "TG12" (effects (font (size 1.016 1.016)))) (number "16" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 20.32 180) (length 5.08) (name "BG12" (effects (font (size 1.016 1.016)))) (number "14" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 12.7 180) (length 5.08) (name "TG36" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 7.62 180) (length 5.08) (name "BG36" (effects (font (size 1.016 1.016)))) (number "13" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 0 180) (length 5.08) (name "TG45" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 -5.08 180) (length 5.08) (name "BG45" (effects (font (size 1.016 1.016)))) (number "8" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 -12.7 180) (length 5.08) (name "TG78" (effects (font (size 1.016 1.016)))) (number "5" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 -17.78 180) (length 5.08) (name "BG78" (effects (font (size 1.016 1.016)))) (number "7" (effects (font (size 1.016 1.016)))))(pin passive line (at -5.08 34.29 270) (length 5.08) (name "OUTP" (effects (font (size 1.016 1.016)))) (number "12" (effects (font (size 1.016 1.016)))))(pin passive line (at 5.08 34.29 270) (length 5.08) (name "~{EN}" (effects (font (size 1.016 1.016)))) (number "11" (effects (font (size 1.016 1.016)))))(pin passive line (at 22.86 -25.4 180) (length 5.08) (name "EN" (effects (font (size 1.016 1.016)))) (number "10" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -34.29 90) (length 5.08) (name "OUTN" (effects (font (size 1.016 1.016)))) (number "9" (effects (font (size 1.016 1.016)))))(pin passive line (at 0 -34.29 90) (length 5.08) (name "EP" (effects (font (size 1.016 1.016)))) (number "17" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE:750316231" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "T" (at 0 28.13 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "750316231" (at 0 -28.13 0) (effects (font (size 1.27 1.27))))
+      (symbol "750316231_0_1" (rectangle (start -15.24 24.13) (end 15.24 -24.13) (stroke (width 0.254) (type default)) (fill (type background))) (text "1:1 / 15uH" (at 0 -19.05 0) (effects (font (size 1.016 1.016)))))
+      (symbol "750316231_1_1" (pin passive line (at -20.32 10.16 0) (length 5.08) (name "PRI+" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -20.32 10.16 0) (length 5.08) (name "PRI+" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at -20.32 -10.16 0) (length 5.08) (name "PRI-" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at -20.32 -10.16 0) (length 5.08) (name "PRI-" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at -20.32 20.32 0) (length 5.08) (name "BIAS dot" (effects (font (size 1.016 1.016)))) (number "5" (effects (font (size 1.016 1.016)))))(pin passive line (at -20.32 0 0) (length 5.08) (name "BIAS" (effects (font (size 1.016 1.016)))) (number "6" (effects (font (size 1.016 1.016)))))(pin passive line (at 20.32 10.16 180) (length 5.08) (name "SEC+" (effects (font (size 1.016 1.016)))) (number "7" (effects (font (size 1.016 1.016)))))(pin passive line (at 20.32 10.16 180) (length 5.08) (name "SEC+" (effects (font (size 1.016 1.016)))) (number "8" (effects (font (size 1.016 1.016)))))(pin passive line (at 20.32 -10.16 180) (length 5.08) (name "SEC dot" (effects (font (size 1.016 1.016)))) (number "11" (effects (font (size 1.016 1.016)))))(pin passive line (at 20.32 -10.16 180) (length 5.08) (name "SEC dot" (effects (font (size 1.016 1.016)))) (number "12" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE:PE68386NL" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "T" (at 0 16.7 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "PE68386NL" (at 0 -16.7 0) (effects (font (size 1.27 1.27))))
+      (symbol "PE68386NL_0_1" (rectangle (start -10.16 12.7) (end 10.16 -12.7) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "PE68386NL_1_1" (pin passive line (at -15.24 7.62 0) (length 5.08) (name "PRI dot" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.24 -7.62 0) (length 5.08) (name "PRI" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at 15.24 7.62 180) (length 5.08) (name "SEC dot" (effects (font (size 1.016 1.016)))) (number "6" (effects (font (size 1.016 1.016)))))(pin passive line (at 15.24 -7.62 180) (length 5.08) (name "SEC" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE:TLP291" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "U" (at 0 14.16 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "TLP291" (at 0 -14.16 0) (effects (font (size 1.27 1.27))))
+      (symbol "TLP291_0_1" (rectangle (start -10.16 10.16) (end 10.16 -10.16) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "TLP291_1_1" (pin passive line (at -15.24 5.08 0) (length 5.08) (name "A" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.24 -5.08 0) (length 5.08) (name "K" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at 15.24 5.08 180) (length 5.08) (name "C" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))(pin passive line (at 15.24 -5.08 180) (length 5.08) (name "E" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE:PORT4" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 16.7 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "PORT4" (at 0 -16.7 0) (effects (font (size 1.27 1.27))))
+      (symbol "PORT4_0_1" (rectangle (start -10.16 12.7) (end 10.16 -12.7) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "PORT4_1_1" (pin passive line (at -15.24 7.619999999999999 0) (length 5.08) (name "1" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.24 2.539999999999999 0) (length 5.08) (name "2" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.24 -2.540000000000001 0) (length 5.08) (name "3" (effects (font (size 1.016 1.016)))) (number "3" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.24 -7.620000000000001 0) (length 5.08) (name "4" (effects (font (size 1.016 1.016)))) (number "4" (effects (font (size 1.016 1.016)))))))(symbol "MCS_PoE:PORT2" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+      (property "Reference" "J" (at 0 11.620000000000001 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "PORT2" (at 0 -11.620000000000001 0) (effects (font (size 1.27 1.27))))
+      (symbol "PORT2_0_1" (rectangle (start -10.16 7.62) (end 10.16 -7.62) (stroke (width 0.254) (type default)) (fill (type background))) )
+      (symbol "PORT2_1_1" (pin passive line (at -15.24 2.54 0) (length 5.08) (name "1" (effects (font (size 1.016 1.016)))) (number "1" (effects (font (size 1.016 1.016)))))(pin passive line (at -15.24 -2.54 0) (length 5.08) (name "2" (effects (font (size 1.016 1.016)))) (number "2" (effects (font (size 1.016 1.016))))))))(text "5 V / 12 V / 24 V - SIMULTANEOUS OUTPUTS" (at 15 13 0) (effects (font (size 3.048 3.048)) (justify left top)) (uuid "4679d7a0-9881-43ec-8f88-2509cf5eebf8"))(text "MCS-Control | Prototype rev. A | 5 V / 12 V / 24 V : 1 A simultaneously | Excluded from PCB" (at 15 21 0) (effects (font (size 1.524 1.524)) (justify left top)) (uuid "dad20099-126e-4986-a66f-f50df569b000"))(rectangle (start 15 35) (end 415 167) (stroke (width 0.254) (type default)) (fill (type none)) (uuid "8c83396e-0bb1-4eb2-ae91-a27de686b164"))(text "01  24 V TO 5 V / 1 A" (at 20 39 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "c37cd888-339d-469f-b9f8-262f80e66976"))(symbol (lib_id "MCS_PoE:LMR33620ADDA") (at 145 80 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "b4e88860-6b48-4a81-92dc-da168e3402a0")
+      (property "Reference" "U350" (at 145 63 0) (effects (font (size 1.27 1.27))  ))(property "Value" "LMR33620ADDA / 400kHz" (at 145 67 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 145 80 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 145 80 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 145 80 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "fdf61b7a-299b-4478-9268-111877aafe68"))(pin "2" (uuid "d683b633-3531-493e-a7e6-97c032e83797"))(pin "3" (uuid "f797652e-e42b-477c-bb3d-2bf880fe0556"))(pin "4" (uuid "2975f591-9186-4028-bd6d-14cf477286da"))(pin "5" (uuid "5b8fd55b-9e14-4683-b86d-a794ff79c8bc"))(pin "6" (uuid "55808fe1-19a1-4202-b77a-a4601e670b65"))(pin "7" (uuid "92621016-e060-4e57-9ed6-9110d80adc1d"))(pin "8" (uuid "61284870-25c5-4ba8-9d8a-73603afee039"))(pin "9" (uuid "bbfe0a25-b121-408c-b3be-b6f705a46faa")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "U350") (unit 1)))))(wire (pts (xy 145 90.16) (xy 145 100.32)) (stroke (width 0) (type default)) (uuid "9686b379-0d09-4835-9a05-9405fc69b35d"))(global_label "POE_GND" (shape passive) (at 145 100.32 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "34e63583-080a-4035-a38d-b6799a542b04"))(wire (pts (xy 134.84 74.92) (xy 124.68 74.92)) (stroke (width 0) (type default)) (uuid "75b66b7b-b6ee-47c9-9ff5-85d78a4adcc6"))(global_label "POE_24V" (shape passive) (at 124.68 74.92 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "99564aba-71d1-4c71-99e3-182778f72b40"))(wire (pts (xy 134.84 80) (xy 124.68 80)) (stroke (width 0) (type default)) (uuid "00bc3106-ff77-4715-8e74-97dfe884294f"))(global_label "POE_24V" (shape passive) (at 124.68 80 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "e7392832-acd2-44df-acbb-d2381ac0554c"))(wire (pts (xy 134.84 85.08) (xy 124.68 85.08)) (stroke (width 0) (type default)) (uuid "b8c929ef-a6ff-4410-9191-86132a7d9be1"))(label "VCC5" (at 124.68 85.08 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "d3d6890d-0464-4ddf-962c-426e1df98e95"))(wire (pts (xy 145 90.16) (xy 145 100.32)) (stroke (width 0) (type default)) (uuid "47085798-227a-4704-873b-502cf65c6f53"))(global_label "POE_GND" (shape passive) (at 145 100.32 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "4b956dd0-b479-4362-920d-a9ae1dc19c96"))(no_connect (at 155.16 85.08) (uuid "3cc01c84-5687-45b2-8e7e-eb75a77fcee4"))(symbol (lib_id "MCS_PoE:C") (at 50 100 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "36b1dbe1-fc1d-455b-a664-f5c65233fc8b")
+      (property "Reference" "C350" (at 56.35 98.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "10uF / 50V" (at 56.35 101.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 50 100 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 50 100 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 50 100 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "97bf0a5f-021a-4fad-b65a-b1b742c76741"))(pin "2" (uuid "fafe7cd2-04fc-443c-a335-a666914ff044")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C350") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 90 100 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "2269582b-e073-48a1-9451-a000a8460b0f")
+      (property "Reference" "C351" (at 96.35 98.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "220nF / 50V" (at 96.35 101.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 90 100 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 90 100 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 90 100 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "b52e5ce6-db25-4433-9860-3cc903ed720f"))(pin "2" (uuid "fb25b311-6b06-4f1a-9d7f-62dc17e403ad")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C351") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 145 123 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "66e92a4a-49cf-4553-9bf7-211c56340a5a")
+      (property "Reference" "C352" (at 151.35 121.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1uF / 16V" (at 151.35 124.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 145 123 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 145 123 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 145 123 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "0d357e35-99c7-4144-aa13-81884ffe22ab"))(pin "2" (uuid "b4dd72ce-75e7-4201-b5f1-7b757eed1194")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C352") (unit 1)))))(wire (pts (xy 145 119.19) (xy 145 114.11)) (stroke (width 0) (type default)) (uuid "937fd35b-ea95-4f6e-9bc2-f4d9d5f8fae9"))(label "VCC5" (at 145 114.11 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "e86a6bd2-17f7-4bc0-9b08-96cb37e58c62"))(wire (pts (xy 145 126.81) (xy 145 131.89)) (stroke (width 0) (type default)) (uuid "e7458864-103d-4690-9b13-fc0e5ea2048a"))(global_label "POE_GND" (shape passive) (at 145 131.89 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "c256beea-b588-4d4d-a3c6-db55ab115114"))(symbol (lib_id "MCS_PoE:C") (at 195 65 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "0a4ab746-60b9-4467-af79-60a5bbd6e812")
+      (property "Reference" "C353" (at 201.35 63.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100nF / 16V" (at 201.35 66.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 195 65 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 195 65 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 195 65 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "a395cb77-bb1a-4bac-863f-67a5b939669e"))(pin "2" (uuid "b3707836-3df8-42f8-8b5e-e116f54accfd")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C353") (unit 1)))))(wire (pts (xy 50 96.19) (xy 50 88)) (stroke (width 0) (type default)) (uuid "75857168-dbeb-44b8-bd0b-3594e2ed9607"))(wire (pts (xy 90 96.19) (xy 90 88)) (stroke (width 0) (type default)) (uuid "339fd8f3-b68e-4dd7-9b24-892d18c1b101"))(wire (pts (xy 50 88) (xy 90 88)) (stroke (width 0) (type default)) (uuid "e852184a-b2ab-4efc-80a2-4b9fc72830d7"))(global_label "POE_24V" (shape passive) (at 50 88 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "aa0b39e7-fa41-4ece-91c5-0e0f09de6dbc"))(wire (pts (xy 50 103.81) (xy 50 114)) (stroke (width 0) (type default)) (uuid "70321a6a-e50a-4ae1-882e-044fb60cf67a"))(wire (pts (xy 90 103.81) (xy 90 114)) (stroke (width 0) (type default)) (uuid "791fd44f-c367-49dd-b9cf-8c665b6f9103"))(wire (pts (xy 50 114) (xy 90 114)) (stroke (width 0) (type default)) (uuid "4c713f5c-5b25-4944-9920-c657288b2a96"))(global_label "POE_GND" (shape passive) (at 50 114 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "475c5927-87bc-41f3-af53-ae8df221cb30"))(symbol (lib_id "MCS_PoE:L") (at 245 80 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "428228f9-6082-42b6-afbb-900fcb5ac49f")
+      (property "Reference" "L350" (at 245 75.555 90) (effects (font (size 1.27 1.27))  ))(property "Value" "10uH / Isat >= 5A" (at 245 78.095 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 245 80 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 245 80 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 245 80 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "92686eaa-b7ce-45a2-b797-8ddacbcdf345"))(pin "2" (uuid "764a8e14-571f-4b74-81eb-c6e4fd9828f1")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "L350") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 250 124 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "9061104c-7dd6-4c97-82ca-7506d5140247")
+      (property "Reference" "C354" (at 256.35 122.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 16V" (at 256.35 125.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 250 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 250 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 250 124 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "89045bd4-8818-4eab-988e-1c2569475371"))(pin "2" (uuid "1c009786-0f79-4b6f-85b4-6360a6738a8c")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C354") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 290 124 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "9989663e-31f5-411e-b5de-6c0c4a888bb2")
+      (property "Reference" "C355" (at 296.35 122.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 16V" (at 296.35 125.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 290 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 290 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 290 124 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "58d56a09-f36a-4afc-9d77-8bad34db30c9"))(pin "2" (uuid "2e2adb5e-213c-4a83-b30a-2deb229c08fb")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C355") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 330 124 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "0382fd44-76b8-4d78-8847-9c67dda311f6")
+      (property "Reference" "C356" (at 336.35 122.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 16V" (at 336.35 125.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 330 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 330 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 330 124 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "351fb11d-6a3d-40ba-9427-0c6f2c151a84"))(pin "2" (uuid "cc6edbb8-aea1-4786-b83d-f1df195bde2b")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C356") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 370 124 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "de8f8d44-3de7-4239-94ea-64d108ee6a03")
+      (property "Reference" "C357" (at 376.35 122.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 16V" (at 376.35 125.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 370 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 370 124 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 370 124 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "b63a8b7a-6c6e-4d85-b27b-d4975a74c6e2"))(pin "2" (uuid "5c6872a0-d89d-47b5-889f-b6ecec3e0e16")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C357") (unit 1)))))(wire (pts (xy 250 120.19) (xy 250 111)) (stroke (width 0) (type default)) (uuid "b7f5e9af-3de0-4f27-9e6b-53d539369f7e"))(wire (pts (xy 290 120.19) (xy 290 111)) (stroke (width 0) (type default)) (uuid "f792d492-21d0-447d-b48d-411cd2102802"))(wire (pts (xy 330 120.19) (xy 330 111)) (stroke (width 0) (type default)) (uuid "54e48204-2a54-42c8-a450-59ee6ffd3b8d"))(wire (pts (xy 370 120.19) (xy 370 111)) (stroke (width 0) (type default)) (uuid "14a53a0c-9b00-4b2b-921e-e8b70575d3a6"))(wire (pts (xy 250 111) (xy 290 111)) (stroke (width 0) (type default)) (uuid "4d1c3c66-8df5-4b0a-b4aa-b52f3ef3c333"))(wire (pts (xy 290 111) (xy 330 111)) (stroke (width 0) (type default)) (uuid "a24237dd-98f0-42ac-9a02-55a7521156c6"))(wire (pts (xy 330 111) (xy 370 111)) (stroke (width 0) (type default)) (uuid "5b745951-fdc6-43e5-9311-74d8d9f8413f"))(junction (at 290 111) (diameter 0) (color 0 0 0 0) (uuid "f37dbd43-511b-44e7-94e7-c783807f6318"))(junction (at 330 111) (diameter 0) (color 0 0 0 0) (uuid "e7f72802-15e5-414e-9b25-1b9f3bddff18"))(global_label "POE_5V" (shape passive) (at 250 111 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "7ec3c012-3c7e-40d6-9576-86b74dbfcfa1"))(wire (pts (xy 250 127.81) (xy 250 137)) (stroke (width 0) (type default)) (uuid "c3575cfb-0690-4508-8511-d4880da4b9e5"))(wire (pts (xy 290 127.81) (xy 290 137)) (stroke (width 0) (type default)) (uuid "355698f3-8d46-41b1-a7c0-cd347506d55d"))(wire (pts (xy 330 127.81) (xy 330 137)) (stroke (width 0) (type default)) (uuid "b2b206e5-ff8a-4983-ab3a-f3cc88bb1b5a"))(wire (pts (xy 370 127.81) (xy 370 137)) (stroke (width 0) (type default)) (uuid "cd32997b-893c-43ae-a59a-77a64763814a"))(wire (pts (xy 250 137) (xy 290 137)) (stroke (width 0) (type default)) (uuid "094c0146-de11-4f9d-9064-f4a68cdc1bba"))(wire (pts (xy 290 137) (xy 330 137)) (stroke (width 0) (type default)) (uuid "bf93819f-1173-4d83-9192-6f082c2da2c8"))(wire (pts (xy 330 137) (xy 370 137)) (stroke (width 0) (type default)) (uuid "dde7e34c-c1ec-4148-96df-20c56096a347"))(junction (at 290 137) (diameter 0) (color 0 0 0 0) (uuid "b4b00955-dfef-4088-b169-45e3e6e17d93"))(junction (at 330 137) (diameter 0) (color 0 0 0 0) (uuid "4febd5c7-2fcc-4d04-bf9c-6cc93b7bb927"))(global_label "POE_GND" (shape passive) (at 250 137 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "d1fa57e2-8750-426e-837c-0e1daf4be5cd"))(symbol (lib_id "MCS_PoE:R") (at 335 60 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "515c47ba-04d9-4a98-b2f7-a42c5a676607")
+      (property "Reference" "R350" (at 341.35 58.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100k 1%" (at 341.35 61.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 335 60 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 335 60 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 335 60 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "d5469b83-9b8f-43d9-b2cb-e45f729f0ff7"))(pin "2" (uuid "f028fb1d-932e-4726-a198-d65d341fc95c")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "R350") (unit 1)))))(symbol (lib_id "MCS_PoE:R") (at 380 80 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "e5c31dd3-ad50-4cb9-8857-9836c86b2b28")
+      (property "Reference" "R351" (at 386.35 78.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "24.9k 1%" (at 386.35 81.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 380 80 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 380 80 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 380 80 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "56ad720c-1199-4e7e-92c1-8070a1a66b72"))(pin "2" (uuid "8e86e3d6-418d-432f-b34e-5bff891bb3fc")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "R351") (unit 1)))))(wire (pts (xy 380 83.81) (xy 380 88.89)) (stroke (width 0) (type default)) (uuid "4773e252-6a13-4d0c-bd59-f8efcc10eb56"))(global_label "POE_GND" (shape passive) (at 380 88.89 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "72d9e12b-be85-4db3-9f99-22cf90c4d997"))(wire (pts (xy 155.16 77.46) (xy 185 77.46)) (stroke (width 0) (type default)) (uuid "f709ae13-df3e-4f0a-82b5-b3678cfc323c"))(wire (pts (xy 185 77.46) (xy 185 80)) (stroke (width 0) (type default)) (uuid "99777406-3886-407e-b567-6d98ff8b2516"))(wire (pts (xy 185 80) (xy 241.19 80)) (stroke (width 0) (type default)) (uuid "32ea41a5-a5cb-4818-b1d7-54ff6edd07aa"))(wire (pts (xy 195 68.81) (xy 195 80)) (stroke (width 0) (type default)) (uuid "16a4f242-d9f5-47fb-9c26-c056fe04ccc0"))(wire (pts (xy 195 80) (xy 185 80)) (stroke (width 0) (type default)) (uuid "7d3a9ce8-af3b-4eaf-a62d-f92a90de1b05"))(junction (at 195 80) (diameter 0) (color 0 0 0 0) (uuid "e1cf50a2-be38-4456-8c65-5b068ab472d9"))(wire (pts (xy 155.16 74.92) (xy 175 74.92)) (stroke (width 0) (type default)) (uuid "db2c0606-f1e9-476d-bb8e-529942cf04b4"))(wire (pts (xy 175 74.92) (xy 175 52)) (stroke (width 0) (type default)) (uuid "ce5d9fbf-1daf-4d07-a8bc-a9dca9f51aca"))(wire (pts (xy 175 52) (xy 195 52)) (stroke (width 0) (type default)) (uuid "8f63d42c-f94f-4345-a5ab-68430c4c6250"))(wire (pts (xy 195 52) (xy 195 61.19)) (stroke (width 0) (type default)) (uuid "5b2ac304-765f-449d-a067-49b9bfd27f13"))(wire (pts (xy 248.81 80) (xy 295 80)) (stroke (width 0) (type default)) (uuid "b8258df9-7e53-4d7d-a6f2-0c606c794403"))(wire (pts (xy 295 80) (xy 295 111)) (stroke (width 0) (type default)) (uuid "1d3dc9ef-7f6c-4e4e-83bf-dc62419b31eb"))(wire (pts (xy 295 111) (xy 250 111)) (stroke (width 0) (type default)) (uuid "0c04d563-9a09-47f0-9cf0-5dd7c13be005"))(junction (at 295 111) (diameter 0) (color 0 0 0 0) (uuid "0bbc2675-1432-4dd2-aae7-e2964eb61ef8"))(wire (pts (xy 335 56.19) (xy 335 49)) (stroke (width 0) (type default)) (uuid "4160c39d-cde4-4dfc-aad9-c298e4146e33"))(wire (pts (xy 335 49) (xy 295 49)) (stroke (width 0) (type default)) (uuid "adc7e592-c28c-47ac-a2fc-0f9d58dfc0e3"))(wire (pts (xy 295 49) (xy 295 80)) (stroke (width 0) (type default)) (uuid "20981dcb-a2e0-4cec-ac58-72d237640474"))(junction (at 295 80) (diameter 0) (color 0 0 0 0) (uuid "4576cbab-b9e8-4ae5-b383-1967cbbb1a7d"))(wire (pts (xy 335 63.81) (xy 335 72)) (stroke (width 0) (type default)) (uuid "a01466ce-99ec-4737-bbf0-b99100884a3c"))(wire (pts (xy 335 72) (xy 380 72)) (stroke (width 0) (type default)) (uuid "d5a706ae-bb48-454e-bd36-d4c4d1e845be"))(wire (pts (xy 380 72) (xy 380 76.19)) (stroke (width 0) (type default)) (uuid "73472d7d-a42f-45ef-b97d-ed9e2c906cb5"))(label "FB5" (at 335 72 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "e2b70354-515b-4d47-a8ad-38cdda18d9f7"))(wire (pts (xy 155.16 82.54) (xy 210 82.54)) (stroke (width 0) (type default)) (uuid "a178b8a4-b626-4501-99a0-e8ac47c0b961"))(wire (pts (xy 210 82.54) (xy 210 97)) (stroke (width 0) (type default)) (uuid "c838bc57-aefa-46e2-8ef2-676e87a5d8e5"))(wire (pts (xy 210 97) (xy 350 97)) (stroke (width 0) (type default)) (uuid "ee229502-059a-4123-ad7b-ee24a6055d62"))(wire (pts (xy 350 97) (xy 350 72)) (stroke (width 0) (type default)) (uuid "cf866099-865f-4759-abae-f5e768bbfb5e"))(junction (at 350 72) (diameter 0) (color 0 0 0 0) (uuid "05b758f7-1ee7-4a8e-a713-3a76438c053f"))(text "PG unused. EN tied to VIN. Internal compensation. 4 x 22uF nominal output capacitance." (at 25 153 0) (effects (font (size 1.143 1.143)) (justify left top)) (uuid "91a56f1d-f6ef-46cf-ae36-1b58b581190e"))(rectangle (start 15 177) (end 415 309) (stroke (width 0.254) (type default)) (fill (type none)) (uuid "cc43277d-9437-4ea1-8954-07b8b22392a1"))(text "02  24 V TO 12 V / 1 A" (at 20 181 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "a8548609-1e34-4c44-a8af-8e32c18389d1"))(symbol (lib_id "MCS_PoE:LMR33620ADDA") (at 145 222 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "716695ca-680b-4aaa-874e-26cd652cb87a")
+      (property "Reference" "U351" (at 145 205 0) (effects (font (size 1.27 1.27))  ))(property "Value" "LMR33620ADDA / 400kHz" (at 145 209 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 145 222 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 145 222 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 145 222 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "c558039a-deb4-4ae3-93ff-759750ea6211"))(pin "2" (uuid "e5f9f959-bb80-43ff-8d5b-eeea62bf4866"))(pin "3" (uuid "58d0cc12-118e-4df4-a3da-1ce98db96855"))(pin "4" (uuid "ddad58db-b2bd-48d7-93ba-1304a2a7c5f2"))(pin "5" (uuid "8cade748-4407-4c1c-988a-567dfca7acde"))(pin "6" (uuid "1e66e807-7fd7-4338-a7c4-da4bd413ab67"))(pin "7" (uuid "6ccebfdc-8fb2-492c-8c94-3d51871dcac5"))(pin "8" (uuid "fadb0f7b-19b5-4acb-9915-973cf89c27b7"))(pin "9" (uuid "68873ed5-793c-448f-95ca-3974d3c4b2d2")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "U351") (unit 1)))))(wire (pts (xy 145 232.16) (xy 145 242.32)) (stroke (width 0) (type default)) (uuid "a097e89a-dbb4-4697-acbd-437db6e5d906"))(global_label "POE_GND" (shape passive) (at 145 242.32 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "741b8200-cb83-44de-a2e9-145f56bd24dc"))(wire (pts (xy 134.84 216.92) (xy 124.68 216.92)) (stroke (width 0) (type default)) (uuid "f0caf175-fd6b-41e0-aac1-dfb4fd244b0c"))(global_label "POE_24V" (shape passive) (at 124.68 216.92 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "b98c3a11-a5c1-40e2-8d55-0964c7e9d40c"))(wire (pts (xy 134.84 222) (xy 124.68 222)) (stroke (width 0) (type default)) (uuid "6a6363d1-371e-4d59-8af9-21af7d9721b4"))(global_label "POE_24V" (shape passive) (at 124.68 222 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "56b823e8-27d0-4f73-acc8-db4803ec1658"))(wire (pts (xy 134.84 227.08) (xy 124.68 227.08)) (stroke (width 0) (type default)) (uuid "2076f6bf-0278-40ed-8f1f-c8ef899988da"))(label "VCC12" (at 124.68 227.08 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "e5028685-7b02-4111-b753-6bae4eac85e9"))(wire (pts (xy 145 232.16) (xy 145 242.32)) (stroke (width 0) (type default)) (uuid "601f4b73-aad7-4711-aec9-53108f2f4e74"))(global_label "POE_GND" (shape passive) (at 145 242.32 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "2cd2d6b5-b940-4289-89d1-76193c134438"))(no_connect (at 155.16 227.08) (uuid "e301bfb0-adbb-448c-9c9c-cbf1b257dbc2"))(symbol (lib_id "MCS_PoE:C") (at 50 242 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "1a5a2749-3273-4d56-ba2d-b6efe74df362")
+      (property "Reference" "C360" (at 56.35 240.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "10uF / 50V" (at 56.35 243.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 50 242 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 50 242 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 50 242 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "9687117b-9ae5-428d-bd44-8cc5e2e29e72"))(pin "2" (uuid "ba303a66-7c80-46fe-8590-460ba75cc2e2")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C360") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 90 242 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "740a362b-e8b5-47e2-921a-a0a790a04289")
+      (property "Reference" "C361" (at 96.35 240.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "220nF / 50V" (at 96.35 243.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 90 242 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 90 242 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 90 242 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "efcf8062-d684-4fa6-a486-fb8b9c912104"))(pin "2" (uuid "36c58f83-2ce5-481e-a2ba-1efe51d4c3f8")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C361") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 145 265 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "0fb2f680-7043-4114-a890-060ca59bf494")
+      (property "Reference" "C362" (at 151.35 263.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "1uF / 16V" (at 151.35 266.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 145 265 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 145 265 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 145 265 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "6a309800-518d-47f6-97b3-7b483c321426"))(pin "2" (uuid "bb35feb5-df1c-446b-b76d-06fe21e8b56a")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C362") (unit 1)))))(wire (pts (xy 145 261.19) (xy 145 256.11)) (stroke (width 0) (type default)) (uuid "8fcce87d-292b-47e0-8121-efb4dd0364e0"))(label "VCC12" (at 145 256.11 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "ea416fe8-0c3f-4b46-a01f-3b49a79806be"))(wire (pts (xy 145 268.81) (xy 145 273.89)) (stroke (width 0) (type default)) (uuid "034ebef6-cc55-4e5d-b952-b7339741ad2c"))(global_label "POE_GND" (shape passive) (at 145 273.89 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "30d4b0d2-2b76-4b69-8eee-c459678ec4f6"))(symbol (lib_id "MCS_PoE:C") (at 195 207 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "72db6195-0c28-4c91-ba54-8f44dbe89667")
+      (property "Reference" "C363" (at 201.35 205.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100nF / 16V" (at 201.35 208.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 195 207 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 195 207 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 195 207 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "a1cae180-1bd4-481e-853a-06b4e3dc1a4d"))(pin "2" (uuid "b00e60e7-adcf-4116-8acb-9b02442ea142")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C363") (unit 1)))))(wire (pts (xy 50 238.19) (xy 50 230)) (stroke (width 0) (type default)) (uuid "b5e26fae-77f1-4f3a-9e37-5ac64b445623"))(wire (pts (xy 90 238.19) (xy 90 230)) (stroke (width 0) (type default)) (uuid "56f60a65-d08b-44de-99cd-5b453b5ce699"))(wire (pts (xy 50 230) (xy 90 230)) (stroke (width 0) (type default)) (uuid "b5f71c36-9237-4958-bafa-aa34f159c2e8"))(global_label "POE_24V" (shape passive) (at 50 230 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "5ba00c87-3dbd-40ea-b2ce-00669bddc76d"))(wire (pts (xy 50 245.81) (xy 50 256)) (stroke (width 0) (type default)) (uuid "7fa65356-6cb9-45e8-af32-231725fe7fff"))(wire (pts (xy 90 245.81) (xy 90 256)) (stroke (width 0) (type default)) (uuid "330d8187-7eac-4825-8b84-b6433de4bf5b"))(wire (pts (xy 50 256) (xy 90 256)) (stroke (width 0) (type default)) (uuid "3c08d281-33bc-4fa9-8ebd-b5e9f345e731"))(global_label "POE_GND" (shape passive) (at 50 256 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "9878b616-9ebd-46b7-882e-b2e7466aafb0"))(symbol (lib_id "MCS_PoE:L") (at 245 222 90) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "886750be-6bd8-4592-813a-5170d270c0a9")
+      (property "Reference" "L351" (at 245 217.555 90) (effects (font (size 1.27 1.27))  ))(property "Value" "27uH / Isat >= 5A" (at 245 220.095 90) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 245 222 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 245 222 90) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 245 222 90) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "580eb8a1-c575-4dc0-b7fe-e99b5b91289a"))(pin "2" (uuid "46d735df-0679-4fc5-8e8a-f524a3585e51")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "L351") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 250 266 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "9538dfb2-2564-46f4-954f-ba2bea3d941e")
+      (property "Reference" "C364" (at 256.35 264.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 25V" (at 256.35 267.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 250 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 250 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 250 266 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "e177bade-a298-49d5-adac-2cd59e6c84d3"))(pin "2" (uuid "30f69630-54ec-441d-b9c0-0c191a6728e8")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C364") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 290 266 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "75cc3a4b-5c45-4cff-8df7-21d712cffb46")
+      (property "Reference" "C365" (at 296.35 264.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 25V" (at 296.35 267.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 290 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 290 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 290 266 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "74a218d9-1c7a-4e59-9221-3475af81c2a2"))(pin "2" (uuid "3207e932-0a60-4ff0-ab09-34bb74e9221e")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C365") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 330 266 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "8fa1a8c2-4610-455b-acde-ef859fc6478f")
+      (property "Reference" "C366" (at 336.35 264.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 25V" (at 336.35 267.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 330 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 330 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 330 266 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "7d9070bc-7bf1-43e0-a031-4fa4eea5101f"))(pin "2" (uuid "e1576799-787c-4df2-b15f-f7e72ed52014")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C366") (unit 1)))))(symbol (lib_id "MCS_PoE:C") (at 370 266 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "2554dbc8-d101-42c1-8ae0-072c4716ac85")
+      (property "Reference" "C367" (at 376.35 264.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "22uF / 25V" (at 376.35 267.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 370 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 370 266 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 370 266 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "9382ddf3-3059-45a3-9b95-33256598eec6"))(pin "2" (uuid "f6807b83-358e-4cc2-b46e-be6f98fecbb0")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "C367") (unit 1)))))(wire (pts (xy 250 262.19) (xy 250 253)) (stroke (width 0) (type default)) (uuid "2db0a0aa-7783-4e52-800c-97791851f841"))(wire (pts (xy 290 262.19) (xy 290 253)) (stroke (width 0) (type default)) (uuid "a3481d21-732f-4cec-bb75-6079882903bb"))(wire (pts (xy 330 262.19) (xy 330 253)) (stroke (width 0) (type default)) (uuid "e69e4d77-4de3-4a60-9544-4723c488a946"))(wire (pts (xy 370 262.19) (xy 370 253)) (stroke (width 0) (type default)) (uuid "b013dcc1-e29d-4d35-b891-f9735c6710d6"))(wire (pts (xy 250 253) (xy 290 253)) (stroke (width 0) (type default)) (uuid "857dce80-a259-45d3-b627-e52c896734b4"))(wire (pts (xy 290 253) (xy 330 253)) (stroke (width 0) (type default)) (uuid "f9aa1fff-2e11-4e14-9374-0e937045a5b1"))(wire (pts (xy 330 253) (xy 370 253)) (stroke (width 0) (type default)) (uuid "f768e8f1-6443-44a1-b7f4-daddff44b192"))(junction (at 290 253) (diameter 0) (color 0 0 0 0) (uuid "05ab3eb6-55b7-4787-9ce7-f738fe6e5017"))(junction (at 330 253) (diameter 0) (color 0 0 0 0) (uuid "5d28bff6-2093-4770-ae86-7832f0ca196b"))(global_label "POE_12V" (shape passive) (at 250 253 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "f5435f2c-f97f-4c20-b262-ba058793fffd"))(wire (pts (xy 250 269.81) (xy 250 279)) (stroke (width 0) (type default)) (uuid "4f38435a-42bc-44a6-a4cd-052a9f978488"))(wire (pts (xy 290 269.81) (xy 290 279)) (stroke (width 0) (type default)) (uuid "112b1661-58ff-47c4-ab71-2dbf83b7c4f1"))(wire (pts (xy 330 269.81) (xy 330 279)) (stroke (width 0) (type default)) (uuid "b5d8b5d9-2683-4d25-a22d-4739d8e3a0cb"))(wire (pts (xy 370 269.81) (xy 370 279)) (stroke (width 0) (type default)) (uuid "28f55ee1-7ac4-4aa0-a072-179f56ed3cd8"))(wire (pts (xy 250 279) (xy 290 279)) (stroke (width 0) (type default)) (uuid "0405b512-07f3-43d5-9a07-edadfb6504d1"))(wire (pts (xy 290 279) (xy 330 279)) (stroke (width 0) (type default)) (uuid "8d0a9729-7ce1-485b-b808-18b6f1d0b06e"))(wire (pts (xy 330 279) (xy 370 279)) (stroke (width 0) (type default)) (uuid "9820d638-a6b0-41aa-a5a6-3363b730db8e"))(junction (at 290 279) (diameter 0) (color 0 0 0 0) (uuid "20299bee-2a49-462e-a9e5-83d837638555"))(junction (at 330 279) (diameter 0) (color 0 0 0 0) (uuid "8f4b5b08-b838-465d-8f56-865278ad959a"))(global_label "POE_GND" (shape passive) (at 250 279 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "423d240c-f5a2-4f08-a7b5-947540498dfc"))(symbol (lib_id "MCS_PoE:R") (at 335 202 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "32e63acd-c074-4638-9d6c-8e4c58fdca0c")
+      (property "Reference" "R360" (at 341.35 200.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "100k 1%" (at 341.35 203.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 335 202 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 335 202 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 335 202 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "0f3e4a96-9ddc-42dc-8189-480011603a15"))(pin "2" (uuid "38ae6555-e234-4d3d-b6cb-b4f4db533703")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "R360") (unit 1)))))(symbol (lib_id "MCS_PoE:R") (at 380 222 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "137ce19d-4b14-40b4-8d96-f532c5917daa")
+      (property "Reference" "R361" (at 386.35 220.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "9.09k 1%" (at 386.35 223.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 380 222 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 380 222 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 380 222 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "5cfd1d43-7eb8-4f0c-bf89-f87a952b9cc8"))(pin "2" (uuid "8c22b214-8af7-4083-b517-6611be24da8b")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "R361") (unit 1)))))(wire (pts (xy 380 225.81) (xy 380 230.89)) (stroke (width 0) (type default)) (uuid "9aa9655d-7170-406c-9af2-d133c126c7e0"))(global_label "POE_GND" (shape passive) (at 380 230.89 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "157238d1-1a88-494d-bbb6-754fd4d2a050"))(wire (pts (xy 155.16 219.46) (xy 185 219.46)) (stroke (width 0) (type default)) (uuid "1df73765-001d-4c52-8034-70645d0f8742"))(wire (pts (xy 185 219.46) (xy 185 222)) (stroke (width 0) (type default)) (uuid "979ee556-46e7-44c2-980c-834bee5152d6"))(wire (pts (xy 185 222) (xy 241.19 222)) (stroke (width 0) (type default)) (uuid "9ba61400-ce9d-437d-b6d9-5e1b7122c8f0"))(wire (pts (xy 195 210.81) (xy 195 222)) (stroke (width 0) (type default)) (uuid "675bf345-0f53-4284-8eeb-221fe88d3a69"))(wire (pts (xy 195 222) (xy 185 222)) (stroke (width 0) (type default)) (uuid "9172d573-28d6-4401-9514-7424f3ede152"))(junction (at 195 222) (diameter 0) (color 0 0 0 0) (uuid "ea83930e-e669-4c7c-91f3-8e00ad785d91"))(wire (pts (xy 155.16 216.92) (xy 175 216.92)) (stroke (width 0) (type default)) (uuid "0dc5c825-a9e7-4711-aa9e-9a6103b4661f"))(wire (pts (xy 175 216.92) (xy 175 194)) (stroke (width 0) (type default)) (uuid "04436be2-c4d9-42f1-bf50-552b8435583f"))(wire (pts (xy 175 194) (xy 195 194)) (stroke (width 0) (type default)) (uuid "14449ec3-3ef6-46d5-9bf7-13daece0416e"))(wire (pts (xy 195 194) (xy 195 203.19)) (stroke (width 0) (type default)) (uuid "30161e80-9437-4ca7-9289-7fb967a40ade"))(wire (pts (xy 248.81 222) (xy 295 222)) (stroke (width 0) (type default)) (uuid "b5232bf0-6c70-4a7e-83e1-841fade04dc5"))(wire (pts (xy 295 222) (xy 295 253)) (stroke (width 0) (type default)) (uuid "c9081c2d-d9bd-4f85-b3c8-5efde3277dfa"))(wire (pts (xy 295 253) (xy 250 253)) (stroke (width 0) (type default)) (uuid "37cdaa26-f99d-4667-8fe3-d560af0f894e"))(junction (at 295 253) (diameter 0) (color 0 0 0 0) (uuid "52f22ec1-fde3-40d4-b2fc-bb759d3c1931"))(wire (pts (xy 335 198.19) (xy 335 191)) (stroke (width 0) (type default)) (uuid "40d2b138-53b0-4c6b-a5c9-eb3724031df3"))(wire (pts (xy 335 191) (xy 295 191)) (stroke (width 0) (type default)) (uuid "034224ee-ad02-4c34-980d-3594a24620db"))(wire (pts (xy 295 191) (xy 295 222)) (stroke (width 0) (type default)) (uuid "268dbf32-0c57-4743-b79c-7ca4ebd86f93"))(junction (at 295 222) (diameter 0) (color 0 0 0 0) (uuid "209bae55-5ed1-47a1-b7de-56d752a663d6"))(wire (pts (xy 335 205.81) (xy 335 214)) (stroke (width 0) (type default)) (uuid "40bdfa5f-276c-4ee5-b0ec-b3aa8e15ba2b"))(wire (pts (xy 335 214) (xy 380 214)) (stroke (width 0) (type default)) (uuid "8e85f391-eb58-473a-a1fe-0928d433a128"))(wire (pts (xy 380 214) (xy 380 218.19)) (stroke (width 0) (type default)) (uuid "b9805b96-444c-42f1-9fa5-3571b8d65110"))(label "FB12" (at 335 214 0) (effects (font (size 1.016 1.016)) (justify left bottom)) (uuid "a74bcad0-3a42-4350-89cb-69cbd4dccd05"))(wire (pts (xy 155.16 224.54) (xy 210 224.54)) (stroke (width 0) (type default)) (uuid "519b6fdc-5a92-47a8-a16e-b603411e19b4"))(wire (pts (xy 210 224.54) (xy 210 239)) (stroke (width 0) (type default)) (uuid "7f1b58e8-fc07-4ab7-8ad9-f7142a629b3e"))(wire (pts (xy 210 239) (xy 350 239)) (stroke (width 0) (type default)) (uuid "088a8b32-afbe-445d-85df-32c71092940c"))(wire (pts (xy 350 239) (xy 350 214)) (stroke (width 0) (type default)) (uuid "fe9fa228-d082-456c-ad7c-72e943cc0982"))(junction (at 350 214) (diameter 0) (color 0 0 0 0) (uuid "31e79f9d-d020-4438-9987-1f5e8e99ea08"))(text "PG unused. EN tied to VIN. Internal compensation. 4 x 22uF nominal output capacitance." (at 25 295 0) (effects (font (size 1.143 1.143)) (justify left top)) (uuid "48846f0d-4f60-4ce9-9457-069965013ef1"))(rectangle (start 430 35) (end 580 190) (stroke (width 0.254) (type default)) (fill (type none)) (uuid "f903fafb-3844-4508-95e2-678cbd7bdd28"))(text "03  OUTPUT CONNECTOR / POWER BUDGET" (at 435 39 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "b3e81542-d83b-4fd2-8dc1-6cbbcbbbb201"))(symbol (lib_id "MCS_PoE:PORT4") (at 535 90 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "b1106b99-850d-43ed-b4a5-cb7d3fdea6b2")
+      (property "Reference" "J350" (at 520 66 0) (effects (font (size 1.27 1.27))  ))(property "Value" "Outputs / >= 2A contacts" (at 505 71 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 535 90 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 535 90 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 535 90 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "88608ffc-efd8-4f9a-a390-72f877a4c151"))(pin "2" (uuid "84f00e00-901d-461a-ae19-bf0ca0c4f503"))(pin "3" (uuid "e77082a7-1f6f-4d78-b897-f0a5a16b550e"))(pin "4" (uuid "8c9d9a49-5129-4625-a1b8-17fadbab2937")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "J350") (unit 1)))))(wire (pts (xy 519.76 82.38) (xy 494.36 82.38)) (stroke (width 0) (type default)) (uuid "1cdfdedd-6486-4013-888c-f2ab3e3302c5"))(global_label "POE_5V" (shape passive) (at 494.36 82.38 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "3606946a-dd2f-4c9c-b678-6e489c55f84e"))(wire (pts (xy 519.76 87.46) (xy 494.36 87.46)) (stroke (width 0) (type default)) (uuid "a2373833-c057-4907-8c6d-9f15ee8eb6b0"))(global_label "POE_12V" (shape passive) (at 494.36 87.46 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "38d65014-b7dd-4808-8a8b-515e5376f414"))(wire (pts (xy 519.76 92.54) (xy 494.36 92.54)) (stroke (width 0) (type default)) (uuid "6462915e-f29b-4393-b695-ad2f4a2348b1"))(global_label "POE_24V" (shape passive) (at 494.36 92.54 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "aff0585c-a7a1-4810-a2ae-a61626359ce1"))(wire (pts (xy 519.76 97.62) (xy 494.36 97.62)) (stroke (width 0) (type default)) (uuid "19250b24-61c3-42a9-9068-134636eb7ed1"))(global_label "POE_GND" (shape passive) (at 494.36 97.62 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "0c3d0d44-7c73-4cf8-a839-0b52886cba5c"))(text "5 V x 1 A = 5 W\n12 V x 1 A = 12 W\n24 V x 1 A = 24 W\nTotal useful output = 41 W\n\n24 V bus load ~1.79 A\n(at 90% buck efficiency).\nFlyback target capacity: 2.4 A.\nAll outputs share POE_GND." (at 440 120 0) (effects (font (size 1.524 1.524)) (justify left top)) (uuid "d2af2369-c71a-4702-a10e-56222c80ab75"))(rectangle (start 430 200) (end 580 320) (stroke (width 0.254) (type default)) (fill (type none)) (uuid "26cc0ed5-b347-47e0-88c6-7f9617ac09cb"))(text "04  ISOLATED PoE POWER STATUS" (at 435 204 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "ad76514b-327e-48b2-b7d4-1bd97f713b80"))(symbol (lib_id "MCS_PoE:PORT2") (at 550 258 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "dbddef78-fd58-40a5-8263-58cdf8125b5f")
+      (property "Reference" "J351" (at 525 241 0) (effects (font (size 1.27 1.27))  ))(property "Value" "Host status" (at 525 246 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 550 258 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 550 258 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 550 258 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "21698d8b-15b4-4ffa-9a6b-8fd7413fbeb2"))(pin "2" (uuid "95ef412d-7520-42d9-b056-7ed2a05c3ec9")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "J351") (unit 1)))))(wire (pts (xy 534.76 255.46) (xy 519.52 255.46)) (stroke (width 0) (type default)) (uuid "6183a9b6-7534-4e2b-9fb8-dfc0588612b7"))(global_label "POE_T2P" (shape passive) (at 519.52 255.46 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "85c94f65-040e-4843-83f6-07018b447fc1"))(wire (pts (xy 534.76 260.54) (xy 519.52 260.54)) (stroke (width 0) (type default)) (uuid "ac0657c8-def4-4026-af86-8c9dbc6a1068"))(global_label "POE_GND" (shape passive) (at 519.52 260.54 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "83204dd7-d4bd-462e-8f31-ff3f71c6f244"))(symbol (lib_id "MCS_PoE:R") (at 470 247 0) (unit 1)
+      (in_bom yes) (on_board no) (dnp no) (uuid "1c44a021-07f8-418a-88a1-419e45993d26")
+      (property "Reference" "R375" (at 476.35 245.73 0) (effects (font (size 1.27 1.27))  ))(property "Value" "10k" (at 476.35 248.27 0) (effects (font (size 1.27 1.27))  ))(property "Footprint" "" (at 470 247 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/user-guides/dc2476a-a.pdf" (at 470 247 0) (effects (font (size 1.27 1.27)) (hide yes) ))(property "Reference_design_ref" "" (at 470 247 0) (effects (font (size 1.27 1.27)) (hide yes) )) (pin "1" (uuid "903f1333-6dea-44da-b295-686d113dee2f"))(pin "2" (uuid "d55586e2-8300-459a-a46c-376a0654d2d8")) (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43/c47dbcaf-051f-4dbb-bb26-da1624c053b5" (reference "R375") (unit 1)))))(wire (pts (xy 470 243.19) (xy 470 238.11)) (stroke (width 0) (type default)) (uuid "e22c94f6-c7d5-462a-88ca-b887a1025108"))(global_label "POE_LOGIC_3V3" (shape passive) (at 470 238.11 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "7ea61d06-5960-4e72-a174-6a688453a3bb"))(wire (pts (xy 470 250.81) (xy 470 255.89)) (stroke (width 0) (type default)) (uuid "86c96849-2e0e-40cd-9e63-700e63eb5bb3"))(global_label "POE_T2P" (shape passive) (at 470 255.89 0) (effects (font (size 1.016 1.016)) (justify left)) (uuid "8b81f9f1-7bb1-4b4a-b70d-dd6dd5ea4722"))(text "POE_LOGIC_3V3 supplied by host.\nT2P is an optocoupler output.\nDecode negotiated power before\nallowing full external load.\nNo automatic load interlock yet." (at 440 279 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "64857382-d17c-4641-9298-4af10d430d9a"))(rectangle (start 15 330) (end 580 378) (stroke (width 0.254) (type default)) (fill (type none)) (uuid "fcd84e9d-edef-4b77-bad7-3fcc911f202f"))(text "05  DESIGN NOTES / BEFORE PCB INTEGRATION" (at 20 334 0) (effects (font (size 2.032 2.032)) (justify left top)) (uuid "b9f00d50-108f-45d2-b7f3-309ca15bac56"))(text "Prototype schematic only. Full-load hardware validation, thermal checks, EMI and PoE power-demotion handling remain.\nBuck values: TI LMR33620 Table 9-2, 400 kHz. Verify effective MLCC capacitance under DC bias and hot inductor saturation.\nKeep 24 V switching transients below the regulators 36 V operating limit. No connector is joined to the existing board nets.\nThe current Sheet_3 Ethernet transformer / Bob Smith termination must be revised for 4-pair PoE++ before connection." (at 25 343 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "16234039-c1bc-488e-9182-ac432d3a1624")))

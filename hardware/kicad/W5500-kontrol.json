@@ -1,0 +1,10 @@
+{
+  "components": 52,
+  "verified_physical_pins": 176,
+  "net_group_mismatches": [],
+  "duplicate_references": [],
+  "other_sheets_changed": [],
+  "pcb_unchanged": true,
+  "all_sheet3_symbols_excluded_from_pcb": true,
+  "sheet3_erc": "No findings"
+}

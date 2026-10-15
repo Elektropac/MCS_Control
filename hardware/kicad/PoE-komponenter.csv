@@ -1,0 +1,58 @@
+Reference,Value,TI reference,Symbol,Footprint,Excluded from PCB
+J400,Fra Ethernet / PoE,J0,PoE_Taps,,True
+D402,HD01,D2,HD01,,True
+D403,HD01,D3,HD01,,True
+FB401,220R @ 100MHz,F1,FerriteBead,,True
+FB402,220R @ 100MHz,F2,FerriteBead,,True
+C424,1nF / 100V,C24,C,,True
+C417,1nF / 100V,C17,C,,True
+D401,SMAJ58A,D1,D_TVS,,True
+C423,100nF / 100V,C23,C,,True
+L401,10uH LPS4012-103ML,L1,L,,True
+C408,22uF / 100V,C8,C_Polarized,,True
+C409,2.2uF / 100V,C9,C,,True
+C410,2.2uF / 100V,C10,C,,True
+T402,POE13P-50L,T2,POE13P_50L,,True
+R406,39k / 0.1W,R6,R,Resistor_SMD:R_0805_2012Metric,True
+C411,100nF / 100V,C11,C,,True
+D408,MURA120,D8,D,,True
+Q402,FDS2582 / 150V,Q2,FDS2582,,True
+R418,0.39R / 0.5W,R18,R,Resistor_SMD:R_2010_5025Metric,True
+R409,10R,R9,R,Resistor_SMD:R_0805_2012Metric,True
+D410,BAS16,D10,BAS16,,True
+C415,220nF / 25V,C15,C,,True
+C416,10uF / 25V,C16,C_Polarized,,True
+D404,B540 / 5A 40V,D4,D_Schottky,,True
+R405,20R / 0.5W,R5,R,Resistor_SMD:R_2010_5025Metric,True
+C407,680pF / 50V,C7,C,,True
+L402,1uH LPS4012-102NL,L2,L,,True
+C412,47uF / 10V,C12,C,,True
+C413,47uF / 10V,C13,C,,True
+C414,100uF / 6.3V,C14,C_Polarized,,True
+C428,1uF / 10V,C28,C,,True
+J403,5 V / 2 A,J3,OUT_5V,,True
+C406,2.2nF / Y-rated*,C6,C,,True
+C427,2.2nF / Y-rated*,C27,C,,True
+U401,TPS23753APW,U1,TPS23753A,Package_SO:TSSOP-14_4.4x5mm_P0.65mm,True
+R407,24.9k 1%,R7,R,Resistor_SMD:R_0603_1608Metric,True
+R412,90.9R 1% / Class 3,R12,R,Resistor_SMD:R_0603_1608Metric,True
+R411,80.6k 1%,R11,R,Resistor_SMD:R_0603_1608Metric,True
+R410,59k 1% / 250kHz,R10,R,Resistor_SMD:R_0603_1608Metric,True
+R413,10R,R13,R,Resistor_SMD:R_0603_1608Metric,True
+R420,1k,R20,R,Resistor_SMD:R_0603_1608Metric,True
+C420,100nF / 16V,C20,C,,True
+R423,2k,R23,R,Resistor_SMD:R_0603_1608Metric,True
+C421,47nF / 16V,C21,C,,True
+R428,402R,R28,R,Resistor_SMD:R_0603_1608Metric,True
+U402,TCMT1107,U2,TCMT1107,,True
+R414,0R,R14,R,Resistor_SMD:R_0603_1608Metric,True
+R422,1k,R22,R,Resistor_SMD:R_0603_1608Metric,True
+R416,10k,R16,R,Resistor_SMD:R_0603_1608Metric,True
+D412,BAT54S,D12,BAT54S,,True
+C422,1uF / 10V,C22,C,,True
+U403,TLV431ACDBVR,U3,TLV431A_DBV,Package_TO_SOT_SMD:SOT-23-5,True
+R419,44.2k 1%,R19,R,Resistor_SMD:R_0603_1608Metric,True
+R424,14.3k 1%,R24,R,Resistor_SMD:R_0603_1608Metric,True
+C418,100pF / 16V,C18,C,,True
+R421,10k,R21,R,Resistor_SMD:R_0603_1608Metric,True
+C419,6.8nF / 16V,C19,C,,True

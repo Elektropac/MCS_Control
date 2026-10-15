@@ -1,0 +1,53 @@
+Reference,Value,Waveshare reference,Symbol,Footprint,Excluded from PCB
+U32,W5500,U7,W5500,Package_QFP:LQFP-48_7x7mm_P0.5mm,yes
+R208,12.4k 1%,R18,R,,yes
+R209,10k,R51,R,,yes
+C111,4.7uF,C32,C,,yes
+C112,10nF,C35,C,,yes
+T200,H1102NLT,T1,H1102NLT,,yes
+C113,6.8nF,C61,C,,yes
+C114,6.8nF,C62,C,,yes
+R212,82,R10,R,,yes
+R213,82,R11,R,,yes
+C115,22uF,C57,C,,yes
+C116,22uF,C58,C,,yes
+R214,47,R43,R,,yes
+R215,47,R44,R,,yes
+R216,47,R45,R,,yes
+J200,HC-RJ45,RJ1,HC_RJ45,,yes
+J201,PoE taps (optional),P1,POE_TAPS,,yes
+R217,75,CON3,R,,yes
+R218,75,CON4,R,,yes
+R219,75,CON9,R,,yes
+R220,75,CON10,R,,yes
+C117,100nF,C55,C,,yes
+C118,1nF / 2kV,CON5,C,,yes
+C119,100nF,CON13,C,,yes
+C120,100nF,CON14,C,,yes
+C121,100nF,CON15,C,,yes
+C122,100nF,CON16,C,,yes
+L200,600R @ HF,L8,FerriteBead,,yes
+C102,100nF,C65,C,,yes
+C109,100nF,C33,C,,yes
+C110,10uF,C34,C,,yes
+C103,100nF,C26,C,,yes
+C104,100nF,C27,C,,yes
+C105,100nF,C28,C,,yes
+C106,100nF,C29,C,,yes
+C107,100nF,C30,C,,yes
+C108,100nF,C31,C,,yes
+X2,25MHz,X2,Crystal_GND24,,yes
+R206,0,R16,R,,yes
+C100,18pF,C25,C,,yes
+C101,18pF,C24,C,,yes
+R207,1M,R17,R,,yes
+R210,600,R20,R,,yes
+D200,LINK,L4,LED,,yes
+R211,600,R21,R,,yes
+D201,ACT,L5,LED,,yes
+R200,20,R22,R,,yes
+R201,20,R23,R,,yes
+R202,20,R24,R,,yes
+R203,20,R25,R,,yes
+R204,20,R26,R,,yes
+R205,20,R27,R,,yes

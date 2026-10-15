@@ -1,0 +1,340 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "fb0a4143-171a-4458-9d1c-a721ad981f43")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 30.480000 83.820000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "01ead827-b4bc-4854-819f-4fc7ea15a285")
+		(property "Sheetname" "IO Expander"
+			(at 30.480000 83.108400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "IO Expander.kicad_sch"
+			(at 30.480000 88.214600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30.480000 66.040000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "53c025f1-6fff-4863-b07b-dcf01c5ccc18")
+		(property "Sheetname" "Sheet_2"
+			(at 30.480000 65.328400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Sheet_2.kicad_sch"
+			(at 30.480000 70.434600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30.480000 48.260000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "58707b5b-4ee3-488b-a19a-434a6d20aa25")
+		(property "Sheetname" "Serial"
+			(at 30.480000 47.548400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Serial.kicad_sch"
+			(at 30.480000 52.654600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30.480000 57.150000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "59f96187-ccc1-48f8-bbe1-12f51ddee709")
+		(property "Sheetname" "Inputs"
+			(at 30.480000 56.438400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Inputs.kicad_sch"
+			(at 30.480000 61.544600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30.480000 74.930000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "89afc3d1-1d23-41f9-87fa-806f5a9c85f9")
+		(property "Sheetname" "Sheet_3"
+			(at 30.480000 74.218400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Sheet_3.kicad_sch"
+			(at 30.480000 79.324600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30.480000 30.480000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "be5d747d-f997-4de8-8486-a9e3a548a2c9")
+		(property "Sheetname" "Sheet_1"
+			(at 30.480000 29.768400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Sheet_1.kicad_sch"
+			(at 30.480000 34.874600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "1")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 30.480000 39.370000)
+		(size 12.7 3.81)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "ebb05a16-c4d4-4aad-abea-afbcc3b8954a")
+		(property "Sheetname" "Isolated_Powersupply"
+			(at 30.480000 38.658400 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Isolated_Powersupply.kicad_sch"
+			(at 30.480000 43.764600 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a"
+				(path "/fb0a4143-171a-4458-9d1c-a721ad981f43"
+					(page "2")
+				)
+			)
+		)
+	)
+	(embedded_fonts no)
+(sheet (at 115 30) (size 65 20) (stroke (width 0) (type default)) (fill (color 0 0 0 0)) (uuid "2695c255-f159-4e1e-b2fc-9efa35b69d11")
+ (property "Sheetname" "PoE_Input" (at 115 29 0) (effects (font (size 1.27 1.27)) (justify left bottom)))
+ (property "Sheetfile" "PoE_Input.kicad_sch" (at 115 51 0) (effects (font (size 1.27 1.27)) (justify left top)))
+ (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43" (page "9")))))(sheet (at 115 70) (size 65 20) (stroke (width 0) (type default)) (fill (color 0 0 0 0)) (uuid "ad7502e3-af31-45bc-9adf-b73c7e22b829")
+ (property "Sheetname" "PoE_24V" (at 115 69 0) (effects (font (size 1.27 1.27)) (justify left bottom)))
+ (property "Sheetfile" "PoE_24V.kicad_sch" (at 115 91 0) (effects (font (size 1.27 1.27)) (justify left top)))
+ (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43" (page "10")))))(sheet (at 115 110) (size 65 20) (stroke (width 0) (type default)) (fill (color 0 0 0 0)) (uuid "c47dbcaf-051f-4dbb-bb26-da1624c053b5")
+ (property "Sheetname" "PoE_Outputs" (at 115 109 0) (effects (font (size 1.27 1.27)) (justify left bottom)))
+ (property "Sheetfile" "PoE_Outputs.kicad_sch" (at 115 131 0) (effects (font (size 1.27 1.27)) (justify left top)))
+ (instances (project "MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a" (path "/fb0a4143-171a-4458-9d1c-a721ad981f43" (page "11"))))))

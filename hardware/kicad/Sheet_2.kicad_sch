@@ -1,0 +1,9 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "ca2f5146-a6ec-4c51-b870-e5fdcfeae7be")
+	(paper "A4")
+	(title_block (title "MCS-Control - Sheet_2") (comment 1 "Jesper Møller") (comment 2 "Imported from EasyEDA"))
+	(lib_symbols)
+)
