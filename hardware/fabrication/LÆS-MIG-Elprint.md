@@ -39,8 +39,10 @@ bygget efter) — de er identiske.
 
 ## Hele KiCad-projektet
 
-I har nu adgang til hele KiCad-projektet, så I kan slå alt op direkte:
-`hardware/kicad/` i repoet. Gerber kan genereres på forespørgsel.
+Hele KiCad-projektet er **vedlagt i pakken** under `kicad-projekt/`, så I kan slå alt op
+direkte (schematic, PCB, symbol- og footprint-biblioteker). Åbn
+`kicad-projekt/MCS-Control_6fa4f290d14a4191b5bd4ad91b5ee33a.kicad_pro` i KiCad 10.
+Hold mappen samlet (biblioteker peges på via relative stier). Gerber kan sendes på forespørgsel.
 
 ## Spørgsmål besvaret
 
