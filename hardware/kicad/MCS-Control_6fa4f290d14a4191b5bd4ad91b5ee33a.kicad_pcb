@@ -132152,4 +132152,26 @@
 		(uuid "c94548ea-4bf7-4dbc-bbfd-905349b6d586")
 	)
 	(embedded_fonts no)
+
+	(gr_line
+		(start 100 60)
+		(end 200 60)
+		(stroke (width 0.2) (type solid))
+		(layer "Edge.Cuts")
+		(uuid "b1000001-0000-0000-0000-000000000001")
+	)
+	(gr_line
+		(start 200 60)
+		(end 200 160)
+		(stroke (width 0.2) (type solid))
+		(layer "Edge.Cuts")
+		(uuid "b1000001-0000-0000-0000-000000000002")
+	)
+	(gr_line
+		(start 200 160)
+		(end 100 160)
+		(stroke (width 0.2) (type solid))
+		(layer "Edge.Cuts")
+		(uuid "b1000001-0000-0000-0000-000000000003")
+	)
 )
