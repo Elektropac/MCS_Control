@@ -220,4 +220,10 @@
 		(uuid "1e79aa7f-4a9b-4943-b322-e5247e029fdb")
 	)
 	(embedded_fonts no)
+
+	(model "${KICAD8_3DMODEL_DIR}/Package_SO.3dshapes/SOP-8_6.605x9.655mm_P2.54mm.step"
+		(offset (xyz 0 0 0))
+		(scale (xyz 1 1 1))
+		(rotate (xyz 0 0 0))
+	)
 )
