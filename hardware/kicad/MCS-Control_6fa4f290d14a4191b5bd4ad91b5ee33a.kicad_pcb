@@ -132151,8 +132151,6 @@
 		(net "C4_2")
 		(uuid "c94548ea-4bf7-4dbc-bbfd-905349b6d586")
 	)
-	(embedded_fonts no)
-
 	(gr_line
 		(start 100 60)
 		(end 200 60)
@@ -132174,4 +132172,5 @@
 		(layer "Edge.Cuts")
 		(uuid "b1000001-0000-0000-0000-000000000003")
 	)
+	(embedded_fonts no)
 )
