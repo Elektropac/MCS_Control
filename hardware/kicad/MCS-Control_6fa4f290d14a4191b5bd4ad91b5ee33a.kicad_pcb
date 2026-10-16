@@ -29,7 +29,7 @@
 		(35 "F.Fab" user "3DModel")
 		(33 "B.Fab" user "BottomAssembly")
 		(39 "User.1" user "DRCError")
-		(41 "User.2" user)
+		(41 "User.2" user "IsolationSlot")
 		(43 "User.3" user "ComponentShapeLayer")
 		(45 "User.4" user "LeadShapeLayer")
 	)
@@ -105901,7 +105901,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "2dc3cd9a-8c11-4726-b1dc-0ef0e9fe206e")
 	)
 	(gr_line
@@ -105911,7 +105911,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "aeb4d511-caad-4ba5-a284-1184351803cc")
 	)
 	(gr_line
@@ -105921,7 +105921,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "a499cac1-e709-4c4d-a9f9-6cc2e72fdb54")
 	)
 	(gr_line
@@ -105931,7 +105931,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "7db89a95-5d12-438b-ac6a-5e7c20bd4532")
 	)
 	(gr_line
@@ -105941,7 +105941,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "11f362ea-19e6-4831-9c8a-a89cdfbf0405")
 	)
 	(gr_line
@@ -105951,7 +105951,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "3e101efb-05c7-42f3-948a-9e2c43788f37")
 	)
 	(gr_line
@@ -105961,7 +105961,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "da7cdf9c-d302-465b-b501-02f7dc18c27e")
 	)
 	(gr_line
@@ -105971,7 +105971,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "ca1f023e-901b-43ca-9cca-99b877316378")
 	)
 	(gr_line
@@ -105981,7 +105981,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "570cb3f7-fc11-43c9-9ff7-aa626e6718ef")
 	)
 	(gr_line
@@ -105991,7 +105991,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(layer "Edge.Cuts")
+		(layer "User.2")
 		(uuid "9cddf5ab-91c8-48f7-8e07-a35deecb0abe")
 	)
 	(gr_text "Relay_B"
