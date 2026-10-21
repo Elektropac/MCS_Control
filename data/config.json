@@ -1,9 +1,5 @@
 {
-  // Test config: 1 probe + 1 pump group, DHCP.
-  "connection": { "settings": { "ethernet": { "mode": "dhcp" } } },
-
   "config": {
-    "guide": "cloudgauge2",
     "connection": {
         "server": {
             "local": {
@@ -11,7 +7,7 @@
                 "port": 3000
             },
             "global": {
-                "host": "echo.websocket.org",
+                "host": "stage.nexus.mcsbackend.com",
                 "port": 443
             }
         },
@@ -39,36 +35,5 @@
   },
 
   "groups": [
-    {
-      "id": "probe_1",
-      "type": "probe",
-      "probe": {
-        "name": "Probe 1",
-        "input": "A1",
-        "probe_type": "mcs_level",
-        "media": "Diesel",
-        "density": 0.84,
-        "alarm_unit": "%",
-        "low_level": 10,
-        "overfill": 95,
-        "lut": [ [0,0],[1000,2000],[2000,4000],[3000,5000] ]
-      },
-      "rules": []
-    },
-    {
-      "id": "fueling_1",
-      "type": "pump",
-      "channel": "B",
-      "pump": {
-        "name": "Pump 1",
-        "channel": "B",
-        "nozzle": "B1",
-        "pulse": "B2",
-        "relay": "relay_b",
-        "pulses_per_litre": 10,
-        "preset_litres": 0
-      },
-      "rules": []
-    }
   ]
 }
