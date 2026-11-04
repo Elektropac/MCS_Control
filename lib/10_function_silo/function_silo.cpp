@@ -133,6 +133,10 @@ namespace function_silo
             ESP.restart();
             return "{\"result\": \"Rebooting...\"}";
         }
+        else if (function_name == "ping")
+        {
+            return "{\"result\":\"pong\"}";
+        }
 
         // -- poseidon io --
 

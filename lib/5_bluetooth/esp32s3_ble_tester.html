@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1120" />
+  <title>ESP32-S3 BLE Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1120;
+      --surface: #121d30;
+      --surface2: #18263b;
+      --stroke: #2c3b51;
+      --text: #f1f5fb;
+      --muted: #98a9c0;
+      --teal: #53dac3;
+      --red: #ff8282;
+      --amber: #ffc87a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 26px 24px 42px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      color: var(--teal);
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 27px;
+      margin: 4px 0 2px;
+      letter-spacing: -.035em;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .subtle,
+    .help {
+      color: var(--muted);
+    }
+
+    .help {
+      font-size: 12px;
+      margin-top: 7px;
+      line-height: 1.55;
+    }
+
+    .status {
+      border: 1px solid var(--stroke);
+      padding: 8px 12px;
+      border-radius: 100px;
+      font-weight: 650;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 100%;
+      background: #708198;
+      flex-shrink: 0;
+    }
+
+    .status.connected .dot {
+      background: var(--teal);
+      box-shadow: 0 0 0 4px #53dac320;
+    }
+
+    .status.connected {
+      color: var(--teal);
+    }
+
+    .status.busy .dot {
+      background: var(--amber);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(275px, 310px) minmax(340px, 1fr) minmax(340px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--stroke);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #c4d1e1;
+      margin-bottom: 6px;
+    }
+
+    .field {
+      margin-bottom: 15px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--stroke);
+      border-radius: 9px;
+      background: #0d1828;
+      color: var(--text);
+      padding: 11px 12px;
+      font: inherit;
+      outline: 0;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px #53dac321;
+    }
+
+    textarea {
+      min-height: 75px;
+      resize: vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #71859e;
+    }
+
+    button {
+      border: 1px solid var(--stroke);
+      background: var(--surface2);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 9px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #22334b;
+      border-color: #53718c;
+    }
+
+    button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #09251f;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: #a0f1e3;
+    }
+
+    button.danger {
+      color: #ffaaaa;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .actions>button {
+      flex: 1;
+    }
+
+    .info {
+      background: #0b1728;
+      border: 1px dashed #394c65;
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .info strong {
+      color: var(--text);
+    }
+
+    .notice {
+      border-color: #775a31;
+      background: #241e1a;
+      color: #f6c994;
+    }
+
+    .device-name {
+      font-weight: 800;
+      font-size: 17px;
+      overflow-wrap: anywhere;
+    }
+
+    .quality-card {
+      margin-top: 14px;
+      padding: 11px 12px;
+      background: #0d1828;
+      border: 1px solid var(--stroke);
+      border-radius: 9px;
+    }
+
+    .quality-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+    }
+
+    .quality-value {
+      margin-top: 4px;
+      font-weight: 750;
+    }
+
+    .quality-value.excellent,
+    .quality-value.good {
+      color: var(--teal);
+    }
+
+    .quality-value.fair {
+      color: var(--amber);
+    }
+
+    .quality-value.weak {
+      color: var(--red);
+    }
+
+    .mono {
+      font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .uuid {
+      color: var(--muted);
+      font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .service {
+      border-bottom: 1px solid var(--stroke);
+      padding: 16px 18px 10px;
+    }
+
+    .service:last-child {
+      border-bottom: 0;
+    }
+
+    .service-name {
+      font-size: 13px;
+      font-weight: 750;
+      margin-bottom: 2px;
+    }
+
+    .characteristic {
+      display: block;
+      text-align: left;
+      width: 100%;
+      margin: 10px 0;
+      border: 1px solid var(--stroke);
+      padding: 12px;
+      background: #101b2c;
+      border-radius: 10px;
+    }
+
+    .characteristic.active {
+      border-color: var(--teal);
+      background: #102a31;
+    }
+
+    .characteristic .uuid {
+      margin-top: 3px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 9px;
+    }
+
+    .chip {
+      padding: 2px 6px;
+      border-radius: 5px;
+      font: 10px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+      color: #b8c9dc;
+      background: #243247;
+    }
+
+    .chip.on {
+      background: #184d44;
+      color: #80f0d7;
+    }
+
+    .placeholder {
+      text-align: center;
+      padding: 45px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .placeholder svg {
+      display: block;
+      margin: 0 auto 12px;
+      opacity: .4;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      background: #0d1828;
+      border: 1px solid var(--stroke);
+      border-radius: 9px;
+      padding: 11px 6px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .details-title {
+      font-size: 14px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .details-meta {
+      margin: 4px 0 16px;
+    }
+
+    .readout {
+      display: grid;
+      gap: 9px;
+      margin: 15px 0;
+    }
+
+    .readout>div {
+      padding: 10px 12px;
+      background: #0c1929;
+      border: 1px solid var(--stroke);
+      border-radius: 9px;
+    }
+
+    .readout .label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .value {
+      font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      min-height: 19px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: #a6b7cd;
+      margin: 18px 0 10px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 110px;
+      gap: 8px;
+    }
+
+    .log {
+      height: 290px;
+      overflow: auto;
+      padding: 12px 15px;
+      background: #0a1525;
+      font: 11px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .line {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      margin-bottom: 3px;
+    }
+
+    .ts {
+      color: #7287a3;
+    }
+
+    .line.error {
+      color: var(--red);
+    }
+
+    .line.rx {
+      color: #7fe9d6;
+    }
+
+    .line.tx {
+      color: #ffd392;
+    }
+
+    .line.info {
+      background: none;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      color: #cad6e6;
+      font: inherit;
+    }
+
+    .inline-btn {
+      padding: 5px 9px;
+      font-size: 11px;
+    }
+
+    .foot {
+      text-align: center;
+      margin-top: 20px;
+      color: #7e90a7;
+      font-size: 12px;
+    }
+
+    @media (max-width:1100px) {
+      .layout {
+        grid-template-columns: minmax(280px, .8fr) minmax(350px, 1.2fr);
+      }
+
+      .right {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+    }
+
+    @media (max-width:720px) {
+      .shell {
+        padding: 18px 12px 30px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .layout,
+      .right {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .layout>*,
+      .right>* {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="eyebrow">Hardware / Diagnostics</div>
+        <h1>ESP32-S3 BLE Lab</h1>
+        <p class="subtle">Browser-based GATT explorer · No dependencies</p>
+      </div>
+      <div id="status" class="status"><span class="dot"></span><span id="statusText">Disconnected</span></div>
+    </header>
+
+    <div id="environmentWarning" class="info notice" style="display:none;margin-bottom:16px"></div>
+
+    <div class="layout">
+      <aside class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Connection</h2>
+          </div>
+          <div class="panel-body">
+            <div class="field"><label for="prefix">Device name prefix <span
+                  class="subtle">(optional)</span></label><input id="prefix" value="Control_" type="text"
+                placeholder="e.g. ESP32" autocomplete="off" />
+              <p class="help">Leave blank to see all nearby BLE devices.</p>
+            </div>
+            <div class="field"><label for="uuids">GATT service UUIDs</label><textarea id="uuids" spellcheck="false"
+                placeholder="12345678-1234-1234-1234-123456789abc"></textarea>
+              <p class="help">Main, secondary, selector, and state services are included automatically. Add other service UUIDs, separated
+                by commas or newlines, <strong>before connecting</strong>. Standard battery and device info services are
+                included automatically.</p>
+            </div>
+            <div class="actions"><button class="primary" id="connect">Scan &amp; connect</button><button class="danger"
+                id="disconnect" disabled>Disconnect</button></div>
+            <div class="stat-row">
+              <div class="stat">
+                <div class="stat-number" id="nServices">0</div>
+                <div class="stat-label">Services</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number" id="nRx">0</div>
+                <div class="stat-label">RX packets</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number" id="nTx">0</div>
+                <div class="stat-label">TX packets</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Device</h2>
+          </div>
+          <div class="panel-body" id="deviceInfo">
+            <div class="subtle">Nothing connected yet.</div>
+          </div>
+        </section>
+        <div class="info"><strong>Tip:</strong> Web Bluetooth can only access services you authorize at connection time.
+          If your custom GATT service is missing, enter its UUID above, disconnect, and scan again. This tests BLE GATT,
+          not Bluetooth Classic / SPP.</div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>GATT Services &amp; Characteristics</h2><span class="subtle" id="charCount" style="font-size:11px">0
+            characteristics</span>
+        </div>
+        <div id="services">
+          <div class="placeholder">Connect to discover authorized GATT services.</div>
+        </div>
+      </section>
+
+      <div class="stack right">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Characteristic I/O</h2>
+          </div>
+          <div id="details" class="panel-body">
+            <div class="placeholder" style="padding:35px 0">Select a characteristic to read, write, or subscribe.</div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Event log</h2>
+            <div class="actions"><button class="inline-btn" id="copyLog">Copy</button><button class="inline-btn"
+                id="clearLog">Clear</button></div>
+          </div>
+          <div class="log" id="log" role="log" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+    <p class="foot">Chrome or Edge with Web Bluetooth · HTTPS or localhost · BLE device must advertise/connect as a GATT
+      peripheral</p>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (id) => document.getElementById(id);
+      const state = { device: null, server: null, connecting: false, chars: new Map(), services: 0, selected: null, rx: 0, tx: 0, rssi: null, rssiUnavailable: false, advertisementController: null, logLines: [] };
+      const knownServices = [
+        'battery_service', 'device_information',
+        '4fafc201-1fb5-459e-8fcc-c5c9c331914b', // main
+        '2d145a50-eadc-4505-bf0b-17a6c89d3758', // secondary
+        '1b7819c2-1390-4ac1-b497-6e87b8541ea4', // selector
+        '05ffec94-33b4-4065-83c5-381e1a021071', // state
+      ];
+      const names = {
+        // main service and characteristics
+        '4fafc201-1fb5-459e-8fcc-c5c9c331914b': 'Main serial interface',
+        '2c3b4d5e-6f7a-8b9c-d0e1-f2a3b4c5d6e7': 'Input',
+        '1b9a473a-4493-4536-8b2b-9d4133488256': 'Output',
+
+        // secondary service and characteristics
+        '2d145a50-eadc-4505-bf0b-17a6c89d3758': 'Secondary serial interface',
+        '6f70c48b-72f0-42e5-9a07-a9147e6c9dba': 'Secondary Input',
+        'a2ce29fb-bdea-436e-a5e2-497a764ce4ce': 'Secondary Output',
+
+        // available service and characteristics
+        '1b7819c2-1390-4ac1-b497-6e87b8541ea4': 'Selector Service',
+        '6e01896c-0aa0-4418-9cbf-ba4c276f3009': 'Available Characteristic',
+
+        // state service and characteristics
+        '05ffec94-33b4-4065-83c5-381e1a021071': 'State Service',
+        'eb9fad1c-011d-4fb7-b21a-82ca6f8208c9': 'State Characteristic',
+
+      };
+      const displayName = (uuid) => names[uuid.toLowerCase()] || 'Custom UUID';
+      const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const prettyError = (e) => e?.message || String(e);
+      const connected = () => Boolean(state.device?.gatt?.connected);
+
+      function log(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString(undefined, { hour12: false });
+        const entry = `[${timestamp}] ${message}`;
+        state.logLines.push(entry);
+        if (state.logLines.length > 1500) state.logLines.shift();
+        const node = document.createElement('div');
+        node.className = 'line ' + type;
+        const time = document.createElement('span');
+        time.className = 'ts'; time.textContent = `[${timestamp}] `;
+        node.append(time, document.createTextNode(message));
+        $('log').append(node);
+        while ($('log').children.length > 500) $('log').firstChild.remove();
+        $('log').scrollTop = $('log').scrollHeight;
+      }
+
+      function setStatus(label, cssClass = '') {
+        $('status').className = 'status ' + cssClass;
+        $('statusText').textContent = label;
+      }
+
+      function updateButtons() {
+        $('connect').disabled = state.connecting || !navigator.bluetooth;
+        $('connect').textContent = state.connecting ? 'Connecting…' : connected() ? 'Switch device' : 'Scan & connect';
+        $('disconnect').disabled = !connected();
+        $('prefix').disabled = state.connecting;
+        $('uuids').disabled = state.connecting;
+        $('nServices').textContent = state.services;
+        $('nRx').textContent = state.rx;
+        $('nTx').textContent = state.tx;
+        $('charCount').textContent = `${state.chars.size} characteristic${state.chars.size === 1 ? '' : 's'}`;
+      }
+
+      function normalizedServices(input) {
+        const raw = input.trim().split(/[\s,;]+/).filter(Boolean);
+        const uuids = [];
+        for (const value of raw) {
+          let id = value;
+          // Also accept convenient 16/32-bit numeric UUID aliases like 180F.
+          if (/^(?:0x)?[0-9a-f]{4,8}$/i.test(id)) id = parseInt(id.replace(/^0x/i, ''), 16);
+          try { uuids.push(BluetoothUUID.getService(id)); }
+          catch { throw new Error(`Invalid service UUID: ${value}`); }
+        }
+        return [...new Set([...knownServices, ...uuids])];
+      }
+
+      function onDisconnected(event) {
+        if (event.target !== state.device) return; // Ignore disconnects from a previously selected device.
+        const name = state.device?.name || 'Device';
+        stopAdvertisementWatch();
+        state.server = null;
+        state.chars.clear(); state.services = 0; state.selected = null;
+        renderServices(); renderDetails(); renderDevice(); updateButtons();
+        setStatus('Disconnected');
+        log(`${name} disconnected`, 'error');
+      }
+
+      function stopAdvertisementWatch() {
+        state.advertisementController?.abort();
+        state.advertisementController = null;
+        state.rssi = null;
+        state.rssiUnavailable = false;
+      }
+
+      function watchAdvertisementRssi(device) {
+        stopAdvertisementWatch();
+        if (typeof device.watchAdvertisements !== 'function') {
+          state.rssiUnavailable = true;
+          return;
+        }
+
+        const controller = new AbortController();
+        state.advertisementController = controller;
+        device.addEventListener('advertisementreceived', event => {
+          if (device !== state.device || !Number.isFinite(event.rssi)) return;
+          state.rssi = event.rssi;
+          renderDevice();
+        });
+        device.watchAdvertisements({ signal: controller.signal }).catch(e => {
+          if (controller.signal.aborted || device !== state.device) return;
+          state.rssiUnavailable = true;
+          renderDevice();
+          log(`Advertisement RSSI unavailable: ${prettyError(e)}`);
+        });
+      }
+
+      async function scanAndConnect() {
+        if (state.connecting || !navigator.bluetooth) return;
+        let services;
+        try { services = normalizedServices($('uuids').value); }
+        catch (e) { log(prettyError(e), 'error'); return; }
+
+        const prefix = $('prefix').value.trim();
+        const options = prefix ? { filters: [{ namePrefix: prefix }], optionalServices: services }
+          : { acceptAllDevices: true, optionalServices: services };
+
+        // requestDevice must be invoked from this click's user gesture.
+        state.connecting = true; updateButtons(); setStatus('Selecting device', 'busy');
+        try {
+          const chosen = await navigator.bluetooth.requestDevice(options);
+          if (connected()) state.device.gatt.disconnect();
+          stopAdvertisementWatch();
+          state.device = chosen;
+          chosen.addEventListener('gattserverdisconnected', onDisconnected);
+          watchAdvertisementRssi(chosen);
+          setStatus('Connecting', 'busy');
+          log(`Selected: ${chosen.name || '(unnamed)'} (${chosen.id})`);
+          state.server = await chosen.gatt.connect();
+          console.log(`Connected to GATT server:`, state.server);
+
+          if (!connected()) throw new Error('GATT disconnected during setup');
+          state.chars.clear(); state.selected = null; state.services = 0; state.rx = 0; state.tx = 0;
+          setStatus('Connected', 'connected');
+          renderDevice();
+          await discoverServices();
+          log('GATT discovery complete');
+        } catch (e) {
+          if (e.name === 'NotFoundError') log('Device selection cancelled or no matching BLE device found');
+          else log(`Connection failed: ${prettyError(e)}`, 'error');
+          setStatus(connected() ? 'Connected' : 'Disconnected', connected() ? 'connected' : '');
+        } finally { state.connecting = false; updateButtons(); renderDevice(); }
+      }
+
+      async function discoverServices() {
+        let found;
+        try { found = await state.server.getPrimaryServices(); }
+        catch (e) { log(`Cannot list services: ${prettyError(e)}`, 'error'); return; }
+        state.services = found.length;
+        if (found.length === 0) log('No authorized services found. Add your ESP32 service UUID before connecting.', 'error');
+        for (const service of found) {
+          try {
+            const characteristics = await service.getCharacteristics();
+            log(`Service ${service.uuid}: ${characteristics.length} characteristic(s)`);
+            for (const characteristic of characteristics) {
+              const key = service.uuid + '|' + characteristic.uuid;
+              const entry = { key, service, characteristic, active: false, last: null };
+              characteristic.addEventListener('characteristicvaluechanged', e => {
+                const bytes = bytesFromDataView(e.target.value);
+                entry.last = bytes;
+                state.rx++; updateButtons();
+                log(`NOTIFY ${characteristic.uuid}: ${toHex(bytes)} | ${quotedText(bytes)}`, 'rx');
+                if (state.selected === key) renderValues(entry);
+              });
+              state.chars.set(key, entry);
+            }
+          } catch (e) { log(`Error accessing ${service.uuid}: ${prettyError(e)}`, 'error'); }
+        }
+        updateButtons(); renderServices(); renderDetails();
+      }
+
+      function renderServices() {
+        const root = $('services'); root.replaceChildren();
+        if (!state.chars.size) {
+          root.innerHTML = `<div class="placeholder">${connected() ? 'No accessible characteristics. Check the service UUID list and reconnect.' : 'Connect to discover authorized GATT services.'}</div>`;
+          return;
+        }
+        const byService = new Map();
+        for (const entry of state.chars.values()) {
+          if (!byService.has(entry.service.uuid)) byService.set(entry.service.uuid, []);
+          byService.get(entry.service.uuid).push(entry);
+        }
+        for (const [uuid, entries] of byService) {
+          const wrap = document.createElement('div'); wrap.className = 'service';
+          wrap.innerHTML = `<div class="service-name">${escapeHtml(displayName(uuid))}</div><div class="uuid">${escapeHtml(uuid)}</div>`;
+          for (const entry of entries) {
+            const properties = entry.characteristic.properties;
+            const flags = ['read', 'write', 'writeWithoutResponse', 'notify', 'indicate'].filter(f => properties[f]);
+            const btn = document.createElement('button');
+            btn.className = 'characteristic' + (entry.key === state.selected ? ' active' : '');
+            btn.innerHTML = `<strong>${escapeHtml(displayName(entry.characteristic.uuid))}</strong><div class="uuid">${escapeHtml(entry.characteristic.uuid)}</div><div class="chips">${flags.map(f => `<span class="chip${entry.active && ['notify', 'indicate'].includes(f) ? ' on' : ''}">${f === 'writeWithoutResponse' ? 'writeNoRsp' : f}</span>`).join('') || '<span class="chip">no public I/O</span>'}</div>`;
+            btn.addEventListener('click', () => { state.selected = entry.key; renderServices(); renderDetails(); });
+            wrap.append(btn);
+          }
+          root.append(wrap);
+        }
+      }
+
+      function renderDevice() {
+        if (!connected()) {
+          $('deviceInfo').innerHTML = '<div class="subtle">Nothing connected yet.</div>';
+          return;
+        }
+
+        const quality = state.rssi === null
+          ? { label: state.rssiUnavailable ? 'RSSI unavailable' : 'Waiting for RSSI', level: '' }
+          : {
+            label: state.rssi >= -60 ? 'Excellent' : state.rssi >= -70 ? 'Good' : state.rssi >= -80 ? 'Fair' : 'Weak',
+            level: state.rssi >= -60 ? 'excellent' : state.rssi >= -70 ? 'good' : state.rssi >= -80 ? 'fair' : 'weak'
+          };
+        const signal = state.rssi === null ? '' : ` · ${state.rssi} dBm`;
+        $('deviceInfo').innerHTML = `
+          <div class="device-name">${escapeHtml(state.device.name || '(unnamed device)')}</div>
+          <div class="uuid" style="margin-top:8px">ID: ${escapeHtml(state.device.id)}</div>
+          <div class="chips" style="margin-top:12px"><span class="chip on">GATT connected</span></div>
+          <div class="quality-card">
+            <div class="quality-label">Connection quality · advertisement RSSI</div>
+            <div class="quality-value ${quality.level}">${quality.label}${signal}</div>
+            <p class="help">Signal strength reported by BLE advertisements; it may not reflect the active GATT link.</p>
+          </div>`;
+      }
+
+      function bytesFromDataView(dataView) {
+        return new Uint8Array(dataView.buffer.slice(dataView.byteOffset, dataView.byteOffset + dataView.byteLength));
+      }
+      const toHex = bytes => [...bytes].map(n => n.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+      const quotedText = bytes => JSON.stringify(new TextDecoder().decode(bytes));
+
+      function renderValues(entry) {
+        if (state.selected !== entry.key) return;
+        $('valueHex').textContent = entry.last ? (toHex(entry.last) || '(empty)') : '—';
+        $('valueText').textContent = entry.last ? quotedText(entry.last) : '—';
+        $('byteCount').textContent = entry.last ? `${entry.last.length} byte(s)` : 'No data yet';
+      }
+
+      function renderDetails() {
+        const entry = state.chars.get(state.selected);
+        const root = $('details');
+        if (!connected() || !entry) { root.innerHTML = '<div class="placeholder" style="padding:35px 0">Select a characteristic to read, write, or subscribe.</div>'; return; }
+        const p = entry.characteristic.properties;
+        const canWrite = p.write || p.writeWithoutResponse;
+        const canNotify = p.notify || p.indicate;
+        root.innerHTML = `
+      <div class="details-title">${escapeHtml(displayName(entry.characteristic.uuid))}</div>
+      <div class="details-meta uuid">${escapeHtml(entry.characteristic.uuid)}</div>
+      <div class="section-label">Incoming value <span id="byteCount" style="float:right;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400"></span></div>
+      <div class="readout"><div><div class="label">HEX</div><div class="value" id="valueHex">—</div></div><div><div class="label">UTF-8 text</div><div class="value" id="valueText">—</div></div></div>
+      <div class="actions"><button id="readBtn" ${p.read ? '' : 'disabled'}>Read</button><button id="notifyBtn" ${canNotify ? '' : 'disabled'}>${entry.active ? 'Stop notifications' : 'Start notifications'}</button></div>
+      <div class="section-label">Write value</div>
+      <div class="field"><label for="writeValue">Payload</label><textarea id="writeValue" placeholder="Hello ESP32" ${canWrite ? '' : 'disabled'} spellcheck="false"></textarea></div>
+      <div class="field"><label for="writeEncoding">Encoding</label><div class="split"><select id="writeEncoding" ${canWrite ? '' : 'disabled'}><option value="text">UTF-8 text</option><option value="hex">Hex bytes</option></select><select id="writeMode" ${canWrite ? '' : 'disabled'}><option value="auto">Auto</option>${p.write ? '<option value="response">With ACK</option>' : ''}${p.writeWithoutResponse ? '<option value="noresponse">No ACK</option>' : ''}</select></div></div>
+      <button class="primary" id="writeBtn" style="width:100%" ${canWrite ? '' : 'disabled'}>Write to characteristic</button>
+      <p class="help">${!canWrite ? 'This characteristic is not writable. ' : ''}Hex example: <code>48 65 6C 6C 6F</code>. Auto prefers writes with response.</p>`;
+        renderValues(entry);
+        $('readBtn').addEventListener('click', () => readCharacteristic(entry));
+        $('notifyBtn').addEventListener('click', () => toggleNotifications(entry));
+        $('writeBtn').addEventListener('click', () => writeCharacteristic(entry));
+      }
+
+      async function readCharacteristic(entry) {
+        if (!connected()) return;
+        try {
+          const data = await entry.characteristic.readValue();
+          const bytes = bytesFromDataView(data);
+          entry.last = bytes; state.rx++; updateButtons(); renderValues(entry);
+          log(`READ ${entry.characteristic.uuid}: ${toHex(bytes)} | ${quotedText(bytes)}`, 'rx');
+        } catch (e) { log(`Read failed: ${prettyError(e)}`, 'error'); }
+      }
+
+      async function toggleNotifications(entry) {
+        if (!connected()) return;
+        try {
+          if (entry.active) { await entry.characteristic.stopNotifications(); entry.active = false; log(`Notifications stopped: ${entry.characteristic.uuid}`); }
+          else { await entry.characteristic.startNotifications(); entry.active = true; log(`Notifications started: ${entry.characteristic.uuid}`); }
+          renderServices(); renderDetails();
+        } catch (e) { log(`Notify failed: ${prettyError(e)}`, 'error'); }
+      }
+
+      function parsePayload(raw, encoding) {
+        if (encoding === 'text') return new TextEncoder().encode(raw);
+        const hex = raw.replace(/0x/gi, '').replace(/[\s,:-]/g, '');
+        if (!hex || hex.length % 2 || !/^[0-9a-f]+$/i.test(hex)) throw new Error('Hex payload must contain an even number of valid hexadecimal digits');
+        return Uint8Array.from(hex.match(/.{2}/g), pair => parseInt(pair, 16));
+      }
+
+      async function writeCharacteristic(entry) {
+        if (!connected()) return;
+        const raw = $('writeValue').value;
+        const encoding = $('writeEncoding').value;
+        const mode = $('writeMode').value;
+        let payload;
+        try { payload = parsePayload(raw, encoding); }
+        catch (e) { log(`Write failed: ${prettyError(e)}`, 'error'); return; }
+        const p = entry.characteristic.properties;
+        try {
+          if (mode === 'response' && !p.write) throw new Error('Writes with response not supported');
+          if (mode === 'noresponse' && !p.writeWithoutResponse) throw new Error('Writes without response not supported');
+          if (mode === 'noresponse' || (mode === 'auto' && !p.write && p.writeWithoutResponse)) {
+            if (entry.characteristic.writeValueWithoutResponse) await entry.characteristic.writeValueWithoutResponse(payload);
+            else await entry.characteristic.writeValue(payload);
+          } else {
+            if (entry.characteristic.writeValueWithResponse) await entry.characteristic.writeValueWithResponse(payload);
+            else await entry.characteristic.writeValue(payload);
+          }
+          state.tx++; updateButtons();
+          log(`WRITE ${entry.characteristic.uuid}: ${toHex(payload)} | ${quotedText(payload)}`, 'tx');
+        } catch (e) { log(`Write failed: ${prettyError(e)}`, 'error'); }
+      }
+
+      $('connect').addEventListener('click', scanAndConnect);
+      $('disconnect').addEventListener('click', () => { if (connected()) state.device.gatt.disconnect(); });
+      $('clearLog').addEventListener('click', () => { state.logLines = []; $('log').replaceChildren(); });
+      $('copyLog').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(state.logLines.join('\n')); log('Log copied to clipboard'); }
+        catch (e) { log(`Cannot copy log: ${prettyError(e)}`, 'error'); }
+      });
+
+      if (!window.isSecureContext || !navigator.bluetooth) {
+        $('environmentWarning').style.display = 'block';
+        $('environmentWarning').textContent = !window.isSecureContext
+          ? 'Web Bluetooth needs HTTPS or http://localhost. Run a local web server and open the localhost URL.'
+          : 'This browser does not expose Web Bluetooth. Open this page in Chrome or Edge on a supported desktop/Android device.';
+      }
+      updateButtons();
+      log('BLE Lab ready. Main, secondary, and selector services are configured. Click Scan & connect.');
+    })();
+  </script>
+</body>
+
+</html>
