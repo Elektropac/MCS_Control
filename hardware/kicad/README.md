@@ -14,7 +14,10 @@
 - Relæspor (5 mm) `B_RELAY_NO`/`B_RELAY_COM` lå 0,14/0,20 mm fra højre kant → lodrette stykker rykket 0,5 mm ind (nu ~0,65/0,70 mm). DRC: **516 fund**, 0 kobber-til-kant.
 
 **Tilbage — kræver manuel gennemgang:**
-- 83 courtyard-overlap, mest R/Q tæt på PhotoMOS (U). Tjek om det er reelt eller for store importerede courtyards.
+- 83 courtyard-overlap — **ACCEPTERET (beslutning 2026-11-04, Jesper):** courtyards er normale (~0,27 mm margin),
+  komponenterne står reelt tæt: 0,30–0,5 mm pad-til-pad (ingen under 0,3 mm), kobber overholder 0,15 mm clearance.
+  Printet er produceret og virker med denne placering → ingen flytning. Tætteste: D13/D14, D3/D4 (0,30 mm), R11/U20, R79/U44 (0,35 mm).
+- 10× SOT-23 (2N7002) har courtyard *mindre* end egne pads (importfejl) — skjuler evt. overlap, giver ikke falske fund.
 - 12 spor med løs ende (ikke fjernet automatisk — flere spor har samme net/længde, så en automatisk match kan ramme forkert).
 - ~420 silk-advarsler og 2 tekst-tykkelser (kosmetisk).
 
