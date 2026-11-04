@@ -28,6 +28,15 @@
 - **LS1 buzzer (CPT-1667):** forenklet cylinder Ø16,6 mm, højde 8 mm (skøn).
 
 **Tilbage — kræver manuel gennemgang:**
+- **⚠ Isolationsslids mangler (250 V AC):** kom ikke med fra EasyEDA som udfræsning. I KiCad ligger kun
+  midterlinjen på laget `IsolationSlot` (User.2, fræses IKKE) + HV-grænsen på bottom silk.
+  Skal laves som **lukket udskæring på Edge.Cuts, 2 mm bred, runde ender**, langs IsolationSlot-stien:
+  (169,09;155,12) → (169,09;149,41) → (176,45;142,04) → (176,45;140,65) → (178,99;138,10) → (178,99;133,79)
+  → (182,80;129,98) → (182,80;91,24) → (184,58;89,46) → (193,47;89,46). Går bevidst ikke ud til kanten
+  (4,9 mm fra underkant, 6,5 mm fra højre kant).
+  Måling med slids: `A_RELAY_NO` ↔ `9-36V_IN` kun **2,56 mm luftafstand** hen over slidsen ved (170,7;152,1) —
+  under typisk 3,0 mm for forstærket isolation → flyt 9-36V_IN-sporet ~0,5 mm. Øvrige HV↔LV ≥ 3,5 mm over
+  slidsen; uden slids imellem ≥ 9,5 mm.
 - 83 courtyard-overlap — **ACCEPTERET (beslutning 2026-11-04, Jesper):** courtyards er normale (~0,27 mm margin),
   komponenterne står reelt tæt: 0,30–0,5 mm pad-til-pad (ingen under 0,3 mm), kobber overholder 0,15 mm clearance.
   Printet er produceret og virker med denne placering → ingen flytning. Tætteste: D13/D14, D3/D4 (0,30 mm), R11/U20, R79/U44 (0,35 mm).
