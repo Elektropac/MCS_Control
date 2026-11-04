@@ -11,9 +11,9 @@
 - 106 bundkomponenter havde courtyard på forsidens lag → flyttet til B.Courtyard.
 - 312 pads (alle passive R/C/SD0805) havde pasta-margin −100 mm = ingen stencil-åbning → nulstillet.
 - 14 spor med længde 0 fjernet.
+- Relæspor (5 mm) `B_RELAY_NO`/`B_RELAY_COM` lå 0,14/0,20 mm fra højre kant → lodrette stykker rykket 0,5 mm ind (nu ~0,65/0,70 mm). DRC: **516 fund**, 0 kobber-til-kant.
 
 **Tilbage — kræver manuel gennemgang:**
-- **6× relæspor for tæt på kanten:** `B_RELAY_NO` 0,14 mm og `B_RELAY_COM` 0,20 mm fra printkanten (x ≈ 197 mm). Skal flyttes ind.
 - 83 courtyard-overlap, mest R/Q tæt på PhotoMOS (U). Tjek om det er reelt eller for store importerede courtyards.
 - 12 spor med løs ende (ikke fjernet automatisk — flere spor har samme net/længde, så en automatisk match kan ramme forkert).
 - ~420 silk-advarsler og 2 tekst-tykkelser (kosmetisk).

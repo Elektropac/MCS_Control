@@ -124747,7 +124747,7 @@
 		(uuid "60865118-2d51-4699-b333-5875fc6d0e4f")
 	)
 	(segment
-		(start 197.2972 98.8798)
+		(start 196.797 98.379)
 		(end 191.7727 93.3553)
 		(width 5)
 		(layer "B.Cu")
@@ -124764,15 +124764,15 @@
 	)
 	(segment
 		(start 196.2177 152.0293)
-		(end 197.2972 150.9498)
+		(end 196.797 151.45)
 		(width 5)
 		(layer "B.Cu")
 		(net "B_RELAY_COM")
 		(uuid "5b806e25-4073-4a53-b134-42ffa758deec")
 	)
 	(segment
-		(start 197.2972 150.9498)
-		(end 197.2972 98.8798)
+		(start 196.797 151.45)
+		(end 196.797 98.379)
 		(width 5)
 		(layer "B.Cu")
 		(net "B_RELAY_COM")
@@ -124827,7 +124827,7 @@
 		(uuid "0d84032f-cbcf-4f11-9dbf-286e088bab70")
 	)
 	(segment
-		(start 197.3607 115.1358)
+		(start 196.861 114.613)
 		(end 193.411 111.0083)
 		(width 5)
 		(layer "F.Cu")
@@ -124835,8 +124835,8 @@
 		(uuid "93a2d1ed-00d2-4458-84d0-246c29505f11")
 	)
 	(segment
-		(start 197.3607 141.6788)
-		(end 197.3607 115.1358)
+		(start 196.861 142.179)
+		(end 196.861 114.613)
 		(width 5)
 		(layer "F.Cu")
 		(net "B_RELAY_NO")
@@ -124852,7 +124852,7 @@
 	)
 	(segment
 		(start 188.5342 150.5053)
-		(end 197.3607 141.6788)
+		(end 196.861 142.179)
 		(width 5)
 		(layer "F.Cu")
 		(net "B_RELAY_NO")
