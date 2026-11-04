@@ -20,6 +20,12 @@
   så modellen dækker pads og courtyard.
 - Relæ K1/K3 (EasyEDA-model ufuldstændig) og CN1/CN2 (model viste flerpolet klemme) → **forenklede kasser**
   i silketryk-omridsets mål (`3d/*.wrl`). Højde er skøn: relæ 20 mm, klemme 12 mm.
+- **SMD-rotationer:** importen havde drejet mange modeller 90/180° (alle 144 R0603, 18 PhotoMOS, SOIC, SSOP,
+  SMD-16, 6 SOT-23 på bunden). Rettet ved at finde den drejning hvor modellens benfødder (nederste
+  STEP-hjørnepunkter) lander på pads — efterkontrol: 88–100 % for alle typer (SOP-4/SOP-8 kontrolleret visuelt).
+- **U24 Waveshare ESP32-S3-ETH:** model tilføjet (`3d/waveshare_esp32s3eth.wrl`, fra control-emulator) — antager
+  samme montering som pumpesimulatoren: ben loddet med 2,5 mm afstand, RJ45-siden op, USB ved printkanten.
+- **LS1 buzzer (CPT-1667):** forenklet cylinder Ø16,6 mm, højde 8 mm (skøn).
 
 **Tilbage — kræver manuel gennemgang:**
 - 83 courtyard-overlap — **ACCEPTERET (beslutning 2026-11-04, Jesper):** courtyards er normale (~0,27 mm margin),

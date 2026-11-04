@@ -871,13 +871,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -1215,13 +1215,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -1978,7 +1978,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -2316,13 +2316,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -2666,7 +2666,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -4920,13 +4920,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -5264,13 +5264,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -5608,13 +5608,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -6278,13 +6278,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -6692,7 +6692,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -7715,7 +7715,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -8872,13 +8872,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -9222,7 +9222,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -9560,13 +9560,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -9904,13 +9904,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -10248,13 +10248,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -10592,13 +10592,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -14691,7 +14691,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -15464,13 +15464,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -15808,13 +15808,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -16052,7 +16052,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -16390,13 +16390,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -16740,7 +16740,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -17519,13 +17519,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -17863,13 +17863,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -18458,6 +18458,17 @@
 			(uuid "800a5c36-f76f-4af1-bc5e-9db1aa538808")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/3d/waveshare_esp32s3eth.wrl"
+			(offset
+				(xyz 10.5 -44 0)
+			)
+			(scale
+				(xyz 0.3937007874 0.3937007874 0.3937007874)
+			)
+			(rotate
+				(xyz 0 0 180)
+			)
+		)
 	)
 	(footprint "Pad_gge405037"
 		(locked yes)
@@ -18857,13 +18868,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -19527,13 +19538,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -19930,13 +19941,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -20701,7 +20712,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -360)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -21351,7 +21362,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -22454,13 +22465,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -22804,7 +22815,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -23042,7 +23053,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -23380,13 +23391,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -23724,13 +23735,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -24074,7 +24085,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -24831,7 +24842,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -25169,13 +25180,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -25513,13 +25524,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -25857,13 +25868,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -27126,13 +27137,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -27470,13 +27481,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -27820,7 +27831,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -28593,13 +28604,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -28837,7 +28848,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -29175,13 +29186,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -30597,7 +30608,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -30784,6 +30795,17 @@
 			(uuid "e1b55cc8-d02c-4a81-8a51-ea6dd26b15a9")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/3d/buzzer_cpt1667_cyl.wrl"
+			(offset
+				(xyz -0 -0.004 0)
+			)
+			(scale
+				(xyz 0.3937007874 0.3937007874 0.3937007874)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -31119,13 +31141,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -31858,13 +31880,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -32208,7 +32230,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -32552,7 +32574,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -32896,7 +32918,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -33575,7 +33597,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -33913,13 +33935,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -34257,13 +34279,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -34601,13 +34623,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -34945,13 +34967,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -36016,7 +36038,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -36354,13 +36376,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -36704,7 +36726,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -37453,13 +37475,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -37697,7 +37719,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -39842,7 +39864,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -40180,13 +40202,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -42245,13 +42267,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -42589,13 +42611,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -44030,7 +44052,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -44432,13 +44454,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -45266,13 +45288,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -45610,13 +45632,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -45854,7 +45876,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -46192,13 +46214,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -46948,13 +46970,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -47292,13 +47314,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -47636,13 +47658,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -47980,13 +48002,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -48324,13 +48346,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -48957,13 +48979,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -50308,13 +50330,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SSOP-16_L6.2-W5.3-H1.9-LS7.8-P0.65.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -360)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -50722,7 +50744,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -51386,13 +51408,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -52056,13 +52078,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -52400,13 +52422,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0.0001 0 0)
+				(xyz -0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -52744,13 +52766,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -53088,13 +53110,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -55262,7 +55284,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -55606,7 +55628,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -56245,7 +56267,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -57548,13 +57570,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-16_L20.0-W6.5-H3.5-LS10.2-P2.54.step"
 			(offset
-				(xyz -0 -0 0)
+				(xyz -8.89 -3.81 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -57892,13 +57914,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -58242,7 +58264,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -58580,13 +58602,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -58824,7 +58846,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -59162,13 +59184,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -59506,13 +59528,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -61614,13 +61636,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0.0001 -0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 -90)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -62359,7 +62381,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -62597,7 +62619,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -62935,13 +62957,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -63672,7 +63694,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -64010,13 +64032,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -64254,7 +64276,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -64598,7 +64620,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -64942,7 +64964,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -65280,13 +65302,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -65630,7 +65652,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -65974,7 +65996,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -68664,7 +68686,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -69002,13 +69024,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -69773,7 +69795,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 360)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -70117,7 +70139,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -70524,13 +70546,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step"
 			(offset
-				(xyz -0 -0.0001 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 180)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -70874,7 +70896,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -71218,7 +71240,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -71562,7 +71584,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -72399,7 +72421,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -72743,7 +72765,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -73087,7 +73109,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -73757,7 +73779,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -74164,13 +74186,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step"
 			(offset
-				(xyz -0 -0.0001 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 180)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -74840,7 +74862,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -75178,13 +75200,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -75522,13 +75544,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -76307,7 +76329,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -76651,7 +76673,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -76995,7 +77017,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -77339,7 +77361,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -77683,7 +77705,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -78027,7 +78049,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -78371,7 +78393,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -79107,7 +79129,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -80416,7 +80438,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 360)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -80760,7 +80782,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -81104,7 +81126,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -81342,7 +81364,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -81686,7 +81708,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -82093,13 +82115,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step"
 			(offset
-				(xyz -0 -0.0001 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 180)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -82443,7 +82465,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -83277,7 +83299,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -83621,7 +83643,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -83965,7 +83987,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -84309,7 +84331,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -84653,7 +84675,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -84891,7 +84913,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -85129,7 +85151,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -85467,13 +85489,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -86699,7 +86721,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -87536,7 +87558,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -87774,7 +87796,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -88118,7 +88140,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -88462,7 +88484,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -88700,7 +88722,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -89044,7 +89066,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -90779,13 +90801,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-16_L20.0-W6.5-H3.5-LS10.2-P2.54.step"
 			(offset
-				(xyz -0 -0 0)
+				(xyz -8.89 -3.81 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -92380,7 +92402,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -92724,7 +92746,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -93068,7 +93090,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -93475,13 +93497,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step"
 			(offset
-				(xyz -0 -0.0001 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 180)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -93825,7 +93847,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -94232,13 +94254,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step"
 			(offset
-				(xyz -0 -0.0001 0)
+				(xyz -0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 180)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -94582,7 +94604,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -94920,13 +94942,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -97186,7 +97208,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -97530,7 +97552,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -97874,7 +97896,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -98218,7 +98240,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -100717,13 +100739,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 -0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -101599,13 +101621,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step"
 			(offset
-				(xyz -0 -0.0001 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 180)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -102275,7 +102297,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -102619,7 +102641,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -103724,7 +103746,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -104068,7 +104090,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -104412,7 +104434,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -104756,7 +104778,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -105094,13 +105116,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 -0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -105438,13 +105460,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/R0603.step"
 			(offset
-				(xyz -0 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 270)
+				(xyz 0 0 180)
 			)
 		)
 	)

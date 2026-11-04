@@ -15,6 +15,7 @@ Justering: modellens udstrækning (fra STEP-filens hjørnepunkter) drejes 0/90/1
 og flyttes, så den dækker alle pads og passer bedst muligt med footprintets courtyard.
 Ændrer kun 3D-model-felter - ingen pads, spor eller net.
 """
+import collections
 import math
 import re
 import sys
@@ -192,6 +193,113 @@ for fp in board.GetFootprints():
     report.append(f"  {fp.GetReference():4} {name[:34]:34} rot {deg:3}  offset ({ox:6.2f},{oy:6.2f})"
                   f"  {'dækker pads' if covered else 'DÆKKER IKKE ALLE PADS'}")
 
+# --- SMD: importen har drejet mange modeller 90/180 grader forkert (fx alle R0603). Find den drejning
+# (og evt. centrering) hvor modellens benfødder - de nederste hjørnepunkter i STEP-filen - lander på pads.
+_feet_cache = {}
+
+
+def model_feet(fn):
+    if fn not in _feet_cache:
+        t = step_path(fn).read_text(errors="ignore")
+        ents = dict(re.findall(r"#(\d+)\s*=\s*(.*?);\s*(?=#|ENDSEC)", t, re.S))
+        pts = {k: tuple(map(float, m.groups())) for k, v in ents.items()
+               for m in [re.match(r"CARTESIAN_POINT\(\s*'[^']*'\s*,\s*\(\s*([-\d.Ee+]+)\s*,\s*([-\d.Ee+]+)\s*,\s*([-\d.Ee+]+)", v)] if m}
+        vp = [pts[m.group(1)] for v in ents.values()
+              for m in [re.match(r"VERTEX_POINT\(\s*'[^']*'\s*,\s*#(\d+)", v)] if m and m.group(1) in pts]
+        zmin = min(p[2] for p in vp)
+        _feet_cache[fn] = [(x, y) for x, y, z in vp if z <= zmin + 0.15]
+    return _feet_cache[fn]
+
+
+def local_pad_boxes(fp):
+    mirror = fp.GetLayer() == pcbnew.B_Cu      # bundside: footprintet er spejlet
+    boxes = []
+    for p in fp.Pads():
+        bb = p.GetBoundingBox()
+        (x1, y1), (x2, y2) = (to_local(fp, pcbnew.ToMM(bb.GetLeft()), pcbnew.ToMM(bb.GetTop())),
+                              to_local(fp, pcbnew.ToMM(bb.GetRight()), pcbnew.ToMM(bb.GetBottom())))
+        if mirror:
+            x1, x2 = -x1, -x2
+        boxes.append((min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)))
+    return boxes
+
+
+def feet_score(feet, kicad_rot, ox, oy, pads):
+    r = -math.radians(kicad_rot)
+    hit = 0
+    for x, y in feet:
+        X, Y = x * math.cos(r) - y * math.sin(r) + ox, x * math.sin(r) + y * math.cos(r) + oy
+        hit += any(a - 0.2 <= X <= c + 0.2 and b - 0.2 <= Y <= d + 0.2 for a, b, c, d in pads)
+    return hit / max(1, len(feet))
+
+
+smd_fixed = collections.Counter()
+for fp in board.GetFootprints():
+    models = fp.Models()
+    if models.size() == 0 or models[0].m_Filename.endswith(".wrl") or not fp.Pads() \
+            or any(p.GetAttribute() != pcbnew.PAD_ATTRIB_SMD for p in fp.Pads()):
+        continue
+    m = models[0]
+    feet = model_feet(m.m_Filename)
+    pads = local_pad_boxes(fp)
+    px = ((min(p[0] for p in pads) + max(p[2] for p in pads)) / 2, (min(p[1] for p in pads) + max(p[3] for p in pads)) / 2)
+    orig = round(m.m_Rotation.z) % 360
+    cand = []
+    for kr in (orig, (orig + 90) % 360, (orig + 180) % 360, (orig + 270) % 360):
+        r = -math.radians(kr)
+        rf = [(x * math.cos(r) - y * math.sin(r), x * math.sin(r) + y * math.cos(r)) for x, y in feet]
+        fx = ((min(p[0] for p in rf) + max(p[0] for p in rf)) / 2, (min(p[1] for p in rf) + max(p[1] for p in rf)) / 2)
+        for ox, oy, centered in ((m.m_Offset.x, m.m_Offset.y, False), (px[0] - fx[0], px[1] - fx[1], True)):
+            # nuværende løsning foretrækkes ved (næsten) lige score
+            bonus = 0.02 if (kr == orig and not centered) else 0
+            cand.append((feet_score(feet, kr, ox, oy, pads) + bonus, kr, ox, oy, centered))
+    best = max(cand)
+    if best[1] != orig or best[4]:
+        m.m_Rotation = pcbnew.VECTOR3D(0, 0, best[1])
+        m.m_Offset = pcbnew.VECTOR3D(round(best[2], 3), round(best[3], 3), 0)
+        smd_fixed[fp.GetFPID().GetLibItemName().wx_str()[:30] + f" +{(best[1] - orig) % 360}"
+                  + (" centreret" if best[4] else "")] += 1
+
+# --- Manglende modeller
+# U24 = Waveshare ESP32-S3-ETH (samme montering som pumpesimulatoren: ben loddet, 2,5 mm afstand,
+# RJ45-siden op). Modellen (control-emulator/hardware/tools/gen_ws_model.py) har origo i USB-hjørnet
+# på H2-siden; her vender USB-enden ned, så den drejes 180 grader og pin 1 lægges på pad 1.
+WS_PIN1 = (19.87, 1.61)    # pin 1 i modellen: afstand fra USB-enden, afstand fra H2-kanten (mm)
+for fp in board.GetFootprints():
+    if fp.GetValue() == "ESP32-S3 ETH" and fp.Models().size() == 0:
+        p1 = next(p for p in fp.Pads() if p.GetNumber() == "1")
+        lx, ly = to_local(fp, pcbnew.ToMM(p1.GetPosition().x), pcbnew.ToMM(p1.GetPosition().y))
+        m = pcbnew.FP_3DMODEL()
+        m.m_Filename = "${KIPRJMOD}/3d/waveshare_esp32s3eth.wrl"
+        m.m_Scale = pcbnew.VECTOR3D(1 / 2.54, 1 / 2.54, 1 / 2.54)
+        m.m_Rotation = pcbnew.VECTOR3D(0, 0, 180)
+        # efter 180 grader ligger modellens pin 1 i (-1,61, +19,87)
+        m.m_Offset = pcbnew.VECTOR3D(round(lx + WS_PIN1[1], 3), round(ly - WS_PIN1[0], 3), 0)
+        fp.Models().push_back(m)
+        report.append(f"  {fp.GetReference():4} Waveshare-model tilføjet")
+    if fp.GetValue() == "CPT-1667-85T" and fp.Models().size() == 0:
+        # piezo-buzzer: forenklet cylinder i silketryk-cirklens størrelse, højde = skøn
+        sx1, sy1, sx2, sy2 = local_silk_outline(fp)
+        d, h = max(sx2 - sx1, sy2 - sy1), 8.0
+        n = 32
+        ring = [(d / 2 * math.cos(2 * math.pi * i / n), d / 2 * math.sin(2 * math.pi * i / n)) for i in range(n)]
+        coords = ", ".join(f"{x:.3f} {y:.3f} {z}" for z in (0, h) for x, y in ring)
+        faces = [f"{i}, {(i + 1) % n}, {n + (i + 1) % n}, {n + i}, -1" for i in range(n)]
+        faces += [", ".join(str(n + i) for i in range(n)) + ", -1", ", ".join(str(i) for i in reversed(range(n))) + ", -1"]
+        (KICAD / "3d").mkdir(exist_ok=True)
+        (KICAD / "3d" / "buzzer_cpt1667_cyl.wrl").write_text(
+            "#VRML V2.0 utf8\n# Forenklet buzzer-cylinder (genereret af tools/fix_3d_models.py)\n"
+            "Shape { appearance Appearance { material Material { diffuseColor 0.1 0.1 0.1 } }\n"
+            f"  geometry IndexedFaceSet {{ solid FALSE coord Coordinate {{ point [ {coords} ] }}\n"
+            f"    coordIndex [ {' '.join(faces)} ] }} }}\n")
+        m = pcbnew.FP_3DMODEL()
+        m.m_Filename = "${KIPRJMOD}/3d/buzzer_cpt1667_cyl.wrl"
+        m.m_Scale = pcbnew.VECTOR3D(1 / 2.54, 1 / 2.54, 1 / 2.54)
+        m.m_Offset = pcbnew.VECTOR3D(round((sx1 + sx2) / 2, 3), round((sy1 + sy2) / 2, 3), 0)
+        fp.Models().push_back(m)
+        report.append(f"  {fp.GetReference():4} buzzer-cylinder Ø{d:.1f} x {h:.0f} mm tilføjet")
+
 pcbnew.SaveBoard(str(PCB), board)
 print(f"PhotoMOS-model tilføjet: {added}, DC/DC-model skiftet: {swapped}")
+print("SMD-modeller rettet:", dict(smd_fixed) or "ingen")
 print("\n".join(report))
