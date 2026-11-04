@@ -13,6 +13,14 @@
 - 14 spor med længde 0 fjernet.
 - Relæspor (5 mm) `B_RELAY_NO`/`B_RELAY_COM` lå 0,14/0,20 mm fra højre kant → lodrette stykker rykket 0,5 mm ind (nu ~0,65/0,70 mm). DRC: **516 fund**, 0 kobber-til-kant.
 
+**3D-visning rettet** (`hardware/tools/fix_3d_models.py`, kun model-felter):
+- 18 PhotoMOS (SMD-8) manglede model på printet (kun sat i biblioteket) → tilføjet.
+- 6 DC/DC (SIP-4 B2405S) pegede på en kopi af pin-header-modellen → KiCads Murata CRE1 (samme SIP-4-hus).
+- EasyEDA placerer modeller efter midtpunkt, KiCad efter nulpunkt → klemrække U61, header J1, DC/DC drejet/flyttet
+  så modellen dækker pads og courtyard.
+- Relæ K1/K3 (EasyEDA-model ufuldstændig) og CN1/CN2 (model viste flerpolet klemme) → **forenklede kasser**
+  i silketryk-omridsets mål (`3d/*.wrl`). Højde er skøn: relæ 20 mm, klemme 12 mm.
+
 **Tilbage — kræver manuel gennemgang:**
 - 83 courtyard-overlap — **ACCEPTERET (beslutning 2026-11-04, Jesper):** courtyards er normale (~0,27 mm margin),
   komponenterne står reelt tæt: 0,30–0,5 mm pad-til-pad (ingen under 0,3 mm), kobber overholder 0,15 mm clearance.

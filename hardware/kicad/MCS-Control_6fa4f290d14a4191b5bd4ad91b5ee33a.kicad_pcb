@@ -7469,15 +7469,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/SIP-4_L11.5-W6.0-P2.54-L_WINCHEN_B2405S-1W_C2848006.step"
+		(model "${KICAD10_3DMODEL_DIR}/Converter_DCDC.3dshapes/Converter_DCDC_Murata_CRE1xxxxxxSC_THT.step"
 			(offset
-				(xyz 0 1.7639 -4)
+				(xyz -3.695 -1.8 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -7707,6 +7707,17 @@
 			(uuid "6515b3e0-4182-4fae-b14f-e4c101e9848c")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "C0603"
 		(layer "F.Cu")
@@ -16033,6 +16044,17 @@
 			(uuid "3e173b52-cd48-47f3-9b12-654bf5e43b2b")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -17151,15 +17173,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/RELAY-TH_TE_T9GV1L14-9.step"
+		(model "${KIPRJMOD}/3d/relay_T9G_box.wrl"
 			(offset
-				(xyz -0.35 2.828 -3.5)
+				(xyz 0.38 2.84 0)
 			)
 			(scale
-				(xyz 1 1 1)
+				(xyz 0.3937007874 0.3937007874 0.3937007874)
 			)
 			(rotate
-				(xyz -0 -0 -360)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -21321,6 +21343,17 @@
 			(uuid "51677ad4-0fa2-4fec-a17f-e356e2af852b")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "SOP-8_L4.9-W3.9-P1.27-LS6.0-BL"
 		(layer "F.Cu")
@@ -23001,6 +23034,17 @@
 			(uuid "6a170c0b-ea59-40cc-8205-a49d73773277")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -28785,6 +28829,17 @@
 			(uuid "0bc75274-0beb-4685-8a73-4aa78d2718f0")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -31457,15 +31512,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/SIP-4_L11.5-W6.0-P2.54-L_WINCHEN_B2405S-1W_C2848006.step"
+		(model "${KICAD10_3DMODEL_DIR}/Converter_DCDC.3dshapes/Converter_DCDC_Murata_CRE1xxxxxxSC_THT.step"
 			(offset
-				(xyz 0 1.7639 -4)
+				(xyz -3.695 -1.8 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -33274,15 +33329,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/RELAY-TH_TE_T9GV1L14-9.step"
+		(model "${KIPRJMOD}/3d/relay_T9G_box.wrl"
 			(offset
-				(xyz -0.35 2.828 -3.5)
+				(xyz 0.38 2.84 0)
 			)
 			(scale
-				(xyz 1 1 1)
+				(xyz 0.3937007874 0.3937007874 0.3937007874)
 			)
 			(rotate
-				(xyz -0 -0 -360)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -33512,6 +33567,17 @@
 			(uuid "1e2f91ea-5c47-419c-811d-ea3340d415ba")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -35598,15 +35664,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/SIP-4_L11.5-W6.0-P2.54-L_WINCHEN_B2405S-1W_C2848006.step"
+		(model "${KICAD10_3DMODEL_DIR}/Converter_DCDC.3dshapes/Converter_DCDC_Murata_CRE1xxxxxxSC_THT.step"
 			(offset
-				(xyz 0 1.764 -4)
+				(xyz -3.695 -1.8 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -37623,6 +37689,17 @@
 			(uuid "0169bb30-9ab6-463a-85d1-1f3e33257305")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "SOD-323_L1.6-W1.2-LS2.6-RD"
 		(layer "F.Cu")
@@ -39415,13 +39492,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/CONN-TH_24P-P3.50_KEFA_KF2EDGSR-3.5-2X12P.step"
 			(offset
-				(xyz -0 -3.75 -2.5)
+				(xyz -19.535 0.725 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -45769,6 +45846,17 @@
 			(uuid "cfaeb8b4-b16c-4bef-80d1-0d02bf32bb0a")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -48525,13 +48613,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/EASYEDA_MODELS/HDR-M-2.54_1x4.step"
 			(offset
-				(xyz -0 -0 -3)
+				(xyz -3.81 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -54602,15 +54690,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/CONN-TH_2P-P7.62_1728853.step"
+		(model "${KIPRJMOD}/3d/terminal_2p_7.62_box.wrl"
 			(offset
-				(xyz -0 -4 -3.5)
+				(xyz 0 -4 0)
 			)
 			(scale
-				(xyz 1 1 1)
+				(xyz 0.3937007874 0.3937007874 0.3937007874)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -55166,6 +55254,17 @@
 			(uuid "f52f435b-0110-4848-89cc-5fd26d89b0b8")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -55794,15 +55893,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/CONN-TH_2P-P7.62_1728853.step"
+		(model "${KIPRJMOD}/3d/terminal_2p_7.62_box.wrl"
 			(offset
-				(xyz -0 -4 -3.5)
+				(xyz 0 -4 0)
 			)
 			(scale
-				(xyz 1 1 1)
+				(xyz 0.3937007874 0.3937007874 0.3937007874)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -58717,6 +58816,17 @@
 			(uuid "f2a9ae6d-7ff9-477c-a147-a8a3e04e0a1c")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "F.Cu")
@@ -60699,15 +60809,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/SIP-4_L11.5-W6.0-P2.54-L_WINCHEN_B2405S-1W_C2848006.step"
+		(model "${KICAD10_3DMODEL_DIR}/Converter_DCDC.3dshapes/Converter_DCDC_Murata_CRE1xxxxxxSC_THT.step"
 			(offset
-				(xyz 0 1.764 -4)
+				(xyz -3.695 -1.8 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -61094,15 +61204,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/SIP-4_L11.5-W6.0-P2.54-L_WINCHEN_B2405S-1W_C2848006.step"
+		(model "${KICAD10_3DMODEL_DIR}/Converter_DCDC.3dshapes/Converter_DCDC_Murata_CRE1xxxxxxSC_THT.step"
 			(offset
-				(xyz 0 1.7639 -4)
+				(xyz -3.695 -1.8 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -61897,15 +62007,15 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/EASYEDA_MODELS/SIP-4_L11.5-W6.0-P2.54-L_WINCHEN_B2405S-1W_C2848006.step"
+		(model "${KICAD10_3DMODEL_DIR}/Converter_DCDC.3dshapes/Converter_DCDC_Murata_CRE1xxxxxxSC_THT.step"
 			(offset
-				(xyz 0 1.7639 -4)
+				(xyz -3.695 -1.8 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -0 -0 0)
+				(xyz 0 0 270)
 			)
 		)
 	)
@@ -62479,6 +62589,17 @@
 			(uuid "090659c1-a459-4fe8-9c6c-4c127ce5b160")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
@@ -63543,6 +63664,17 @@
 			(uuid "266e9a24-9903-4b62-82d8-131d3da336a1")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
@@ -64114,6 +64246,17 @@
 			(uuid "7d66e28e-f21f-40e1-a3ba-86b577ffd247")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
@@ -81191,6 +81334,17 @@
 			(uuid "b7963d2a-9c42-4c75-9bba-add32576b047")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
@@ -84729,6 +84883,17 @@
 			(uuid "c9a31b25-d498-4b84-a5ae-5371ea3a2371")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "SMD-8_L9.8-W6.4-APW212G2EH"
 		(layer "B.Cu")
@@ -84956,6 +85121,17 @@
 			(uuid "f8613bd3-03bb-4914-8f70-49e4e45b2460")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
@@ -87590,6 +87766,17 @@
 			(uuid "d377f1f6-defc-470f-b383-a39204cd5cea")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
@@ -88505,6 +88692,17 @@
 			(uuid "9e6eeafc-c201-43d9-8005-b14ea1717d20")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/EASYEDA_MODELS/SMD-8_L9.8-W6.4_APW212G2EH.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "R0603"
 		(layer "B.Cu")
