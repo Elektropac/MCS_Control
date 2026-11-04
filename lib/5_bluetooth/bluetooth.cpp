@@ -31,6 +31,7 @@ struct bluetooth_serial
     BLECharacteristic *output;
     bool is_available;
     String encryption_key;
+    unsigned long last_message_millis;
 };
 
 namespace bluetooth_services
@@ -39,13 +40,15 @@ namespace bluetooth_services
         input : NULL,
         output : NULL,
         is_available : true,
-        encryption_key : ""
+        encryption_key : "",
+        last_message_millis : 0
     };
     bluetooth_serial secondary_serial = {
         input : NULL,
         output : NULL,
         is_available : true,
-        encryption_key : ""
+        encryption_key : "",
+        last_message_millis : 0
     };
 
     // selecter service characteristics
@@ -172,6 +175,16 @@ namespace bluetooth_services
                     serial.output->notify();
                 }
             }
+
+
+            if (serial.is_available == false && (millis() - serial.last_message_millis) > 10000) /// Timeout after 10 seconds of inactivity
+            {
+                log_error("[Bluetooth] Serial timeout, marking as available.");
+                serial.is_available = true;
+                serial.encryption_key = "";
+            }
+            
+            serial.last_message_millis = millis();
         }
     }
 
