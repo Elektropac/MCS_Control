@@ -1,0 +1,420 @@
+(version 1)
+
+# Accepterede courtyard-overlap (beslutning 2026-11-04): printet er produceret og virker med denne
+# placering. Pad-til-pad 0,30-0,5 mm, kobber overholder 0,15 mm clearance. Se README.md.
+# Kun disse par ignoreres - nye overlap fanges stadig af DRC.
+
+(rule "Accepteret tæt placering C4-U6"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'C4' && B.Reference == 'U6') || (A.Reference == 'U6' && B.Reference == 'C4')"))
+
+(rule "Accepteret tæt placering C5-U6"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'C5' && B.Reference == 'U6') || (A.Reference == 'U6' && B.Reference == 'C5')"))
+
+(rule "Accepteret tæt placering D3-D4"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'D3' && B.Reference == 'D4') || (A.Reference == 'D4' && B.Reference == 'D3')"))
+
+(rule "Accepteret tæt placering D5-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'D5' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'D5')"))
+
+(rule "Accepteret tæt placering D13-D14"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'D13' && B.Reference == 'D14') || (A.Reference == 'D14' && B.Reference == 'D13')"))
+
+(rule "Accepteret tæt placering Q1-R52"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q1' && B.Reference == 'R52') || (A.Reference == 'R52' && B.Reference == 'Q1')"))
+
+(rule "Accepteret tæt placering Q1-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q1' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'Q1')"))
+
+(rule "Accepteret tæt placering Q1-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q1' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'Q1')"))
+
+(rule "Accepteret tæt placering Q2-R11"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q2' && B.Reference == 'R11') || (A.Reference == 'R11' && B.Reference == 'Q2')"))
+
+(rule "Accepteret tæt placering Q2-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q2' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'Q2')"))
+
+(rule "Accepteret tæt placering Q3-R69"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q3' && B.Reference == 'R69') || (A.Reference == 'R69' && B.Reference == 'Q3')"))
+
+(rule "Accepteret tæt placering Q3-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q3' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'Q3')"))
+
+(rule "Accepteret tæt placering Q3-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q3' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'Q3')"))
+
+(rule "Accepteret tæt placering Q5-R79"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q5' && B.Reference == 'R79') || (A.Reference == 'R79' && B.Reference == 'Q5')"))
+
+(rule "Accepteret tæt placering Q5-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q5' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'Q5')"))
+
+(rule "Accepteret tæt placering Q5-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'Q5' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'Q5')"))
+
+(rule "Accepteret tæt placering R3-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R3' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R3')"))
+
+(rule "Accepteret tæt placering R7-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R7' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R7')"))
+
+(rule "Accepteret tæt placering R8-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R8' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'R8')"))
+
+(rule "Accepteret tæt placering R8-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R8' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R8')"))
+
+(rule "Accepteret tæt placering R9-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R9' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R9')"))
+
+(rule "Accepteret tæt placering R10-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R10' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'R10')"))
+
+(rule "Accepteret tæt placering R11-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R11' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'R11')"))
+
+(rule "Accepteret tæt placering R12-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R12' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R12')"))
+
+(rule "Accepteret tæt placering R13-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R13' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R13')"))
+
+(rule "Accepteret tæt placering R14-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R14' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'R14')"))
+
+(rule "Accepteret tæt placering R15-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R15' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R15')"))
+
+(rule "Accepteret tæt placering R17-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R17' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R17')"))
+
+(rule "Accepteret tæt placering R18-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R18' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'R18')"))
+
+(rule "Accepteret tæt placering R19-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R19' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'R19')"))
+
+(rule "Accepteret tæt placering R20-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R20' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R20')"))
+
+(rule "Accepteret tæt placering R21-U21"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R21' && B.Reference == 'U21') || (A.Reference == 'U21' && B.Reference == 'R21')"))
+
+(rule "Accepteret tæt placering R32-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R32' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R32')"))
+
+(rule "Accepteret tæt placering R33-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R33' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R33')"))
+
+(rule "Accepteret tæt placering R35-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R35' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R35')"))
+
+(rule "Accepteret tæt placering R36-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R36' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R36')"))
+
+(rule "Accepteret tæt placering R37-R76"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R37' && B.Reference == 'R76') || (A.Reference == 'R76' && B.Reference == 'R37')"))
+
+(rule "Accepteret tæt placering R38-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R38' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R38')"))
+
+(rule "Accepteret tæt placering R40-U16"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R40' && B.Reference == 'U16') || (A.Reference == 'U16' && B.Reference == 'R40')"))
+
+(rule "Accepteret tæt placering R49-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R49' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R49')"))
+
+(rule "Accepteret tæt placering R50-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R50' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'R50')"))
+
+(rule "Accepteret tæt placering R51-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R51' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'R51')"))
+
+(rule "Accepteret tæt placering R52-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R52' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'R52')"))
+
+(rule "Accepteret tæt placering R53-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R53' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'R53')"))
+
+(rule "Accepteret tæt placering R54-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R54' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R54')"))
+
+(rule "Accepteret tæt placering R55-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R55' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R55')"))
+
+(rule "Accepteret tæt placering R56-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R56' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R56')"))
+
+(rule "Accepteret tæt placering R57-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R57' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R57')"))
+
+(rule "Accepteret tæt placering R58-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R58' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'R58')"))
+
+(rule "Accepteret tæt placering R59-U28"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R59' && B.Reference == 'U28') || (A.Reference == 'U28' && B.Reference == 'R59')"))
+
+(rule "Accepteret tæt placering R59-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R59' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'R59')"))
+
+(rule "Accepteret tæt placering R60-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R60' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'R60')"))
+
+(rule "Accepteret tæt placering R60-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R60' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R60')"))
+
+(rule "Accepteret tæt placering R61-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R61' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'R61')"))
+
+(rule "Accepteret tæt placering R62-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R62' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R62')"))
+
+(rule "Accepteret tæt placering R63-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R63' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R63')"))
+
+(rule "Accepteret tæt placering R64-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R64' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R64')"))
+
+(rule "Accepteret tæt placering R65-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R65' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R65')"))
+
+(rule "Accepteret tæt placering R66-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R66' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'R66')"))
+
+(rule "Accepteret tæt placering R69-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R69' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'R69')"))
+
+(rule "Accepteret tæt placering R70-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R70' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'R70')"))
+
+(rule "Accepteret tæt placering R71-U33"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R71' && B.Reference == 'U33') || (A.Reference == 'U33' && B.Reference == 'R71')"))
+
+(rule "Accepteret tæt placering R72-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R72' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R72')"))
+
+(rule "Accepteret tæt placering R73-U35"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R73' && B.Reference == 'U35') || (A.Reference == 'U35' && B.Reference == 'R73')"))
+
+(rule "Accepteret tæt placering R74-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R74' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R74')"))
+
+(rule "Accepteret tæt placering R75-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R75' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R75')"))
+
+(rule "Accepteret tæt placering R77-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R77' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'R77')"))
+
+(rule "Accepteret tæt placering R78-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R78' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'R78')"))
+
+(rule "Accepteret tæt placering R79-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R79' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'R79')"))
+
+(rule "Accepteret tæt placering R80-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R80' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'R80')"))
+
+(rule "Accepteret tæt placering R81-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R81' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R81')"))
+
+(rule "Accepteret tæt placering R82-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R82' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R82')"))
+
+(rule "Accepteret tæt placering R83-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R83' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R83')"))
+
+(rule "Accepteret tæt placering R84-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R84' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R84')"))
+
+(rule "Accepteret tæt placering R85-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R85' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'R85')"))
+
+(rule "Accepteret tæt placering R86-U43"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R86' && B.Reference == 'U43') || (A.Reference == 'U43' && B.Reference == 'R86')"))
+
+(rule "Accepteret tæt placering R86-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R86' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'R86')"))
+
+(rule "Accepteret tæt placering R145-U18"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R145' && B.Reference == 'U18') || (A.Reference == 'U18' && B.Reference == 'R145')"))
+
+(rule "Accepteret tæt placering R153-R155"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'R153' && B.Reference == 'R155') || (A.Reference == 'R155' && B.Reference == 'R153')"))
+
+(rule "Accepteret tæt placering U15-U20"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'U15' && B.Reference == 'U20') || (A.Reference == 'U20' && B.Reference == 'U15')"))
+
+(rule "Accepteret tæt placering U23-U29"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'U23' && B.Reference == 'U29') || (A.Reference == 'U29' && B.Reference == 'U23')"))
+
+(rule "Accepteret tæt placering U33-U36"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'U33' && B.Reference == 'U36') || (A.Reference == 'U36' && B.Reference == 'U33')"))
+
+(rule "Accepteret tæt placering U37-U44"
+  (constraint courtyard_clearance (min 0mm))
+  (severity ignore)
+  (condition "(A.Reference == 'U37' && B.Reference == 'U44') || (A.Reference == 'U44' && B.Reference == 'U37')"))
