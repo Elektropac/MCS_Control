@@ -2,6 +2,22 @@
 
 Ét nyt ark: **PoE_5V**, 5 V med mål op til 2 A, tegnet med direkte ledninger. De tidligere 5/12/24 V-ark er arkiveret i backup/PoE-41W-revA. PCB er uændret. Læs [PoE-design.md](PoE-design.md) om integration og resterende hardwarevalidering.
 
+## DRC-oprydning efter import (2026-11-04, branch `hw/drc-oprydning`)
+
+`hardware/tools/fix_easyeda_import.py` rydder importrester på BottomBoard uden at ændre forbindelser
+(alle 938 pads har samme net før/efter; 0 uforbundne). DRC: **1352 → 522 fund**.
+
+- Clearance-regel 0,15 mm (layoutet er lavet med EasyEDA's 6 mil) og kobber-til-kant 0,3 mm.
+- 106 bundkomponenter havde courtyard på forsidens lag → flyttet til B.Courtyard.
+- 312 pads (alle passive R/C/SD0805) havde pasta-margin −100 mm = ingen stencil-åbning → nulstillet.
+- 14 spor med længde 0 fjernet.
+
+**Tilbage — kræver manuel gennemgang:**
+- **6× relæspor for tæt på kanten:** `B_RELAY_NO` 0,14 mm og `B_RELAY_COM` 0,20 mm fra printkanten (x ≈ 197 mm). Skal flyttes ind.
+- 83 courtyard-overlap, mest R/Q tæt på PhotoMOS (U). Tjek om det er reelt eller for store importerede courtyards.
+- 12 spor med løs ende (ikke fjernet automatisk — flere spor har samme net/længde, så en automatisk match kan ramme forkert).
+- ~420 silk-advarsler og 2 tekst-tykkelser (kosmetisk).
+
 # MCS-Control i KiCad
 
 **Seneste ændring:** Sheet_3 er nu erstattet af et nyt W5500/Ethernet-diagram med 52 komponenter efter Waveshares reference. Det er udeladt fra PCB. Se [W5500-Sheet_3.md](W5500-Sheet_3.md) for omfang, grænseflade og kontrol. De øvrige ark og begge PCB-filer er uændrede. Importstatus nedenfor beskriver versionen før denne ændring.
