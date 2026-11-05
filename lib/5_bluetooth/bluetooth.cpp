@@ -234,9 +234,9 @@ namespace bluetooth
     {
         String mac = wifi::make_mac();
         String _name = "Control_" + mac;
-        std::string deviceName = _name.c_str();
 
-        BLEDevice::init(deviceName);
+        // arduino-esp32 3.2.0's BLEDevice::init() takes an Arduino String.
+        BLEDevice::init(_name);
         // Create server
         pServer = BLEDevice::createServer();
         pServer->setCallbacks(new MyServerCallbacks());
@@ -247,7 +247,7 @@ namespace bluetooth
         // Start advertising
         pServer->getAdvertising()->start();
         log_info("[Bluetooth] advertising started");
-        log_info("[Bluetooth] name: %s", deviceName.c_str());
+        log_info("[Bluetooth] name: %s", _name.c_str());
     }
 
     void poll()

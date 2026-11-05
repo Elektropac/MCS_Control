@@ -58,10 +58,12 @@ void sampler_init() {
     s_sample_index = 0;
     s_last_state   = read_signals();
 
-    s_timer = timerBegin(0, 80, true);
-    timerAttachInterrupt(s_timer, &sample_isr, true);
-    timerAlarmWrite(s_timer, SAMPLER_INTERVAL_US, true);
-    timerAlarmEnable(s_timer);
+    // Timer setup — arduino-esp32 3.x API. timerBegin takes a frequency in
+    // Hz directly: 1 MHz gives a 1 µs tick, so the alarm value is simply the
+    // interval in microseconds. (The old 2.x API used prescaler + count.)
+    s_timer = timerBegin(1000000);                       // 1 MHz -> 1 µs ticks
+    timerAttachInterrupt(s_timer, &sample_isr);          // no edge arg in 3.x
+    timerAlarm(s_timer, SAMPLER_INTERVAL_US, true, 0);   // period, autoreload, unlimited
 
     s_ready = true;
 }

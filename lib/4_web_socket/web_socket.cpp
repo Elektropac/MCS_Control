@@ -23,7 +23,9 @@ String make_key()
 
     unsigned char hash[32];
 
-    mbedtls_sha256_ret((const unsigned char *)key.c_str(), key.length(), hash, 0);
+    // ESP-IDF 5.4 (arduino-esp32 3.x) removed the deprecated _ret suffix;
+    // mbedtls_sha256() now has the identical signature.
+    mbedtls_sha256((const unsigned char *)key.c_str(), key.length(), hash, 0);
 
     String result = "";
     for (int i = 0; i < 32; i++)

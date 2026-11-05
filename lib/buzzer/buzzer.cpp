@@ -5,30 +5,30 @@
 // 4 kHz sampler ISR runs). Pin 21 is the buzzer's alone (the old NeoPixel
 // RGB that also claimed pin 21 has been removed).
 // ledcWriteTone() sets frequency AND a 50% duty itself.
+//
+// arduino-esp32 3.x LEDC API is pin-based (channel auto-assigned): we address
+// LEDC by the buzzer pin rather than a fixed channel number.
 // ------------------------------------------
-#define BUZZER_LEDC_CHANNEL   0
-
 static uint8_t s_pin = 0;
 static bool s_playing = false;
 
 void buzzer_tone(uint16_t freq_hz) {
     if (freq_hz == 0) {
-        ledcWrite(BUZZER_LEDC_CHANNEL, 0);
+        ledcWrite(s_pin, 0);
     } else {
-        ledcWriteTone(BUZZER_LEDC_CHANNEL, freq_hz);
+        ledcWriteTone(s_pin, freq_hz);
     }
 }
 
 void buzzer_stop() {
-    ledcWrite(BUZZER_LEDC_CHANNEL, 0);
+    ledcWrite(s_pin, 0);
     s_playing = false;
 }
 
 void buzzer_init(uint8_t pin) {
     s_pin = pin;
-    ledcSetup(BUZZER_LEDC_CHANNEL, 2000, 10);
-    ledcAttachPin(s_pin, BUZZER_LEDC_CHANNEL);
-    ledcWrite(BUZZER_LEDC_CHANNEL, 0);
+    ledcAttach(s_pin, 2000, 10);   // pin, base freq 2 kHz, 10-bit resolution
+    ledcWrite(s_pin, 0);
 }
 
 // ------------------------------------------
