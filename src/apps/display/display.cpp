@@ -1,11 +1,11 @@
-#include "menu.h"
+#include "display.h"
 #include "ssd1306.h"
 #include "logging.h"
-#include "apps/product_display/control_oled_128x64_bitmaps.h"
-#include "apps/product_display/mcs_logo_vert.h"
+#include "oled_bitmaps.h"
+#include "mcs_logo.h"
+#include "mcs_logo_vert.h"
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/pump/pump.h"
-#include "apps/product_display/product_display.h"
 #include "hardware/version.h"
 
 // Read-only access to Niklas' network state (same pattern as the OTA app:
@@ -23,7 +23,37 @@ namespace config {
 }
 
 // -----------------------------------------------------------------
-// Carousel state — owned exclusively by menu_task. No buttons, no queue:
+// Boot splash + panel power (merged from the former product_display app)
+// -----------------------------------------------------------------
+
+// How long the MCS brand logo shows at boot.
+static const uint32_t LOGO_HOLD_MS = 2000;
+
+// The OLED is a fixed display (no buttons, no inactivity sleep) — always on.
+static bool s_panel_on = true;
+
+void display_boot_splash() {
+    log_info("[display] showing MCS logo splash");
+    oled_begin();
+    oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
+    oled_end();
+    vTaskDelay(pdMS_TO_TICKS(LOGO_HOLD_MS));
+}
+
+bool display_panel_on() {
+    return s_panel_on;
+}
+
+void display_wake() {
+    // Panel is always on now; ensure it is (safe no-op in normal operation).
+    if (!s_panel_on) {
+        oled_power(true);
+        s_panel_on = true;
+    }
+}
+
+// -----------------------------------------------------------------
+// Carousel state — owned exclusively by display_task. No buttons, no queue:
 // the task advances on its own timer. This is the cleaned-up base before the
 // config-defined carousel + slide transitions are added.
 //
@@ -355,7 +385,7 @@ static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
     return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/;
 }
 
-static void menu_task(void*) {
+static void display_task(void*) {
     uint16_t step = 0;               // current carousel position
     uint32_t dwell_start = millis(); // when the current screen started
     uint8_t  alarm_idx = 0;
@@ -366,7 +396,7 @@ static void menu_task(void*) {
         // carousel. It redraws fast (blink) and never advances the carousel. ---
         uint8_t alarms = collect_alarms();
         if (alarms > 0) {
-            product_display_wake();
+            display_wake();
             if (alarm_idx >= alarms) alarm_idx = 0;
             if (alarms > 1 && millis() - alarm_cycle_ms > ALARM_CYCLE_MS) {
                 alarm_cycle_ms = millis();
@@ -400,6 +430,6 @@ static void menu_task(void*) {
     }
 }
 
-void menu_start() {
-    xTaskCreate(menu_task, "display", 4096, nullptr, 1, nullptr);
+void display_start() {
+    xTaskCreate(display_task, "display", 4096, nullptr, 1, nullptr);
 }

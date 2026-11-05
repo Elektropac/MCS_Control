@@ -19,9 +19,8 @@ namespace config {
 #include "platform/sampler.h"
 #include "platform/channels_setup.h"
 #include "apps/flow_guard/flow_guard.h"
-#include "apps/product_display/product_display.h"
+#include "apps/display/display.h"
 #include "apps/product_router/product_router.h"
-#include "apps/menu/menu.h"
 #include "apps/ota/ota.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
@@ -43,12 +42,12 @@ void setup() {
     flow_guard_init();              // flow guard state (cursor synced to sampler)
     all_drivers_init();             // probe I2C chips + init all peripherals
 
-    mcs_logo_show_splash();         // MCS brand logo at boot (~2s)
+    display_boot_splash();          // MCS brand logo at boot (~2s)
     // Boot shows the MCS logo splash; the carousel then takes over the OLED,
     // auto-scrolling through the config-defined screens (no buttons — the
     // TopBoard with its 5 buttons + display has been removed; the OLED is now
     // a fixed display driven entirely by config / web / BLE).
-    menu_start();                   // OLED carousel (auto-scrolling, config-defined)
+    display_start();                // OLED carousel (auto-scrolling, config-defined)
 
     channels_setup();               // device-level: set channel supply voltage
     start_product_apps();           // start the apps for what the config contains

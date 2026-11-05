@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCS Control — Firmware Runtime Flowchart</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --mcs-blue:#047cd2; --mcs-blue-d:#0362a6; --heading:#2a3139; --body:#4d5968;
+    --bg:#f6f8fa; --card:#fff; --line:#e3e8ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Nunito Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--bg);color:var(--body);line-height:1.55}
+  header{background:linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d));color:#fff;
+    padding:28px 32px}
+  header h1{margin:0 0 4px;font-size:24px;font-weight:800}
+  header p{margin:0;opacity:.9;font-size:14px}
+  main{max-width:1100px;margin:0 auto;padding:24px 20px 64px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;margin:18px 0;box-shadow:0 1px 3px rgba(16,40,70,.05)}
+  h2{color:var(--heading);font-size:18px;margin:4px 0 12px;font-weight:800}
+  h3{color:var(--heading);font-size:15px;margin:16px 0 6px;font-weight:700}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:13px;margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--heading);font-weight:700;background:#f0f4f8}
+  td code{background:#eef3f8;padding:1px 6px;border-radius:4px;font-size:12px}
+  .note{font-size:13px;color:#6b7785}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.isr{background:#ffe3e3;color:#b42318}
+  .pill.p1{background:#e7f1fb;color:#0362a6}
+  .pill.p2{background:#def7ec;color:#046c4e}
+  .mermaid{overflow-x:auto}
+  footer{max-width:1100px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:#8a94a0}
+</style>
+</head>
+<body>
+<header>
+  <h1>MCS Control — Firmware Runtime Flowchart</h1>
+  <p>What runs where: boot sequence, FreeRTOS tasks, the sampler ISR, and data flow. Branch <code style="background:rgba(255,255,255,.2);padding:1px 6px;border-radius:4px">hw/drop-topboard-buttons</code> · arduino-esp32 3.x · generated 2026-11-05</p>
+</header>
+
+<main>
+
+  <div class="card">
+    <h2>Boot sequence — <code>setup()</code> in main.cpp</h2>
+    <p class="note">Runs once at power-on, in order. Each green "task" box below is spawned here and then runs forever on its own. After setup(), <code>loop()</code> just suspends itself — all work is in tasks + the ISR.</p>
+    <div class="mermaid">
+flowchart TD
+  P([Power on]) --> L[log_init]
+  L --> FS[file_system::init]
+  FS --> CFG[config::init<br/><span>read /config.json</span>]
+  CFG --> I2C[i2c_init<br/>bus + mutex]
+  I2C --> SMP[sampler_init<br/>starts 4 kHz timer ISR]
+  SMP --> FG0[flow_guard_init]
+  FG0 --> DRV[all_drivers_init<br/>probe I2C chips: voltage sel, input cfg,<br/>relays, 2x ADS1115 · init OLED + buzzer]
+  DRV --> SPL[mcs_logo_show_splash ~2s]
+  SPL --> MENU[display_start<br/>&rarr; display task]
+  MENU --> CH[channels_setup<br/>set channel supply voltage]
+  CH --> SPA[start_product_apps<br/>capability router]
+  SPA --> NET[network_start_task<br/>&rarr; 4 network tasks]
+  NET --> SER[serial_cmd_start_task]
+  SER --> OTA[otaInit + ota_start_task]
+  OTA --> END([setup done &rarr; loop suspends])
+
+  classDef step fill:#e7f1fb,stroke:#047cd2,color:#0362a6;
+  classDef spawn fill:#def7ec,stroke:#046c4e,color:#046c4e;
+  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318;
+  class P,L,FS,CFG,I2C,FG0,DRV,SPL,CH,END step;
+  class MENU,SPA,NET,SER,OTA spawn;
+  class SMP isr;
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#e7f1fb;border-color:#047cd2"></span> boot step (one-shot)</span>
+      <span><span class="swatch" style="background:#def7ec;border-color:#046c4e"></span> spawns RTOS task(s)</span>
+      <span><span class="swatch" style="background:#ffe3e3;border-color:#b42318"></span> hardware ISR</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Capability router — <code>start_product_apps()</code></h2>
+    <p class="note">No fixed "product" — the firmware reads <code>groups[]</code> from config and starts only the apps the config actually needs.</p>
+    <div class="mermaid">
+flowchart TD
+  R[read config groups] --> Q{what's in config?}
+  Q -->|probe groups &gt; 0| PR[cloudgauge_init<br/>+ flow_guard task<br/>+ cloudgauge task]
+  Q -->|pump groups &gt; 0| PU[pump_init<br/>+ pump task]
+  Q -->|probe OR pump| RE[rule_engine_init<br/>+ rule_engine task]
+  Q -->|nothing| NN[log error: nothing to start]
+
+  classDef step fill:#e7f1fb,stroke:#047cd2,color:#0362a6;
+  classDef spawn fill:#def7ec,stroke:#046c4e,color:#046c4e;
+  class R,Q,NN step;
+  class PR,PU,RE spawn;
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Everything running after boot</h2>
+
+    <h3>Always on</h3>
+    <table>
+      <tr><th>What</th><th>Type</th><th>Prio / stack</th><th>Job</th></tr>
+      <tr><td><code>sample_isr</code></td><td><span class="pill isr">timer ISR</span></td><td>1 MHz tick, fires every 250 µs (4 kHz)</td><td>Reads all 8 digital inputs, logs state changes to a ring buffer. Basis for pulse counting + flow guard.</td></tr>
+      <tr><td><code>display</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> 4096</td><td>Owns the OLED. Auto-scrolling carousel (HOME → tanks → pumps → INFO). Alarm overlay takes over on low/overfill.</td></tr>
+      <tr><td><code>network</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> 8192</td><td>Ethernet (W5500) + WiFi stack, link management.</td></tr>
+      <tr><td><code>web_server</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> 8192</td><td>Serves the web UI (tanks/pumps/setup/test/ota) + /api/function_silo.</td></tr>
+      <tr><td><code>web_socket</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> 8192</td><td>WebSocket link to the server/Nexus.</td></tr>
+      <tr><td><code>bluetooth</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> 8192</td><td>BLE (Niklas) — device access over Bluetooth.</td></tr>
+      <tr><td><code>serial_cmd</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> 4096</td><td>Serial debug console (send <code>?</code> for help).</td></tr>
+      <tr><td><code>ota</code></td><td><span class="pill p1">task</span></td><td><span class="pill p1">P1</span> ~8K</td><td>Idle until a web/UI request. Fueling-safe gate: never flashes during a transaction.</td></tr>
+    </table>
+
+    <h3>Started only if the config needs them (capability-driven)</h3>
+    <table>
+      <tr><th>What</th><th>Prio / stack</th><th>Starts when</th><th>Job</th></tr>
+      <tr><td><code>cloudgauge</code></td><td><span class="pill p2">P2</span> 4096</td><td>probe groups &gt; 0</td><td>Measures 4–20 mA probes → mm → litres (LUT). A/B alternating. Owns measurement.</td></tr>
+      <tr><td><code>flow_guard</code></td><td><span class="pill p1">P1</span> 2048</td><td>probe groups &gt; 0</td><td>Watches the sampler for unauthorised flow (pulses without a transaction).</td></tr>
+      <tr><td><code>pump</code></td><td><span class="pill p2">P2</span> 4096</td><td>pump groups &gt; 0</td><td>Fueling controller: nozzle, pulse counting → litres, relay, preset stop.</td></tr>
+      <tr><td><code>rule_engine</code></td><td><span class="pill p2">P2</span> 6144</td><td>probe OR pump</td><td>Runs the config <code>rules[]</code> (IF/THEN/ELSE) for both probes and pumps. Reads state, drives relays/notify.</td></tr>
+    </table>
+
+    <h3>Available but not auto-started in the current boot path</h3>
+    <table>
+      <tr><th>What</th><th>Prio / stack</th><th>Note</th></tr>
+      <tr><td><code>poseidon</code> (generic IO)</td><td><span class="pill p2">P2</span> 4096</td><td>Has <code>poseidon_start_task()</code> but product_router doesn't call it — wire in if a Poseidon/IO capability is added.</td></tr>
+      <tr><td><code>service_ap</code></td><td>no task</td><td>SoftAP module intact; its OLED trigger was removed with the buttons. Needs a new trigger (boot-window or config) in the carousel step.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Data flow — how a reading reaches the outside</h2>
+    <div class="mermaid">
+flowchart LR
+  HW[Field inputs<br/>probes / pulses / nozzle] --> ISR[sampler ISR<br/>4 kHz ring buffer]
+  HW --> ADC[ADS1115 ADC<br/>4-20 mA]
+  ADC --> CG[cloudgauge task<br/>mA&rarr;mm&rarr;L]
+  ISR --> PUMP[pump task<br/>count pulses&rarr;L]
+  ISR --> FG[flow_guard]
+  CG --> RE[rule_engine<br/>IF/THEN/ELSE]
+  PUMP --> RE
+  RE --> RLY[relays / buzzer / notify]
+  CG --> FSILO[function_silo<br/>subject dispatcher]
+  PUMP --> FSILO
+  FSILO --> WEB[web_server<br/>/api + pages]
+  FSILO --> WS[web_socket &rarr; server]
+  FSILO --> BLE[bluetooth]
+  CG --> OLED[display task<br/>OLED carousel]
+  PUMP --> OLED
+
+  classDef hw fill:#fff4e5,stroke:#b76e00,color:#8a5300;
+  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318;
+  classDef task fill:#def7ec,stroke:#046c4e,color:#046c4e;
+  classDef hub fill:#e7f1fb,stroke:#047cd2,color:#0362a6;
+  class HW,ADC hw; class ISR isr;
+  class CG,PUMP,FG,RE,OLED task;
+  class FSILO,WEB,WS,BLE,RLY hub;
+    </div>
+    <p class="note"><b>function_silo</b> is the central dispatcher: web/websocket/BLE all send a "subject" (e.g. <code>cloudgauge_get_all</code>, <code>state_get_all</code>, <code>ota_check</code>) and it routes to the right app and returns JSON. One door in, many apps behind it.</p>
+  </div>
+
+</main>
+<footer>
+  Generated from source on branch hw/drop-topboard-buttons. Priorities/stack sizes read from the <code>xTaskCreate</code> calls. Keep this in sync if tasks are added/removed.
+</footer>
+
+<script>
+  mermaid.initialize({startOnLoad:true, theme:"base", themeVariables:{
+    fontFamily:'"Nunito Sans",system-ui,sans-serif', fontSize:'14px',
+    primaryColor:'#e7f1fb', primaryBorderColor:'#047cd2', primaryTextColor:'#2a3139',
+    lineColor:'#8aa0b4'
+  }});
+</script>
+</body>
+</html>
