@@ -5,6 +5,8 @@
 #include "web_socket.h"
 #include "queues.h"
 #include "web_server.h"
+#include "bluetooth.h"
+
 #include "platform/task_registry.h"
 #include "apps/service_ap/service_ap.h"
 
@@ -25,6 +27,7 @@ static void network_task(void* param) {
     for (;;) {
         w5500::poll();
         wifi::poll();
+        service_ap::poll();        // captive-portal DNS (no-op when AP off)
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
@@ -58,7 +61,22 @@ static void web_socket_task(void* param) {
     // Poll loop
     for (;;) {
         web_socket::poll();
-        service_ap::poll();        // captive-portal DNS (no-op when AP off)
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+static void bluetooth_task(void* param) {
+    (void)param;
+
+    while(!network_initialized) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    bluetooth::init();
+
+    // Poll loop
+    for (;;) {
+        bluetooth::poll();
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
@@ -68,9 +86,11 @@ void network_start_task() {
     TaskHandle_t networkHandle = nullptr;
     TaskHandle_t webServerHandle = nullptr;
     TaskHandle_t webSocketHandle = nullptr;
+    TaskHandle_t bluetoothHandle = nullptr;
     int networkSize = 1024 * 8;
     int webServerSize = 1024 * 8;
     int webSocketSize = 1024 * 8;
+    int bluetoothSize = 1024 * 8;
 
     xTaskCreate(
         network_task,
@@ -102,6 +122,16 @@ void network_start_task() {
         &webSocketHandle
     );
     task_register(webSocketHandle, "web_socket", 1, webSocketSize);
+
+    xTaskCreate(
+        bluetooth_task,
+        "bluetooth",
+        bluetoothSize,
+        nullptr,
+        1,
+        &bluetoothHandle
+    );
+    task_register(bluetoothHandle, "bluetooth", 1, bluetoothSize);
 }
 
 

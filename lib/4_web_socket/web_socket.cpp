@@ -59,13 +59,28 @@ namespace web_socket
         web_socket_client = new WebSocketClient(ssl_manager.client(), host.c_str(), port);
         ssl_manager.configure(host.c_str(), port, use_ssl);
 
-        // path = /ws/<mac_address> + ?key=<generated_key> + &config_version=<config_version>
-        String path = "/control/ws/" + wifi::make_mac() + "?key=" + make_key() + "&config_version=" + config::config_version;
+        String mac = wifi::make_mac();
+        String key = make_key();
 
-        log_info("[web_socket] WebSocket connecting to %s:%d%s", host.c_str(), port, path.c_str());
+        // path = /ws/device/<mac_address>/<generated_key>/<config_version>
+        String path = "/ws/device/" + mac + "/" + key + "/" + config::config_version;
 
-        auto init_result = web_socket_client->begin(path.c_str());
+        log_info("[web_socket] WebSocket connecting to %s:%d", host, port);
+        log_info("[web_socket] WebSocket mac: %s", mac.c_str());
+        log_info("[web_socket] WebSocket key: %s", key.c_str());
+        log_info("[web_socket] WebSocket config version: %s", config::config_version.c_str());
+
+        auto init_result = web_socket_client->begin(path);
         is_secure = ssl_manager.isSecure();
+
+        if (use_ssl && !is_secure)
+        {
+            log_error("[web_socket] Failed to establish a secure connection.");
+            web_socket_client->stop();
+            delete web_socket_client;
+            web_socket_client = nullptr;
+            return false;
+        }
 
         if (init_result == 0)
         {

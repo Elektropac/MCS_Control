@@ -61,10 +61,10 @@ namespace config
             return;
         }
 
-        auto is_config_version = config["config"]["config_version"].isNull();
+        auto is_config_version = config["config_version"].isNull();
         if (!is_config_version)
         {
-            config_version = config["config"]["config_version"].as<String>();
+            config_version = config["config_version"].as<String>();
         }
 
         auto is_wifi_object = config["config"]["connection"]["settings"]["wifi"].isNull();
