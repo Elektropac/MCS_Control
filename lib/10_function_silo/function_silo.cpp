@@ -11,6 +11,7 @@
 #include "apps/setup_info/setup_info.h"
 #include "apps/pump/pump.h"
 #include "apps/rule_engine/rule_engine.h"
+#include "apps/state/state.h"
 #include "apps/test_api/test_api.h"
 #include "apps/ota/ota.h"
 
@@ -133,6 +134,10 @@ namespace function_silo
             ESP.restart();
             return "{\"result\": \"Rebooting...\"}";
         }
+        else if (function_name == "ping")
+        {
+            return "{\"result\":\"pong\"}";
+        }
 
         // -- poseidon io --
 
@@ -166,6 +171,12 @@ namespace function_silo
             JsonObject json_object = json_packet["data"].as<JsonObject>();
             const char* pin = json_object["pin"];
             return poseidon_io_reset_pulses(pin ? pin : "");
+        }
+
+        // -- global state aggregator (read-only) --
+        else if (function_name == "state_get_all")
+        {
+            return state_get_all();
         }
 
         // -- hardware test API (web/test.html) --
