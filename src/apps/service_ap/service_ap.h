@@ -25,7 +25,7 @@ namespace service_ap
     // Stop the SoftAP and release AP resources (leaves station mode intact).
     void stop();
 
-    // Toggle convenience for a single menu button. Returns the new state.
+    // Toggle the AP on/off. Returns the new state.
     bool toggle();
 
     // Service the captive-portal DNS. Call regularly from the network task

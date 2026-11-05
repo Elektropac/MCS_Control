@@ -3,7 +3,6 @@
 #include "mcs_logo.h"
 #include "ssd1306.h"
 #include "logging.h"
-#include "apps/menu/menu.h"
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -20,12 +19,8 @@ static const uint32_t SPLASH_HOLD_MS = 2500;
 // How long the MCS brand logo shows before the product splash.
 static const uint32_t LOGO_HOLD_MS = 2000;
 
-// Turn the panel off after this much inactivity (10 minutes).
-static const uint32_t INACTIVITY_TIMEOUT_MS = 10UL * 60UL * 1000UL; // 10 min
-
-// Shared state for the power manager.
-static volatile uint32_t s_last_activity_ms = 0;   // millis() of last activity
-static volatile bool     s_panel_on         = true;
+// The OLED is a fixed display now (no buttons, no inactivity sleep).
+static bool s_panel_on = true;
 
 // Map a guide name to its 128x64 bitmap. Returns nullptr if unknown.
 // Product names: CloudGauge2, Sapphire Lite Mini, Poseidon, Bridge.
@@ -74,54 +69,19 @@ void product_display_show_splash() {
 }
 
 // -----------------------------------------------------------------
-// Power manager
+// Power
+//
+// The OLED is a fixed display (no buttons to wake it), so it stays on. These
+// helpers remain for the alarm overlay but there is no inactivity sleep.
 // -----------------------------------------------------------------
 bool product_display_panel_on() {
     return s_panel_on;
 }
 
-bool product_display_mark_activity() {
-    s_last_activity_ms = millis();
-    if (!s_panel_on) {
-        // Was asleep: wake to the HOME screen. Draw HOME into the hidden buffer
-        // first, then power on, so no stale frame flashes. Return true so the
-        // caller knows this press was "wake only" (not navigation).
-        menu_go_home();
-        oled_power(true);
-        s_panel_on = true;
-        log_info("[product_display] woke panel on activity");
-        return true;
-    }
-    return false;
-}
-
 void product_display_wake() {
-    // Turn the panel on without changing what's shown (used by the alarm
-    // overlay so an alarm lights up a sleeping screen). Also resets the
-    // inactivity clock so the panel stays on while the alarm is active.
-    s_last_activity_ms = millis();
+    // Panel is always on now; ensure it is (safe no-op in normal operation).
     if (!s_panel_on) {
         oled_power(true);
         s_panel_on = true;
-        log_info("[product_display] woke panel for alarm");
     }
-}
-
-static void display_power_task(void* param) {
-    (void)param;
-    for (;;) {
-        if (s_panel_on &&
-            (millis() - s_last_activity_ms) >= INACTIVITY_TIMEOUT_MS) {
-            oled_power(false);
-            s_panel_on = false;
-            log_info("[product_display] inactivity timeout — panel off");
-        }
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-
-void product_display_start_power_manager() {
-    s_last_activity_ms = millis();   // start the clock now (after splash)
-    s_panel_on = true;
-    xTaskCreate(display_power_task, "disp_power", 2048, nullptr, 1, nullptr);
 }

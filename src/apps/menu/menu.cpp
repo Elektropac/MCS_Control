@@ -6,9 +6,6 @@
 #include "apps/cloudgauge/cloudgauge.h"
 #include "apps/pump/pump.h"
 #include "apps/product_display/product_display.h"
-#include "apps/ota/ota.h"
-#include "apps/service_ap/service_ap.h"
-#include "qrcodegen.h"
 #include "hardware/version.h"
 
 // Read-only access to Niklas' network state (same pattern as the OTA app:
@@ -18,49 +15,36 @@ namespace wifi  { extern bool connected; extern String mac; extern IPAddress loc
 #include <ArduinoJson.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <freertos/queue.h>
 
-// config_read_string for the guide (product image on HOME).
+// config_read_string for the guide (product name on HOME).
 namespace config {
     String config_read_string(const char* section, const char* key,
                               const char* fallback);
 }
 
 // -----------------------------------------------------------------
-// State — owned exclusively by menu_task. The buttons task never touches it;
-// it posts Button events to s_queue and menu_task applies them. This is the
-// canonical RTOS pattern: one owner, no shared mutable state, no races.
+// Carousel state — owned exclusively by menu_task. No buttons, no queue:
+// the task advances on its own timer. This is the cleaned-up base before the
+// config-defined carousel + slide transitions are added.
+//
+// The carousel is a flat sequence of screens built fresh each cycle from live
+// data: HOME, then one screen per tank, then one per pump, then INFO. The
+// screen kind + an index (which tank/pump) fully describe what to draw.
 // -----------------------------------------------------------------
-enum Section : uint8_t { SEC_HOME = 0, SEC_TANKS = 1, SEC_PUMPS = 2, SEC_UPDATE = 3, SEC_INFO = 4, SEC_SERVICE = 5, SEC_COUNT = 6 };
+enum ScreenKind : uint8_t { SCR_HOME, SCR_TANK, SCR_PUMP, SCR_INFO };
 
-static Section s_section = SEC_HOME;
-static uint8_t s_index   = 0;      // item within section
-static uint8_t s_count   = 0;      // items in current section (set by renderers)
-static bool    s_detail  = false;  // detail page open for current item
+// How long each screen is held before advancing (static swap for now).
+static const uint32_t DWELL_MS = 4000;
 
-// UPDATE section: which release in the list is highlighted for install.
-static uint8_t s_ota_sel = 0;
-
-// Alarm snooze: a button press while an alarm is showing dismisses the overlay
-// for this long so the user can use the menu. It re-pops when the time elapses
-// (as long as the alarm is still active).
-static volatile uint32_t s_alarm_snooze_until = 0;
-static const uint32_t ALARM_SNOOZE_MS = 30000;   // 30s
-
-static QueueHandle_t s_queue = nullptr;   // Button events: buttons -> menu
-// Signals a forced jump to HOME (e.g. wake from sleep) without a button.
-static volatile bool s_want_home = false;
+// Alarm cycling period when several probes are alarming at once.
+static const uint32_t ALARM_CYCLE_MS = 2500;
 
 // -----------------------------------------------------------------
-// Helpers
+// Renderers (unchanged from the button era — these are display-only and are
+// reused by the carousel). Each draws one full 128x64 frame.
 // -----------------------------------------------------------------
 
-// -----------------------------------------------------------------
-// Renderers
-// -----------------------------------------------------------------
-
-// Map the internal guide id to a human-readable display name. Unknown/custom
-// guides fall back to showing whatever the config holds (or "MCS Control").
+// Map the internal guide id to a human-readable display name.
 static String guide_display_name() {
     String g = config::config_read_string("config", "guide", "");
     if (g == "cloudgauge2")        return "CloudGauge 2";
@@ -71,18 +55,13 @@ static String guide_display_name() {
     return g;   // custom/unknown: show the raw name
 }
 
-// HOME screen: a short animation where the MCS logo zooms down from full
-// screen into a small top-left corner mark, then the guide name appears
-// centered. After the animation it settles to (corner logo + centered name).
+// HOME screen: vertical MCS logo down the left edge + the guide name filling
+// the rest of the screen (auto-sized, word-wrapped up to 3 lines).
 static void render_home() {
-    s_count = 0;
     String name = guide_display_name();
 
     oled_begin();
 
-    // --- Vertical MCS logo down the LEFT edge, guide name filling the
-    // rest of the screen (full height), centered in that region. The vertical
-    // logo frees the whole height so even 3-line names fit comfortably. ---
     oled_draw_bitmap(1, (64 - mcs_logo_vert_h) / 2,
                      mcs_logo_vert, mcs_logo_vert_w, mcs_logo_vert_h);
 
@@ -95,7 +74,6 @@ static void render_home() {
         int lineH = sz + 3;
         String lines[3]; int nlines = 0; int start = 0; bool fits = true;
         while (start < (int)name.length() && nlines < 3) {
-            // Grow line word-by-word while it fits the region width.
             int end = start, lastSpace = -1;
             while (end < (int)name.length()) {
                 int nextSpace = name.indexOf(' ', end);
@@ -136,12 +114,13 @@ static void render_home() {
     oled_end();
 }
 
-static void render_tanks() {
+// TANK screen for probe index `idx`. Shows name, reading, percent + an
+// animated horizontal tank graphic.
+static void render_tank(uint8_t idx) {
     JsonDocument doc;
     deserializeJson(doc, cloudgauge_get_all());
     JsonArray probes = doc["probes"].as<JsonArray>();
     uint8_t n = probes.size();
-    s_count = n;
 
     oled_begin();
 
@@ -152,25 +131,19 @@ static void render_tanks() {
         return;
     }
 
-    if (s_index >= n) s_index = n - 1;
-    JsonObject p = probes[s_index];
+    if (idx >= n) idx = n - 1;
+    JsonObject p = probes[idx];
 
     const char* name  = p["id"]    | "Tank";
     int liters        = p["liters"] | 0;
     int mm            = p["mm"]      | 0;
     bool has_lut      = p["has_lut"] | false;
-    // pct is emitted as a raw JSON number (serialized), so read it as a float —
-    // reading it as a string returns null and silently became 0% before.
     float pctf        = p["pct"]    | 0.0f;
     const char* state = p["state"]  | "normal";
 
-    // Header: name (left) + page counter (right)
     oled_printf_left(0, "%s", name);
-    oled_printf_right(0, "%d/%d", s_index + 1, n);
+    oled_printf_right(0, "%d/%d", idx + 1, n);
 
-    // Values line: left shows the best available reading, right shows percent.
-    // With a LUT we have litres; without one, litres is 0 and meaningless, so
-    // show the measured level in mm instead (never a misleading "0 L").
     int fill = (int)(pctf + 0.5f);
     if (fill < 0) fill = 0; if (fill > 100) fill = 100;
     if (has_lut && liters > 0) oled_printf_left(1, "%d L", liters);
@@ -182,7 +155,7 @@ static void render_tanks() {
     if (label) oled_printf_right(1, "%s", label);
     else       oled_printf_right(1, "%d%%", fill);
 
-    // --- Horizontal tank graphic with animated liquid (ported from old FW) ---
+    // --- Horizontal tank graphic with animated liquid ---
     const int tankX = 5,  tankY = 34, tankW = 118, tankH = 26;
     const int neckW = 18, neckH = 4;
     const int footW = 10, footH = 3;
@@ -197,11 +170,11 @@ static void render_tanks() {
     const int liquidTop  = innerY + innerH - fillHeight;
     const int wavePhase  = (millis() / 260) % 2;
 
-    oled_draw_rframe(tankX, tankY, tankW, tankH, 7);  // tank body (rounded)
-    oled_draw_frame(neckX, neckY, neckW, neckH);   // neck
-    oled_draw_box(leftFootX, footY, footW, footH); // feet
+    oled_draw_rframe(tankX, tankY, tankW, tankH, 7);
+    oled_draw_frame(neckX, neckY, neckW, neckH);
+    oled_draw_box(leftFootX, footY, footW, footH);
     oled_draw_box(rightFootX, footY, footW, footH);
-    oled_draw_line(leftFootX - 6, footY + footH, rightFootX + footW + 6, footY + footH); // ground
+    oled_draw_line(leftFootX - 6, footY + footH, rightFootX + footW + 6, footY + footH);
 
     if (fillHeight > 0) {
         const int innerBottom = innerY + innerH - 1;
@@ -214,7 +187,6 @@ static void render_tanks() {
             const int rowW = innerW - inset * 2;
             if (rowW > 0) oled_draw_line(innerX + inset, y, innerX + inset + rowW - 1, y);
         }
-        // Wave crest on the surface
         for (int x = 0; x < innerW; x += 4) {
             const int waveY = liquidTop + (((x / 4) + wavePhase) % 2);
             int x2 = innerX + x + 2; if (x2 >= innerX + innerW) x2 = innerX + innerW - 1;
@@ -225,12 +197,12 @@ static void render_tanks() {
     oled_end();
 }
 
-static void render_pumps() {
+// PUMP screen for pump index `idx`.
+static void render_pump(uint8_t idx) {
     JsonDocument doc;
     deserializeJson(doc, pump_get_all());
     JsonArray pumps = doc["pumps"].as<JsonArray>();
     uint8_t n = pumps.size();
-    s_count = n;
 
     oled_begin();
 
@@ -241,16 +213,16 @@ static void render_pumps() {
         return;
     }
 
-    if (s_index >= n) s_index = n - 1;
-    JsonObject p = pumps[s_index];
+    if (idx >= n) idx = n - 1;
+    JsonObject p = pumps[idx];
 
     const char* name   = p["name"]  | "Pump";
     bool nozzle_lifted = p["nozzle_lifted"] | false;
     bool relay_on      = p["relay_on"]      | false;
-    float litres       = p["litres"] | 0.0f;   // serialized number
+    float litres       = p["litres"] | 0.0f;
 
     oled_printf_left(0, "%s", name);
-    oled_printf_right(0, "%d/%d", s_index + 1, n);
+    oled_printf_right(0, "%d/%d", idx + 1, n);
 
     oled_printf_left(1, "Nozzle: %s", nozzle_lifted ? "LIFTED" : "HUNG");
     oled_printf_left(2, "Pump:   %s", relay_on ? "ON" : "OFF");
@@ -259,159 +231,14 @@ static void render_pumps() {
     oled_end();
 }
 
-// Compare dotted versions: <0 if a<b, 0 equal, >0 if a>b. Mirrors web UI.
-static int ota_cmp_ver(const String& a, const String& b) {
-    int ia = 0, ib = 0;
-    while (ia < (int)a.length() || ib < (int)b.length()) {
-        long na = 0, nb = 0;
-        while (ia < (int)a.length() && a[ia] != '.') { na = na * 10 + (a[ia] - '0'); ia++; }
-        while (ib < (int)b.length() && b[ib] != '.') { nb = nb * 10 + (b[ib] - '0'); ib++; }
-        if (na != nb) return na < nb ? -1 : 1;
-        if (ia < (int)a.length()) ia++;   // skip '.'
-        if (ib < (int)b.length()) ib++;
-    }
-    return 0;
-}
-
-// 20x20 firmware/chip icon (download arrow into a chip). MSB-first, PROGMEM.
-static const uint8_t fw_chip_20x20[] PROGMEM = {
-    0x03,0x00,0x00, 0x03,0x00,0x00, 0x03,0x00,0x00, 0x03,0x00,0x00,
-    0x33,0x30,0x00, 0x1B,0x60,0x00, 0x0F,0xC0,0x00, 0x07,0x80,0x00,
-    0x03,0x00,0x00, 0x00,0x00,0x00, 0x7F,0xF0,0x00, 0x40,0x10,0x00,
-    0x4E,0xD0,0x00, 0x4E,0xD0,0x00, 0x40,0x10,0x00, 0x7F,0xF0,0x00,
-    0x40,0x10,0x00, 0x7F,0xF0,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00
-};
-
-// Draw a horizontal progress bar (outline + fill) at x,y of size w,h.
-static void draw_progress(int x, int y, int w, int h, int pct) {
-    if (pct < 0) pct = 0; if (pct > 100) pct = 100;
-    oled_draw_rframe(x, y, w, h, 2);
-    int innerW = w - 4;
-    int fillW = innerW * pct / 100;
-    if (fillW > 0) oled_draw_rbox(x + 2, y + 2, fillW, h - 4, 1);
-}
-
-// Draw the shared header (icon + "Firmware" + current version + divider).
-static void draw_update_header(const String& cur) {
-    oled_draw_bitmap(4, 2, fw_chip_20x20, 24, 20);  // icon x4-27, y2-21
-    oled_draw_str(32, 15, "Firmware");               // baseline y15 (text ~y6-15)
-    char vbuf[16]; snprintf(vbuf, sizeof(vbuf), "v%s", cur.c_str());
-    int w = oled_text_width(vbuf);
-    oled_draw_str(126 - w, 15, vbuf);                // right-aligned
-    oled_draw_line(0, 24, 127, 24);                  // divider
-}
-
-// OTA / firmware update screen. UP/DOWN picks a release, OK acts in context:
-//   no releases loaded  -> Check for updates
-//   release highlighted  -> Install / Downgrade / Reinstall (same as web UI)
-static void render_update() {
-    const size_t rels = otaReleaseCount();
-    // Navigable items = all releases + 1 trailing "Check again" entry, so the
-    // user can always re-scan the server even after a list is loaded.
-    s_count = (uint8_t)(rels + 1);
-    if (s_ota_sel >= s_count) s_ota_sel = s_count - 1;
-
-    const String cur = String(otaCurrentVersion());
-    const OtaState st = otaState();
-    const bool busy  = otaBusy();
-
-    oled_begin();
-    draw_update_header(cur);
-
-    // --- Busy: downloading with live progress bar ---
-    if (busy || st == OTA_UPDATING) {
-        size_t dl = otaDownloadedBytes();
-        size_t tot = otaDownloadTotalBytes();
-        int pct = (tot > 0) ? (int)((uint64_t)dl * 100 / tot) : 0;
-        oled_draw_str_center(38, "Downloading...");
-        draw_progress(12, 44, 104, 11, pct);
-        char b[24]; snprintf(b, sizeof(b), "%d%%", pct);
-        oled_draw_str_center(63, b);
-        oled_end();
-        return;
-    }
-
-    // --- Fueling-wait: warning triangle + text ---
-    if (st == OTA_WAITING_FUELING) {
-        oled_draw_line(20, 52, 32, 34); oled_draw_line(32, 34, 44, 52);
-        oled_draw_line(20, 52, 44, 52); oled_draw_line(32, 44, 32, 48);
-        oled_draw_str(52, 42, "Fueling");
-        oled_draw_str(52, 54, "active");
-        oled_end();
-        return;
-    }
-    // --- Success: checkmark ---
-    if (st == OTA_SUCCESS) {
-        oled_draw_line(40, 44, 48, 52); oled_draw_line(48, 52, 64, 34);
-        oled_draw_str(72, 48, "Done");
-        oled_end();
-        return;
-    }
-    // --- Error ---
-    if (st == OTA_ERROR) {
-        oled_draw_str_center(42, "Update failed");
-        oled_draw_str_center(56, "OK = retry");
-        oled_end();
-        return;
-    }
-
-    // --- No releases loaded yet: only the Check item exists ---
-    if (rels == 0) {
-        oled_draw_str_center(40, "No releases loaded");
-        oled_draw_rframe(34, 47, 60, 15, 3);
-        oled_draw_str_center(58, "OK: Check");
-        oled_end();
-        return;
-    }
-
-    // --- Trailing "Check again" item selected ---
-    if (s_ota_sel >= rels) {
-        oled_draw_str_center(38, "Re-scan server");
-        oled_draw_rframe(17, 46, 94, 15, 3);
-        oled_draw_str_center(57, "OK: Check again");
-        oled_end();
-        return;
-    }
-
-    // --- Idle with a release selected: version transition + action ---
-    const String sel = otaReleaseVersionAt(s_ota_sel);
-    int c = ota_cmp_ver(sel, cur);
-    const char* verb = c < 0 ? "Downgrade" : (c > 0 ? "Install" : "Reinstall");
-
-    // Middle row (y~34-40): "v<cur>  ->  v<sel>"
-    char cb[16], sb[16];
-    snprintf(cb, sizeof(cb), "v%s", cur.c_str());
-    snprintf(sb, sizeof(sb), "v%s", sel.c_str());
-    oled_draw_str(4, 39, cb);                        // left
-    int sw = oled_text_width(sb);
-    oled_draw_str(124 - sw, 39, sb);                 // right
-    // arrow in the middle (around x58-70, y36)
-    oled_draw_line(56, 36, 70, 36);
-    oled_draw_line(70, 36, 66, 32); oled_draw_line(70, 36, 66, 40);
-    // page indicator (left) + action button (right-centered)
-    char pg[12]; snprintf(pg, sizeof(pg), "%u/%u", (unsigned)(s_ota_sel + 1), (unsigned)rels);
-    oled_draw_str(2, 61, pg);
-    oled_draw_rframe(30, 48, 94, 15, 3);
-    char ab[24]; snprintf(ab, sizeof(ab), "OK: %s", verb);
-    int aw = oled_text_width(ab);
-    oled_draw_str(30 + (94 - aw) / 2, 59, ab);
-    oled_end();
-}
-
-// System / device info screen: firmware, hardware + module revision, MAC, IP.
-// The MAC is the device's permanent identity (eFuse). IP comes from whichever
-// interface is up (Ethernet preferred, else WiFi). All reads are read-only.
+// INFO screen: firmware, hardware + module revision, MAC, IP. All read-only.
 static void render_info() {
-    s_count = 0;   // single page, UP/DOWN do nothing here
-
-    // Permanent chip MAC (hardware identity), formatted AA:BB:CC:DD:EE:FF.
     uint64_t chip = ESP.getEfuseMac();
     char mac[18];
     snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X",
              (uint8_t)(chip >> 40), (uint8_t)(chip >> 32), (uint8_t)(chip >> 24),
              (uint8_t)(chip >> 16), (uint8_t)(chip >> 8),  (uint8_t)chip);
 
-    // Active IP (Ethernet first, then WiFi, else none).
     String ip = "---";
     if      (w5500::connected) ip = w5500::local_ip.toString();
     else if (wifi::connected)  ip = wifi::local_ip.toString();
@@ -421,81 +248,31 @@ static void render_info() {
     oled_draw_line(0, 15, 127, 15);
 
     oled_draw_str(2, 27, "FW:");
+    // otaCurrentVersion() lives in the OTA app; forward-declare to avoid a
+    // heavier include here.
+    extern const char* otaCurrentVersion();
     oled_draw_str(40, 27, otaCurrentVersion());
     char hw[20];
     snprintf(hw, sizeof(hw), "HW %u  Mod %u", version_hardware(), version_module());
     oled_draw_str(2, 39, hw);
     char macline[26];
     snprintf(macline, sizeof(macline), "MAC %s", mac);
-    oled_draw_str(2, 51, macline);         // full width (17 chars + label fits)
+    oled_draw_str(2, 51, macline);
     char ipline[28];
     snprintf(ipline, sizeof(ipline), "IP  %s", ip.c_str());
     oled_draw_str(2, 63, ipline);
     oled_end();
 }
 
-// Service AP screen. When off: a prompt to press OK to enable. When on: the
-// WiFi-join QR fills the screen so a technician can scan it with a phone
-// camera and land on the device's web UI (served on the AP). OK toggles.
-static void render_service() {
-    s_count = 0;   // single page; UP/DOWN do nothing here
-
-    oled_begin();
-
-    if (!service_ap::is_active()) {
-        oled_draw_str_center(14, "Service Access");
-        oled_draw_line(0, 18, 127, 18);
-        oled_draw_str_center(34, "WiFi + QR for phone");
-        oled_draw_rframe(26, 46, 76, 15, 3);
-        oled_draw_str_center(57, "OK: Enable");
-        oled_end();
-        return;
-    }
-
-    // Active: render the join QR. Fill version 6 covers the ~45-char payload.
-    String payload = service_ap::qr_payload();
-    const int kMaxVer = 6;
-    uint8_t qr[qrcodegen_BUFFER_LEN_FOR_VERSION(kMaxVer)];
-    uint8_t tmp[qrcodegen_BUFFER_LEN_FOR_VERSION(kMaxVer)];
-    bool ok = qrcodegen_encodeText(
-        payload.c_str(), tmp, qr,
-        qrcodegen_Ecc_LOW, qrcodegen_VERSION_MIN, kMaxVer,
-        qrcodegen_Mask_AUTO, true);
-
-    if (ok && oled_draw_qr(qr)) {
-        // QR drawn centered. Nothing else — maximise scannable area.
-    } else {
-        // Fallback: show credentials as text if the QR won't fit.
-        oled_draw_str_center(12, "Service AP");
-        oled_draw_line(0, 16, 127, 16);
-        char l[26];
-        snprintf(l, sizeof(l), "%s", service_ap::ssid().c_str());
-        oled_draw_str_center(30, l);
-        snprintf(l, sizeof(l), "pw %s", service_ap::password().c_str());
-        oled_draw_str_center(44, l);
-        snprintf(l, sizeof(l), "%s", service_ap::ip().c_str());
-        oled_draw_str_center(58, l);
-    }
-    oled_end();
-}
-
 // -----------------------------------------------------------------
-// Alarm overlay
-//
-// When any probe is in an alarm state (fault / overfill / low), an alarm
-// screen takes over the OLED regardless of which section is selected. It
-// blinks by inverting the whole screen, and if several probes are alarming it
-// cycles through them (~2.5s each). It clears automatically when all readings
-// are back in range. A button press still navigates (handled by the task).
+// Alarm overlay (unchanged — no input needed). When any probe is in a level
+// alarm (low / overfill), this takes over the screen, blinks, and cycles
+// through multiple alarms. Clears automatically when readings return to range.
 // -----------------------------------------------------------------
 struct AlarmItem { char name[20]; char kind[10]; int pct; };
 static AlarmItem s_alarms[8];
 static uint8_t   s_alarm_count = 0;
 
-// Scan live probe data; fill s_alarms. Returns number of active alarms.
-// Only real level alarms trigger the overlay (low / overfill). A fault is a
-// sensor/wiring issue, not a tank condition — it's shown on the TANKS screen
-// as "FAULT" but does not take over the display.
 static uint8_t collect_alarms() {
     JsonDocument doc;
     deserializeJson(doc, cloudgauge_get_all());
@@ -519,17 +296,15 @@ static uint8_t collect_alarms() {
     return n;
 }
 
-// Draw the alarm screen for one item, blinking by inverting every ~500ms.
 static void render_alarm(const AlarmItem& a, uint8_t idx, uint8_t total) {
     bool inverted = ((millis() / 500) % 2) == 0;
 
     oled_begin();
     if (inverted) {
         oled_set_draw_color(1);
-        oled_fill_screen();        // white background
-        oled_set_draw_color(0);    // black content
+        oled_fill_screen();
+        oled_set_draw_color(0);
     }
-    // Banner + tank name + alarm kind + current level %.
     oled_draw_str_center(14, "! ALARM !");
     oled_draw_line(0, 18, 127, 18);
     oled_draw_str_center(32, a.name);
@@ -539,196 +314,92 @@ static void render_alarm(const AlarmItem& a, uint8_t idx, uint8_t total) {
         char pg[12]; snprintf(pg, sizeof(pg), "%u/%u", idx + 1, total);
         oled_draw_str(2, 63, pg);
     }
-    oled_set_draw_color(1);        // restore default for next frame
+    oled_set_draw_color(1);
     oled_end();
 }
 
-static void render_tank_detail() {
+// -----------------------------------------------------------------
+// Carousel sequencing
+//
+// The sequence is built fresh from live counts each time we need to advance,
+// so tanks/pumps appearing or disappearing is handled automatically. A screen
+// is identified by (kind, index). step_index walks a virtual flat list:
+//   0            -> HOME
+//   1..nTanks    -> TANK 0..nTanks-1
+//   ..+nPumps    -> PUMP 0..nPumps-1
+//   last         -> INFO
+// -----------------------------------------------------------------
+static uint8_t count_tanks() {
     JsonDocument doc;
     deserializeJson(doc, cloudgauge_get_all());
-    JsonArray probes = doc["probes"].as<JsonArray>();
-    uint8_t n = probes.size();
-    s_count = n;
-    oled_begin();
-    if (n == 0) { oled_print_center(2, "No tanks"); oled_end(); return; }
-    if (s_index >= n) s_index = n - 1;
-    JsonObject p = probes[s_index];
-
-    const char* name  = p["id"]    | "Tank";
-    const char* input = p["input"] | "?";
-    const char* media = p["media"] | "?";
-    float ma          = p["ma"]    | 0.0f;   // serialized number, not a string
-    int mm            = p["mm"]      | 0;
-    int range_mm      = p["range_mm"] | 0;
-    int liters        = p["liters"]  | 0;
-    int capacity      = p["capacity"] | 0;
-    const char* state = p["state"]  | "normal";
-
-    oled_printf_left(0, "%s  (%s)", name, input);
-    oled_printf_left(1, "Media: %s  %.2f mA", media, ma);
-    oled_printf_left(2, "%d mm / %d mm", mm, range_mm);
-    oled_printf_left(3, "%d L / %d L", liters, capacity);
-    oled_printf_left(4, "State: %s", state);
-    oled_end();
+    return doc["probes"].as<JsonArray>().size();
 }
-
-static void render_pump_detail() {
+static uint8_t count_pumps() {
     JsonDocument doc;
     deserializeJson(doc, pump_get_all());
-    JsonArray pumps = doc["pumps"].as<JsonArray>();
-    uint8_t n = pumps.size();
-    s_count = n;
-    oled_begin();
-    if (n == 0) { oled_print_center(2, "No pumps"); oled_end(); return; }
-    if (s_index >= n) s_index = n - 1;
-    JsonObject p = pumps[s_index];
-
-    const char* name   = p["name"]         | "Pump";
-    const char* nozzle = p["nozzle_input"] | "?";
-    const char* pulse  = p["pulse_input"]  | "?";
-    bool nozzle_lifted = p["nozzle_lifted"] | false;
-    bool relay_on      = p["relay_on"]      | false;
-    long pulses        = p["pulses"]        | 0;
-    float ppl          = p["pulses_per_litre"] | 0.0f;   // serialized number
-    float litres       = p["litres"]        | 0.0f;      // serialized number
-
-    oled_printf_left(0, "%s", name);
-    oled_printf_left(1, "Nozzle %s: %s", nozzle, nozzle_lifted ? "LIFT" : "HUNG");
-    oled_printf_left(2, "Relay: %s", relay_on ? "ON" : "OFF");
-    oled_printf_left(3, "Pulse %s: %ld", pulse, pulses);
-    oled_printf_left(4, "%.2f L (%.0f p/L)", litres, ppl);
-    oled_end();
+    return doc["pumps"].as<JsonArray>().size();
 }
 
-static void render_current() {
-    if (s_detail && s_section == SEC_TANKS) { render_tank_detail(); return; }
-    if (s_detail && s_section == SEC_PUMPS) { render_pump_detail(); return; }
-    switch (s_section) {
-        case SEC_TANKS: render_tanks(); break;
-        case SEC_PUMPS: render_pumps(); break;
-        case SEC_UPDATE: render_update(); break;
-        case SEC_INFO:   render_info();   break;
-        case SEC_SERVICE: render_service(); break;
-        default:        render_home();  break;
-    }
+// Draw the screen at virtual position `step` for the current live counts.
+static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
+    if (step == 0) { render_home(); return; }
+    uint16_t s = step - 1;
+    if (s < nTanks) { render_tank((uint8_t)s); return; }
+    s -= nTanks;
+    if (s < nPumps) { render_pump((uint8_t)s); return; }
+    render_info();
 }
 
-// -----------------------------------------------------------------
-// Public API — producers only touch the queue / a flag.
-// -----------------------------------------------------------------
-void menu_go_home() {
-    s_want_home = true;                       // picked up by menu_task
-    Button wake = BTN_NONE;
-    if (s_queue) xQueueSend(s_queue, &wake, 0); // nudge the task to redraw now
-}
-
-void menu_handle_button(Button btn) {
-    if (s_queue) xQueueSend(s_queue, &btn, 0);  // menu_task applies it
-}
-
-// Apply one navigation event to the (task-owned) state.
-static void apply_button(Button btn) {
-    switch (btn) {
-        case BTN_OK:
-            if (s_section == SEC_TANKS || s_section == SEC_PUMPS) {
-                s_detail = !s_detail;
-            } else if (s_section == SEC_UPDATE) {
-                // Context action. Never acts while an action is running.
-                if (!otaBusy()) {
-                    size_t rels = otaReleaseCount();
-                    if (rels == 0 || s_ota_sel >= rels) {
-                        // "Check again" item (or empty list): re-scan server.
-                        otaRequestCheck();
-                    } else {
-                        // Select highlighted release, then install. Works for
-                        // upgrade AND downgrade (fueling-safe gate still applies
-                        // inside the OTA task).
-                        String v = otaReleaseVersionAt(s_ota_sel);
-                        if (v.length()) { otaSelectVersion(v); otaRequestUpdate(); }
-                    }
-                }
-            } else if (s_section == SEC_SERVICE) {
-                service_ap::toggle();        // enable/disable the service AP
-            }
-            break;
-        case BTN_RIGHT:
-            s_detail = false;
-            s_section = (Section)((s_section + 1) % SEC_COUNT);
-            s_index = 0;
-            break;
-        case BTN_LEFT:
-            s_detail = false;
-            s_section = (Section)((s_section + SEC_COUNT - 1) % SEC_COUNT);
-            s_index = 0;
-            break;
-        case BTN_DOWN:
-            if (s_section == SEC_UPDATE) {
-                if (s_count > 0) s_ota_sel = (s_ota_sel + 1) % s_count;
-            } else if (s_count > 1) {
-                s_index = (s_index + 1) % s_count;
-            }
-            break;
-        case BTN_UP:
-            if (s_section == SEC_UPDATE) {
-                if (s_count > 0) s_ota_sel = (s_ota_sel + s_count - 1) % s_count;
-            } else if (s_count > 1) {
-                s_index = (s_index + s_count - 1) % s_count;
-            }
-            break;
-        default: break;   // BTN_NONE = wake/redraw nudge
-    }
+// Total number of screens in one full cycle.
+static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
+    return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/;
 }
 
 static void menu_task(void*) {
+    uint16_t step = 0;               // current carousel position
+    uint32_t dwell_start = millis(); // when the current screen started
     uint8_t  alarm_idx = 0;
     uint32_t alarm_cycle_ms = 0;
+
     for (;;) {
-        TickType_t wait = pdMS_TO_TICKS(250);
-
-        Button btn;
-        if (xQueueReceive(s_queue, &btn, wait) == pdTRUE) {
-            if (s_want_home) { s_want_home = false; s_section = SEC_HOME; s_index = 0; s_detail = false; }
-            // A real button press while alarming snoozes the overlay so the
-            // user can navigate the menu (the alarm re-pops after the snooze).
-            if (btn != BTN_NONE && s_alarm_count > 0) {
-                s_alarm_snooze_until = millis() + ALARM_SNOOZE_MS;
-            }
-            apply_button(btn);
-        } else if (s_want_home) {
-            s_want_home = false; s_section = SEC_HOME; s_index = 0; s_detail = false;
-        }
-
-        // --- Alarm handling (checked BEFORE the panel-sleep guard so an alarm
-        // can wake a sleeping screen). Overlay takes over unless the user
-        // recently pressed a button (snooze window). ---
+        // --- Alarm handling first: an alarm takes over regardless of the
+        // carousel. It redraws fast (blink) and never advances the carousel. ---
         uint8_t alarms = collect_alarms();
-        bool snoozed = (int32_t)(s_alarm_snooze_until - millis()) > 0;
-        if (alarms == 0) s_alarm_snooze_until = 0;   // reset when cleared
-        if (alarms > 0 && !snoozed) {
-            product_display_wake();          // light up the panel if it was off
+        if (alarms > 0) {
+            product_display_wake();
             if (alarm_idx >= alarms) alarm_idx = 0;
-            // Advance to the next alarm every ~2.5s when several are active.
-            if (alarms > 1 && millis() - alarm_cycle_ms > 2500) {
+            if (alarms > 1 && millis() - alarm_cycle_ms > ALARM_CYCLE_MS) {
                 alarm_cycle_ms = millis();
                 alarm_idx = (alarm_idx + 1) % alarms;
             }
             render_alarm(s_alarms[alarm_idx], alarm_idx, alarms);
+            // Reset the dwell clock so the current screen gets its full time
+            // once the alarm clears (don't skip straight past it).
+            dwell_start = millis();
+            vTaskDelay(pdMS_TO_TICKS(250));
             continue;
         }
         alarm_idx = 0;
 
-        // No active alarm: respect the panel-sleep state (don't draw if asleep).
-        if (!product_display_panel_on()) continue;
+        // --- Normal carousel: draw the current screen, advance after DWELL. ---
+        uint8_t nTanks = count_tanks();
+        uint8_t nPumps = count_pumps();
+        uint16_t total = step_count(nTanks, nPumps);
+        if (step >= total) step = 0;
 
-        render_current();     // only menu_task ever draws
+        render_step(step, nTanks, nPumps);
+
+        if (millis() - dwell_start >= DWELL_MS) {
+            step = (step + 1) % total;
+            dwell_start = millis();
+        }
+
+        // Redraw at ~4 fps so the tank liquid animation stays lively while a
+        // screen is held. (Transition animations come in the next step.)
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
 void menu_start() {
-    s_section = SEC_HOME;
-    s_index = 0;
-    s_count = 0;
-    s_detail = false;
-    s_queue = xQueueCreate(8, sizeof(Button));
-    xTaskCreate(menu_task, "menu", 4096, nullptr, 1, nullptr);
+    xTaskCreate(menu_task, "display", 4096, nullptr, 1, nullptr);
 }

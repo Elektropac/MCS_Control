@@ -23,7 +23,6 @@ namespace config {
 #include "apps/product_router/product_router.h"
 #include "apps/menu/menu.h"
 #include "apps/ota/ota.h"
-#include "platform/buttons_task.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
 
@@ -45,16 +44,16 @@ void setup() {
     all_drivers_init();             // probe I2C chips + init all peripherals
 
     mcs_logo_show_splash();         // MCS brand logo at boot (~2s)
-    // Boot shows the MCS logo splash; the guide name then appears via the
-    // HOME screen's logo-zoom animation (no separate product image splash).
-    product_display_start_power_manager();  // auto-off after inactivity, wake on button
-    menu_start();                   // OLED menu (HOME/Tanks/Pumps), driven by buttons
+    // Boot shows the MCS logo splash; the carousel then takes over the OLED,
+    // auto-scrolling through the config-defined screens (no buttons — the
+    // TopBoard with its 5 buttons + display has been removed; the OLED is now
+    // a fixed display driven entirely by config / web / BLE).
+    menu_start();                   // OLED carousel (auto-scrolling, config-defined)
 
     channels_setup();               // device-level: set channel supply voltage
     start_product_apps();           // start the apps for what the config contains
 
     // Platform tasks (always run regardless of product)
-    buttons_start_task();           // polls button ADC every 50ms
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)
     serial_cmd_start_task();        // serial debug commands (send ? for help)
 

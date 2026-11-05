@@ -5,7 +5,6 @@
 #include "logging.h"
 #include "ssd1306.h"
 #include "buzzer.h"
-#include "buttons.h"
 #include "voltage_select.h"
 #include "serial_control.h"
 #include "input_config.h"
@@ -50,5 +49,4 @@ void all_drivers_init() {
     // Non-I2C peripherals
     oled_init(OLED_CLK, OLED_DIN, OLED_CS, OLED_DC, OLED_RST);
     buzzer_init(PIN_BUZZER);
-    buttons_init(PIN_BUTTON);
 }

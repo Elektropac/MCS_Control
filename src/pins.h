@@ -66,9 +66,12 @@
 #define B4_DIGITAL      47
 
 // -------------------------------------------------------
-// BUTTON
+// FREE / RESERVED
 // -------------------------------------------------------
-#define PIN_BUTTON      15
+// GPIO 15 was the 5-button analog ladder input on the TopBoard (now removed).
+// Kept here, commented out, so the pin is documented as free — grab it from
+// here if you need a spare GPIO later instead of hunting for an unused one.
+// #define PIN_BUTTON      15
 
 // -------------------------------------------------------
 // BUZZER

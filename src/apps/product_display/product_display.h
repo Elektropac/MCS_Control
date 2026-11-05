@@ -20,25 +20,17 @@ void mcs_logo_show_splash();
 void product_display_show_splash();
 
 // -----------------------------------------------------------------
-// Display power management
+// Display power
 //
-// The OLED turns itself OFF after a period of inactivity (default 10 min)
-// to protect the panel and save power. Any button press wakes it again.
+// The TopBoard (5 buttons + display) has been removed, so there is no button
+// to wake a sleeping panel. The OLED is therefore a FIXED display and stays
+// powered on at all times. These helpers remain for the alarm overlay, which
+// may need to assert the panel is on, but there is no inactivity timeout.
 // -----------------------------------------------------------------
 
-// Start the background task that powers the OLED off after the inactivity
-// timeout. Call once at boot, after the splash.
-void product_display_start_power_manager();
-
-// Register user activity (e.g. a button press): resets the inactivity timer.
-// If the panel was off, wakes it (to the HOME screen) and returns true so the
-// caller treats this press as "wake only". Returns false if already awake.
-bool product_display_mark_activity();
-
-// True if the OLED panel is currently powered on.
+// True if the OLED panel is currently powered on (always true now).
 bool product_display_panel_on();
 
-// Wake the panel (power on) without changing content or jumping to HOME, and
-// reset the inactivity clock. Used by the alarm overlay so an alarm lights up
-// a sleeping screen and keeps it on while active.
+// Ensure the panel is powered on (used by the alarm overlay). The panel is
+// normally always on; this is a safe no-op in that case.
 void product_display_wake();
