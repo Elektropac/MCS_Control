@@ -16,25 +16,25 @@
 #include <ArduinoJson.h>
 
 // Parse pump groups from config + set up hardware.
-void pump_init();
+void pumps_init();
 
 // Start the background task (nozzle + pulse sampling).
-void pump_start_task();
+void pumps_start_task();
 
 // Pause/resume the background task.
-void pump_stop();
-void pump_start();
+void pumps_stop();
+void pumps_start();
 
 // All pumps as a JSON array (for the web API).
-String pump_get_all();
+String pumps_get_all();
 
 // One pump by group id or name.
-String pump_get(const char* id);
+String pumps_get(const char* id);
 
 // Nulstil pulskvalitets-tællere for alle pumper (web reset-knap).
-void pump_quality_reset();
+void pumps_quality_reset();
 
 // True if ANY pump is currently active (nozzle lifted or relay on) — i.e. a
 // fueling transaction is in progress. Used by OTA to avoid interrupting a
 // fuelling. Safe to call from another task (reads runtime state only).
-bool pump_any_active();
+bool pumps_any_active();

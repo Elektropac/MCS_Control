@@ -2,19 +2,19 @@
 #include <ArduinoJson.h>
 
 // Initialize poseidon — configure all I/O from config
-void poseidon_init();
+void io_init();
 
 // Start the background reporting task
-void poseidon_start_task();
+void io_start_task();
 
 // Set output pin HIGH/LOW
-String poseidon_io_set(const char* pin, bool state);
+String io_set(const char* pin, bool state);
 
 // Get single pin status
-String poseidon_io_get(const char* pin);
+String io_get(const char* pin);
 
 // Get all pins status
-String poseidon_io_get_all();
+String io_get_all();
 
 // Reset pulse counter for a pin
-String poseidon_io_reset_pulses(const char* pin);
+String io_reset_pulses(const char* pin);

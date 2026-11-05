@@ -6,10 +6,10 @@
 #include "logging.h"
 #include "config.h"
 
-#include "apps/cloudgauge/cloudgauge.h"
-#include "apps/poseidon/poseidon.h"
+#include "apps/probes/probes.h"
+#include "apps/io/io.h"
 #include "apps/setup_info/setup_info.h"
-#include "apps/pump/pump.h"
+#include "apps/pumps/pumps.h"
 #include "apps/rule_engine/rule_engine.h"
 #include "apps/state/state.h"
 #include "apps/test_api/test_api.h"
@@ -70,24 +70,24 @@ namespace function_silo
 
         else if (function_name == "cloudgauge_get_all")
         {
-            return cloudgauge_get_all();
+            return probes_get_all();
         }
         else if (function_name == "cloudgauge_get")
         {
             JsonObject json_object = json_packet["data"].as<JsonObject>();
             const char* input = json_object["input"];
-            return cloudgauge_get(input ? input : "");
+            return probes_get(input ? input : "");
         }
 
         // -- pump / fueling --
 
         else if (function_name == "pump_get_all")
         {
-            return pump_get_all();
+            return pumps_get_all();
         }
         else if (function_name == "pump_quality_reset")
         {
-            pump_quality_reset();
+            pumps_quality_reset();
             return String("{\"result\":\"quality reset\"}");
         }
         else if (function_name == "rule_debug")
@@ -98,7 +98,7 @@ namespace function_silo
         {
             JsonObject json_object = json_packet["data"].as<JsonObject>();
             const char* id = json_object["id"];
-            return pump_get(id ? id : "");
+            return pumps_get(id ? id : "");
         }
 
         // -- ota (firmware update, web/ota.html) --
@@ -143,13 +143,13 @@ namespace function_silo
 
         else if (function_name == "io_get_all")
         {
-            return poseidon_io_get_all();
+            return io_get_all();
         }
         else if (function_name == "io_get")
         {
             JsonObject json_object = json_packet["data"].as<JsonObject>();
             const char* pin = json_object["pin"];
-            return poseidon_io_get(pin ? pin : "");
+            return io_get(pin ? pin : "");
         }
         else if (function_name == "io_set")
         {
@@ -164,13 +164,13 @@ namespace function_silo
                     state = (s == "HIGH" || s == "high" || s == "1" || s == "true");
                 }
             }
-            return poseidon_io_set(pin ? pin : "", state);
+            return io_set(pin ? pin : "", state);
         }
         else if (function_name == "io_reset_pulses")
         {
             JsonObject json_object = json_packet["data"].as<JsonObject>();
             const char* pin = json_object["pin"];
-            return poseidon_io_reset_pulses(pin ? pin : "");
+            return io_reset_pulses(pin ? pin : "");
         }
 
         // -- global state aggregator (read-only) --

@@ -8,4 +8,4 @@
 // Kept out of main so setup() stays clean.
 // =======================================================
 
-void start_product_apps();
+void start_apps();

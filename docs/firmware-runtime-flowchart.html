@@ -61,7 +61,7 @@ flowchart TD
   DRV --> SPL[mcs_logo_show_splash ~2s]
   SPL --> MENU[display_start<br/>&rarr; display task]
   MENU --> CH[channels_setup<br/>set channel supply voltage]
-  CH --> SPA[start_product_apps<br/>capability router]
+  CH --> SPA[start_apps<br/>capability router]
   SPA --> NET[network_start_task<br/>&rarr; 4 network tasks]
   NET --> SER[serial_cmd_start_task]
   SER --> OTA[otaInit + ota_start_task]
@@ -82,7 +82,7 @@ flowchart TD
   </div>
 
   <div class="card">
-    <h2>Capability router — <code>start_product_apps()</code></h2>
+    <h2>Capability router — <code>start_apps()</code></h2>
     <p class="note">No fixed "product" — the firmware reads <code>groups[]</code> from config and starts only the apps the config actually needs.</p>
     <div class="mermaid">
 flowchart TD
@@ -118,16 +118,16 @@ flowchart TD
     <h3>Started only if the config needs them (capability-driven)</h3>
     <table>
       <tr><th>What</th><th>Prio / stack</th><th>Starts when</th><th>Job</th></tr>
-      <tr><td><code>cloudgauge</code></td><td><span class="pill p2">P2</span> 4096</td><td>probe groups &gt; 0</td><td>Measures 4–20 mA probes → mm → litres (LUT). A/B alternating. Owns measurement.</td></tr>
+      <tr><td><code>probes</code></td><td><span class="pill p2">P2</span> 4096</td><td>probe groups &gt; 0</td><td>Measures 4–20 mA probes → mm → litres (LUT). A/B alternating. Owns measurement.</td></tr>
       <tr><td><code>flow_guard</code></td><td><span class="pill p1">P1</span> 2048</td><td>probe groups &gt; 0</td><td>Watches the sampler for unauthorised flow (pulses without a transaction).</td></tr>
-      <tr><td><code>pump</code></td><td><span class="pill p2">P2</span> 4096</td><td>pump groups &gt; 0</td><td>Fueling controller: nozzle, pulse counting → litres, relay, preset stop.</td></tr>
+      <tr><td><code>pumps</code></td><td><span class="pill p2">P2</span> 4096</td><td>pump groups &gt; 0</td><td>Fueling controller: nozzle, pulse counting → litres, relay, preset stop.</td></tr>
       <tr><td><code>rule_engine</code></td><td><span class="pill p2">P2</span> 6144</td><td>probe OR pump</td><td>Runs the config <code>rules[]</code> (IF/THEN/ELSE) for both probes and pumps. Reads state, drives relays/notify.</td></tr>
     </table>
 
     <h3>Available but not auto-started in the current boot path</h3>
     <table>
       <tr><th>What</th><th>Prio / stack</th><th>Note</th></tr>
-      <tr><td><code>poseidon</code> (generic IO)</td><td><span class="pill p2">P2</span> 4096</td><td>Has <code>poseidon_start_task()</code> but product_router doesn't call it — wire in if a Poseidon/IO capability is added.</td></tr>
+      <tr><td><code>io</code> (generic IO)</td><td><span class="pill p2">P2</span> 4096</td><td>Has <code>poseidon_start_task()</code> but capability_router doesn't call it — wire in if a Poseidon/IO capability is added.</td></tr>
       <tr><td><code>service_ap</code></td><td>no task</td><td>SoftAP module intact; its OLED trigger was removed with the buttons. Needs a new trigger (boot-window or config) in the carousel step.</td></tr>
     </table>
   </div>

@@ -6,7 +6,7 @@
 // Analog/pulse inputs report periodically.
 // =======================================================
 
-#include "poseidon.h"
+#include "io.h"
 #include "hardware/adc.h"
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
@@ -371,7 +371,7 @@ static void parse_rules() {
 }
 
 // --- Background task: periodic reads and reporting ---
-static void poseidon_task(void* param) {
+static void io_task(void* param) {
     (void)param;
 
     for (;;) {
@@ -395,7 +395,7 @@ static void poseidon_task(void* param) {
 
         // Push to server if any pin triggered a report
         if (should_push && web_socket::is_connected) {
-            String json = poseidon_io_get_all();
+            String json = io_get_all();
             // web_socket::sendMessage(json);
         }
 
@@ -406,7 +406,7 @@ static void poseidon_task(void* param) {
 
 // --- Public API ---
 
-void poseidon_init() {
+void io_init() {
     s_num_pins = 0;
 
     // Read channel voltages
@@ -533,12 +533,12 @@ void poseidon_init() {
     }
 }
 
-void poseidon_start_task() {
-    xTaskCreate(poseidon_task, "poseidon", 4096, nullptr, 2, &s_task_handle);
+void io_start_task() {
+    xTaskCreate(io_task, "poseidon", 4096, nullptr, 2, &s_task_handle);
     task_register(s_task_handle, "poseidon", 2, 4096);
 }
 
-String poseidon_io_set(const char* pin_name, bool state) {
+String io_set(const char* pin_name, bool state) {
     // Handle hardware relays directly
     if (strcmp(pin_name, "RA") == 0) {
         relay_set(RELAY_A, state);
@@ -578,7 +578,7 @@ String poseidon_io_set(const char* pin_name, bool state) {
     return "{\"error\":\"pin not found\"}";
 }
 
-String poseidon_io_get(const char* pin_name) {
+String io_get(const char* pin_name) {
     for (uint8_t i = 0; i < s_num_pins; i++) {
         if (strcmp(s_pins[i].pin, pin_name) == 0) {
             // Do a fresh read for input pins
@@ -596,7 +596,7 @@ String poseidon_io_get(const char* pin_name) {
     return "{\"error\":\"pin not found\"}";
 }
 
-String poseidon_io_get_all() {
+String io_get_all() {
     JsonDocument doc;
     doc["product"] = "poseidon";
 
@@ -657,7 +657,7 @@ String poseidon_io_get_all() {
     return result;
 }
 
-String poseidon_io_reset_pulses(const char* pin_name) {
+String io_reset_pulses(const char* pin_name) {
     for (uint8_t i = 0; i < s_num_pins; i++) {
         if (strcmp(s_pins[i].pin, pin_name) == 0) {
             if (s_pins[i].mode != IO_PULSE) return "{\"error\":\"pin is not pulse mode\"}";

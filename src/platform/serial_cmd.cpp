@@ -1,7 +1,7 @@
 #include "serial_cmd.h"
 #include "debug.h"
 #include "task_registry.h"
-#include "apps/cloudgauge/cloudgauge.h"
+#include "apps/probes/probes.h"
 #include "hardware/adc.h"
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
@@ -26,7 +26,7 @@ static void process_command(const char* cmd) {
                     Serial.print("-----   ------   ------\r\n");
                     for (uint8_t i = 0; i < 8; i++) {
                         const char* names[] = {"A1","A2","A3","A4","B1","B2","B3","B4"};
-                        String json = cloudgauge_get(names[i]);
+                        String json = probes_get(names[i]);
                         JsonDocument doc;
                         deserializeJson(doc, json);
                         float ma = doc["ma"];
@@ -53,7 +53,7 @@ static void process_command(const char* cmd) {
     }
 
     if (cmd[0] == 'p' && cmd[1] == 'j') {
-        Serial.println(cloudgauge_get_all());
+        Serial.println(probes_get_all());
         return;
     }
 
@@ -120,7 +120,7 @@ static void process_command(const char* cmd) {
 
     if (cmd[0] == 'p' && cmd[1] == 'd') {
         // Stop cloudgauge task to avoid I2C collision
-        cloudgauge_stop();
+        probes_stop();
 
         // Force 24V on both channels
         voltage_select_set_a(VOLTAGE_24V);
@@ -147,13 +147,13 @@ static void process_command(const char* cmd) {
         Serial.print("\r\n");
 
         // Resume cloudgauge
-        cloudgauge_start();
+        probes_start();
         return;
     }
 
     if (cmd[0] == 'p' && cmd[1] == 'r') {
         Serial.print("\r\n=== PROBE POWER RESET ===\r\n");
-        cloudgauge_stop();
+        probes_stop();
         Serial.println("CloudGauge stopped");
 
         // All inputs off
@@ -181,7 +181,7 @@ static void process_command(const char* cmd) {
         Serial.println("Waiting 10s for probe startup...");
         vTaskDelay(pdMS_TO_TICKS(10000));
 
-        cloudgauge_start();
+        probes_start();
         Serial.println("CloudGauge restarted");
         Serial.println("=== DONE — use 'p' to check readings ===\r\n");
         return;

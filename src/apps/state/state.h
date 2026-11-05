@@ -13,7 +13,7 @@
 //
 // IMPORTANT — this module is strictly READ-ONLY:
 //   • It only calls existing getters (pump/cloudgauge/poseidon) and the
-//     two activity flags (rule_engine_fueling_active / pump_any_active).
+//     two activity flags (rule_engine_fueling_active / pumps_any_active).
 //   • It never writes flash, never changes any runtime state, never drives
 //     hardware. It cannot break anything else in the firmware.
 //   • State lives in RAM only — this just reflects it at the moment of the
@@ -23,9 +23,9 @@
 //   {
 //     "fueling_active": true/false,   // any transaction in progress
 //     "pump_active":    true/false,   // any nozzle lifted / relay on
-//     "pumps":      { ... },          // == pump_get_all()
-//     "probes":     { ... },          // == cloudgauge_get_all()
-//     "io":         { ... }           // == poseidon_io_get_all()
+//     "pumps":      { ... },          // == pumps_get_all()
+//     "probes":     { ... },          // == probes_get_all()
+//     "io":         { ... }           // == io_get_all()
 //   }
 // Sections whose app is not active simply return their empty getter output.
 // =======================================================

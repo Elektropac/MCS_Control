@@ -1,7 +1,7 @@
 // =======================================================
 // Pump / fueling controller (config-driven)
 // =======================================================
-#include "pump.h"
+#include "pumps.h"
 #include "hardware/relays.h"
 #include "hardware/input_config.h"
 #include "platform/sampler.h"
@@ -225,7 +225,7 @@ static void pump_to_json(JsonObject obj, const PumpState& p) {
 }
 
 // --- Task ---
-static void pump_task(void* param) {
+static void pumps_task(void* param) {
     (void)param;
     if (s_num_pumps == 0) {
         log_error("[pump] No pumps configured, task suspending");
@@ -263,7 +263,7 @@ static void pump_task(void* param) {
         if (push_counter >= PUMP_PUSH_S * 1000UL) {
             push_counter = 0;
             if (web_socket::is_connected) {
-                // web_socket::sendMessage(pump_get_all());
+                // web_socket::sendMessage(pumps_get_all());
             }
         }
     }
@@ -271,7 +271,7 @@ static void pump_task(void* param) {
 
 // --- Public API ---
 
-void pump_init() {
+void pumps_init() {
     s_num_pumps = 0;
 
     JsonDocument groupsDoc;
@@ -343,15 +343,15 @@ void pump_init() {
     log_info("[pump] Initialized, %d pump(s)", s_num_pumps);
 }
 
-void pump_start_task() {
-    xTaskCreate(pump_task, "pump", 4096, nullptr, 2, &s_task_handle);
+void pumps_start_task() {
+    xTaskCreate(pumps_task, "pump", 4096, nullptr, 2, &s_task_handle);
     task_register(s_task_handle, "pump", 2, 4096);
 }
 
-void pump_stop()  { if (s_task_handle) vTaskSuspend(s_task_handle); }
-void pump_start() { if (s_task_handle) vTaskResume(s_task_handle); }
+void pumps_stop()  { if (s_task_handle) vTaskSuspend(s_task_handle); }
+void pumps_start() { if (s_task_handle) vTaskResume(s_task_handle); }
 
-String pump_get_all() {
+String pumps_get_all() {
     JsonDocument doc;
     JsonArray pumps = doc["pumps"].to<JsonArray>();
     for (uint8_t i = 0; i < s_num_pumps; i++) {
@@ -363,7 +363,7 @@ String pump_get_all() {
     return result;
 }
 
-void pump_quality_reset() {
+void pumps_quality_reset() {
     for (uint8_t i = 0; i < s_num_pumps; i++) {
         PumpState& p = s_pumps[i];
         p.last_pulse_idx = 0;
@@ -372,7 +372,7 @@ void pump_quality_reset() {
     }
 }
 
-String pump_get(const char* id) {
+String pumps_get(const char* id) {
     for (uint8_t i = 0; i < s_num_pumps; i++) {
         if (strcmp(s_pumps[i].id, id) == 0 || strcmp(s_pumps[i].name, id) == 0) {
             JsonDocument doc;
@@ -387,7 +387,7 @@ String pump_get(const char* id) {
 }
 
 // True if any pump has a nozzle lifted or its relay on (fueling in progress).
-bool pump_any_active() {
+bool pumps_any_active() {
     for (uint8_t i = 0; i < s_num_pumps; i++) {
         if (!s_pumps[i].valid) continue;
         if (s_pumps[i].nozzle_lifted || s_pumps[i].relay_on) return true;

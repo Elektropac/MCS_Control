@@ -9,7 +9,7 @@
 // which map to hardware settings (voltage, mode, input count).
 // =======================================================
 
-#include "cloudgauge.h"
+#include "probes.h"
 #include "hardware/adc.h"
 #include "hardware/input_config.h"
 #include "hardware/voltage_select.h"
@@ -140,7 +140,7 @@ static uint8_t s_num_probes = 0;
 static TaskHandle_t s_task_handle = nullptr;
 
 // Forward declarations — these helpers are defined later in this file but are
-// used by cloudgauge_task() when building upload samples.
+// used by probes_task() when building upload samples.
 static float input_to_mm(const ProbeState& p);
 static float mm_to_liters(const ProbeState& p, float mm);
 static float level_percent(const ProbeState& p, float mm, float liters);
@@ -382,7 +382,7 @@ static void evaluate_probe_rules(ProbeState& p);   // defined below
 static void update_alarm_latch(ProbeState& p, float level); // defined below
 static float current_level(const ProbeState& p);  // defined below
 
-static void cloudgauge_task(void* param) {
+static void probes_task(void* param) {
     (void)param;
 
     if (s_read_count == 0) {
@@ -413,7 +413,7 @@ static void cloudgauge_task(void* param) {
 
         // NOTE: probe rule evaluation has moved to the shared rule engine
         // (src/apps/rule_engine). The engine reads each probe's alarm state
-        // via cloudgauge_group_state() and runs the configured rules there,
+        // via probes_group_state() and runs the configured rules there,
         // so probe + pump share ONE engine. Measurement stays in this file.
         // (Was: evaluate_probe_rules(s_probes[i]) for each probe.)
 
@@ -695,7 +695,7 @@ static void evaluate_probe_rules(ProbeState& p) {
 
 // --- Public API ---
 
-void cloudgauge_init() {
+void probes_init() {
     s_num_probes = 0;
 
     // Channel voltages are set at device level by channels_setup() before we
@@ -879,20 +879,20 @@ void cloudgauge_init() {
         (volt_b == VOLTAGE_5V) ? 5 : (volt_b == VOLTAGE_12V) ? 12 : 24);
 }
 
-void cloudgauge_start_task() {
-    xTaskCreate(cloudgauge_task, "cloudgauge", 4096, nullptr, 2, &s_task_handle);
+void probes_start_task() {
+    xTaskCreate(probes_task, "cloudgauge", 4096, nullptr, 2, &s_task_handle);
     task_register(s_task_handle, "cloudgauge", 2, 4096);
 }
 
-void cloudgauge_stop() {
+void probes_stop() {
     if (s_task_handle) vTaskSuspend(s_task_handle);
 }
 
-void cloudgauge_start() {
+void probes_start() {
     if (s_task_handle) vTaskResume(s_task_handle);
 }
 
-String cloudgauge_get_all() {
+String probes_get_all() {
     JsonDocument doc;
     doc["product"] = "cloudgauge2";
     
@@ -914,7 +914,7 @@ String cloudgauge_get_all() {
 }
 
 
-String cloudgauge_get(const char* input_name) {
+String probes_get(const char* input_name) {
     for (uint8_t i = 0; i < s_num_probes; i++) {
         if (strcmp(s_probes[i].input, input_name) == 0) {
             JsonDocument doc;
@@ -939,7 +939,7 @@ String cloudgauge_get(const char* input_name) {
 
 // Current alarm state of a probe group: "normal"|"low_level"|"overfill"|
 // "fault", or "" if the group id is unknown.
-const char* cloudgauge_group_state(const char* group_id) {
+const char* probes_group_state(const char* group_id) {
     for (uint8_t i = 0; i < s_num_probes; i++) {
         if (s_probes[i].valid && strcmp(s_probes[i].group_id, group_id) == 0) {
             return current_state(s_probes[i]);
@@ -950,7 +950,7 @@ const char* cloudgauge_group_state(const char* group_id) {
 
 // Current level of a probe group in its alarm_unit (%, mm or L).
 // Returns 0 if the group id is unknown.
-float cloudgauge_group_value(const char* group_id) {
+float probes_group_value(const char* group_id) {
     for (uint8_t i = 0; i < s_num_probes; i++) {
         if (s_probes[i].valid && strcmp(s_probes[i].group_id, group_id) == 0) {
             return current_level(s_probes[i]);

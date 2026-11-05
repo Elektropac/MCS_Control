@@ -20,7 +20,7 @@ namespace config {
 #include "platform/channels_setup.h"
 #include "apps/flow_guard/flow_guard.h"
 #include "apps/display/display.h"
-#include "apps/product_router/product_router.h"
+#include "apps/capability_router/capability_router.h"
 #include "apps/ota/ota.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
@@ -50,7 +50,7 @@ void setup() {
     display_start();                // OLED carousel (auto-scrolling, config-defined)
 
     channels_setup();               // device-level: set channel supply voltage
-    start_product_apps();           // start the apps for what the config contains
+    start_apps();           // start the apps for what the config contains
 
     // Platform tasks (always run regardless of product)
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)

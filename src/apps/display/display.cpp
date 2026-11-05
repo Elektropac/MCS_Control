@@ -4,8 +4,8 @@
 #include "oled_bitmaps.h"
 #include "mcs_logo.h"
 #include "mcs_logo_vert.h"
-#include "apps/cloudgauge/cloudgauge.h"
-#include "apps/pump/pump.h"
+#include "apps/probes/probes.h"
+#include "apps/pumps/pumps.h"
 #include "hardware/version.h"
 
 // Read-only access to Niklas' network state (same pattern as the OTA app:
@@ -148,7 +148,7 @@ static void render_home() {
 // animated horizontal tank graphic.
 static void render_tank(uint8_t idx) {
     JsonDocument doc;
-    deserializeJson(doc, cloudgauge_get_all());
+    deserializeJson(doc, probes_get_all());
     JsonArray probes = doc["probes"].as<JsonArray>();
     uint8_t n = probes.size();
 
@@ -230,7 +230,7 @@ static void render_tank(uint8_t idx) {
 // PUMP screen for pump index `idx`.
 static void render_pump(uint8_t idx) {
     JsonDocument doc;
-    deserializeJson(doc, pump_get_all());
+    deserializeJson(doc, pumps_get_all());
     JsonArray pumps = doc["pumps"].as<JsonArray>();
     uint8_t n = pumps.size();
 
@@ -305,7 +305,7 @@ static uint8_t   s_alarm_count = 0;
 
 static uint8_t collect_alarms() {
     JsonDocument doc;
-    deserializeJson(doc, cloudgauge_get_all());
+    deserializeJson(doc, probes_get_all());
     JsonArray probes = doc["probes"].as<JsonArray>();
     uint8_t n = 0;
     for (JsonObject p : probes) {
@@ -361,12 +361,12 @@ static void render_alarm(const AlarmItem& a, uint8_t idx, uint8_t total) {
 // -----------------------------------------------------------------
 static uint8_t count_tanks() {
     JsonDocument doc;
-    deserializeJson(doc, cloudgauge_get_all());
+    deserializeJson(doc, probes_get_all());
     return doc["probes"].as<JsonArray>().size();
 }
 static uint8_t count_pumps() {
     JsonDocument doc;
-    deserializeJson(doc, pump_get_all());
+    deserializeJson(doc, pumps_get_all());
     return doc["pumps"].as<JsonArray>().size();
 }
 

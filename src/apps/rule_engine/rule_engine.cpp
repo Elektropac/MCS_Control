@@ -30,9 +30,9 @@ namespace web_socket {
 // --- CloudGauge read-only accessor: current alarm state of a probe group.
 // Returns "normal" | "low_level" | "overfill" | "fault" | "" (unknown).
 // Implemented in cloudgauge.cpp — measurement stays there, we only READ. ---
-extern const char* cloudgauge_group_state(const char* group_id);
+extern const char* probes_group_state(const char* group_id);
 // Current level value of a probe group in its alarm_unit (for conditions).
-extern float cloudgauge_group_value(const char* group_id);
+extern float probes_group_value(const char* group_id);
 
 // =======================================================
 // Tunables
@@ -230,7 +230,7 @@ static bool eval_condition(const RuleGroup& g, JsonObject c) {
     // probe:<group> → numeric level
     if (strncmp(source, "probe:", 6) == 0) {
         const char* grp = source + 6;
-        double level = cloudgauge_group_value(grp);
+        double level = probes_group_value(grp);
         double v  = c["value"]  | 0.0;
         double v2 = c["value2"] | 0.0;
         return cond_cmp_num(level, op, v, v2);
@@ -392,7 +392,7 @@ static bool eval_trigger(RuleGroup& g, JsonObject trig, uint8_t rule_idx,
     // ---- probe: fire on the edge INTO the matching alarm state ----
     if (!strcmp(domain, "probe")) {
         const char* want = trig["type"] | "";
-        const char* state = cloudgauge_group_state(g.id);
+        const char* state = probes_group_state(g.id);
         if (!state || !state[0]) return false;
         bool changed = (strcmp(state, g.last_probe_state) != 0);
         bool fire = (changed && !strcmp(want, state));
@@ -617,7 +617,7 @@ static void evaluate_group(RuleGroup& g) {
 
     // Update edge-tracking state ONCE per tick (after all rules evaluated).
     if (!strcmp(g.type, "probe")) {
-        const char* state = cloudgauge_group_state(g.id);
+        const char* state = probes_group_state(g.id);
         if (state && state[0]) {
             strncpy(g.last_probe_state, state, sizeof(g.last_probe_state) - 1);
             g.last_probe_state[sizeof(g.last_probe_state) - 1] = '\0';

@@ -1,6 +1,6 @@
-#include "product_router.h"
-#include "apps/cloudgauge/cloudgauge.h"
-#include "apps/pump/pump.h"
+#include "capability_router.h"
+#include "apps/probes/probes.h"
+#include "apps/pumps/pumps.h"
 #include "apps/flow_guard/flow_guard.h"
 #include "apps/rule_engine/rule_engine.h"
 #include "logging.h"
@@ -15,7 +15,7 @@ namespace config {
 // Capability detection: look at what the config actually CONTAINS (probe
 // groups, pump groups) and start the matching apps. No "product" concept —
 // the config describes capabilities, the firmware reacts to them.
-void start_product_apps() {
+void start_apps() {
     JsonDocument groupsDoc;
     uint8_t probe_groups = 0;
     uint8_t pump_groups  = 0;
@@ -31,16 +31,16 @@ void start_product_apps() {
 
     // Probes → start the cloudgauge measurement task.
     if (probe_groups > 0) {
-        cloudgauge_init();
+        probes_init();
         flow_guard_start_task();
-        cloudgauge_start_task();
+        probes_start_task();
         log_info("[capabilities] started probe measurement");
     }
 
     // Pumps → start the pump/fueling controller.
     if (pump_groups > 0) {
-        pump_init();
-        pump_start_task();
+        pumps_init();
+        pumps_start_task();
         log_info("[capabilities] started pump controller");
     }
 

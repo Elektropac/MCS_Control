@@ -32,8 +32,8 @@ namespace w5500 { extern bool connected; }
 namespace wifi  { extern bool connected; }
 
 // --- Measurement tasks we pause during a download (we own these APIs) ---
-#include "apps/cloudgauge/cloudgauge.h"
-#include "apps/pump/pump.h"
+#include "apps/probes/probes.h"
+#include "apps/pumps/pumps.h"
 #include "apps/rule_engine/rule_engine.h"
 
 namespace {
@@ -604,7 +604,7 @@ void runUpdate() {
     // waiting and let the task retry on the next poll. We re-queue the action.
     // Check BOTH the pump app (physical nozzle/relay) and the rule engine
     // (transaction state machine), since the engine now owns fueling logic.
-    if (pump_any_active() || rule_engine_fueling_active()) {
+    if (pumps_any_active() || rule_engine_fueling_active()) {
         setState(OTA_WAITING_FUELING, "Update deferred: fueling in progress");
         log_info("[ota] update deferred — fueling active");
         s_pendingAction = OTA_ACTION_UPDATE;   // retry next poll
@@ -621,8 +621,8 @@ void runUpdate() {
     // Pause measurement tasks so they don't hit the shared network/SPI while
     // we stream the firmware. (We own these APIs; Niklas' net code untouched.)
     log_info("[ota] pausing probe/pump tasks for download");
-    cloudgauge_stop();
-    pump_stop();
+    probes_stop();
+    pumps_stop();
 
     setState(OTA_UPDATING, String("Downloading ") + manifest.version + "...");
     log_info("[ota] update start: %s via %s", manifest.url.c_str(), s_selectedTransport.c_str());
@@ -632,8 +632,8 @@ void runUpdate() {
 
     if (!ok) {
         // Download failed — resume the tasks and report. No reboot.
-        cloudgauge_start();
-        pump_start();
+        probes_start();
+        pumps_start();
         setState(OTA_ERROR, error);
         log_error("[ota] update failed: %s", error.c_str());
         return;

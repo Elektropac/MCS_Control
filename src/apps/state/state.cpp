@@ -2,9 +2,9 @@
 
 #include <ArduinoJson.h>
 
-#include "apps/pump/pump.h"
-#include "apps/cloudgauge/cloudgauge.h"
-#include "apps/poseidon/poseidon.h"
+#include "apps/pumps/pumps.h"
+#include "apps/probes/probes.h"
+#include "apps/io/io.h"
 #include "apps/rule_engine/rule_engine.h"
 
 // Parse a sub-getter's JSON string into `dst[key]`. If the string is empty
@@ -31,13 +31,13 @@ String state_get_all() {
     // Activity flags — the actual "what is the device doing" answer.
     // Both are read-only runtime checks (nozzle lifted / relay on).
     doc["fueling_active"] = rule_engine_fueling_active();
-    doc["pump_active"]    = pump_any_active();
+    doc["pump_active"]    = pumps_any_active();
 
     // Nest the existing per-domain getters. Each is config-dynamic, so the
     // aggregate reflects exactly what this unit is set up with.
-    nest_json(doc, "pumps",  pump_get_all());
-    nest_json(doc, "probes", cloudgauge_get_all());
-    nest_json(doc, "io",     poseidon_io_get_all());
+    nest_json(doc, "pumps",  pumps_get_all());
+    nest_json(doc, "probes", probes_get_all());
+    nest_json(doc, "io",     io_get_all());
 
     String result;
     serializeJson(doc, result);
