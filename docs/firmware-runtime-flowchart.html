@@ -187,7 +187,7 @@ flowchart TD
   S([display_task]) --> A{any probe<br/>in alarm?}
   A -->|yes| AL([wake panel, draw blinking alarm<br/>cycle if several, reset dwell]) --> W([wait 250 ms]) --> A
   A -->|no| C([count tanks + pumps]) --> D([draw current screen<br/>HOME, tank, pump, INFO])
-  D --> T{held >= DWELL<br/>4s?}
+  D --> T{held past DWELL<br/>4s?}
   T -->|yes| N([advance to next screen]) --> W2([wait 250 ms]) --> A
   T -->|no| W2
   classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,AL,C,D,N,W,W2 d;
