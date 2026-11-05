@@ -13,8 +13,7 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:"Nunito Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     background:var(--bg);color:var(--body);line-height:1.55}
-  header{background:linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d));color:#fff;
-    padding:28px 32px}
+  header{background:linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d));color:#fff;padding:28px 32px}
   header h1{margin:0 0 4px;font-size:24px;font-weight:800}
   header p{margin:0;opacity:.92;font-size:14px}
   .layout{display:flex;max-width:1200px;margin:0 auto}
@@ -23,8 +22,7 @@
   nav a:hover{background:#eaf2fb;color:var(--mcs-blue-d)}
   nav .grp{font-weight:800;color:var(--heading);margin:14px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
   main{flex:1;min-width:0;padding:24px 20px 80px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
-    padding:20px 22px;margin:18px 0;box-shadow:0 1px 3px rgba(16,40,70,.05)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:18px 0;box-shadow:0 1px 3px rgba(16,40,70,.05)}
   h2{color:var(--heading);font-size:19px;margin:4px 0 12px;font-weight:800}
   h3{color:var(--mcs-blue-d);font-size:15px;margin:14px 0 4px;font-weight:800}
   .meta{font-size:12px;color:#8a94a0;margin:0 0 10px}
@@ -49,7 +47,7 @@
 <body>
 <header>
   <h1>MCS Control — Firmware Runtime Flowchart</h1>
-  <p>Boot sequence, every FreeRTOS task's own loop, the sampler ISR, and data flow. Branch <code style="background:rgba(255,255,255,.2);padding:1px 6px;border-radius:5px">hw/drop-topboard-buttons</code> · arduino-esp32 3.x · generated 2026-11-05</p>
+  <p>Boot sequence, every FreeRTOS task's own loop, the sampler ISR, and data flow. Branch hw/drop-topboard-buttons · arduino-esp32 3.x · generated 2026-11-05</p>
 </header>
 
 <div class="layout">
@@ -80,25 +78,27 @@
 <main>
 
   <div class="card" id="boot">
-    <h2>Boot sequence — <code>setup()</code></h2>
-    <p class="meta">Runs once at power-on, in order. Green nodes spawn a task that then runs forever. After setup(), <code>loop()</code> suspends — all work lives in tasks + the ISR.</p>
+    <h2>Boot sequence (setup)</h2>
+    <p class="meta">Runs once at power-on, in order. Green nodes spawn a task that then runs forever. After setup, loop suspends.</p>
     <div class="mermaid">
 flowchart TD
-  P([Power on]) --> L([log_init]) --> FS([file_system.init]) --> CFG([config.init])
-  CFG --> I2C([i2c_init]) --> SMP([sampler_init<br/>starts 4 kHz ISR]) --> FG0([flow_guard_init])
-  FG0 --> DRV([all_drivers_init<br/>I2C chips + OLED + buzzer])
-  DRV --> SPL([display_boot_splash ~2s])
+  P([Power on]) --> L([log_init])
+  L --> FS([file_system init])
+  FS --> CFG([config init])
+  CFG --> I2C([i2c_init])
+  I2C --> SMP([sampler_init starts 4 kHz ISR]):::isr
+  SMP --> FG0([flow_guard_init])
+  FG0 --> DRV([all_drivers_init: I2C chips, OLED, buzzer])
+  DRV --> SPL([display_boot_splash 2s])
   SPL --> DISP([display_start]):::spawn
   DISP --> CH([channels_setup])
-  CH --> APPS([start_apps<br/>capability router]):::spawn
+  CH --> APPS([start_apps capability router]):::spawn
   APPS --> NET([network_start_task x4]):::spawn
   NET --> SER([serial_cmd_start_task]):::spawn
-  SER --> OTA([otaInit + ota_start_task]):::spawn
-  OTA --> END([setup done - loop suspends])
-  classDef spawn fill:#def7ec,stroke:#046c4e,color:#046c4e;
-  class P,L,FS,CFG,I2C,FG0,DRV,SPL,CH,END default;
-  class SMP isr;
-  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318;
+  SER --> OTA([otaInit and ota_start_task]):::spawn
+  OTA --> END([setup done, loop suspends])
+  classDef spawn fill:#def7ec,stroke:#046c4e,color:#046c4e
+  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318
     </div>
     <div class="legend">
       <span><span class="swatch" style="background:#eef3f8;border-color:#9bb4cc"></span> boot step</span>
@@ -108,16 +108,16 @@ flowchart TD
   </div>
 
   <div class="card" id="router">
-    <h2>Capability router — <code>start_apps()</code></h2>
-    <p class="meta">No fixed product — reads <code>groups[]</code> from config and starts only the apps the config needs.</p>
+    <h2>Capability router (start_apps)</h2>
+    <p class="meta">No fixed product. Reads groups from config and starts only the apps the config needs.</p>
     <div class="mermaid">
 flowchart TD
-  R([read config groups]) --> Q{what's in config?}
-  Q -->|probe groups| PR([probes_init + flow_guard + probes task]):::spawn
-  Q -->|pump groups| PU([pumps_init + pumps task]):::spawn
-  Q -->|probe OR pump| RE([rule_engine_init + rule_engine task]):::spawn
+  R([read config groups]) --> Q{what is in config}
+  Q -->|probe groups| PR([probes_init, flow_guard, probes task]):::spawn
+  Q -->|pump groups| PU([pumps_init, pumps task]):::spawn
+  Q -->|probe or pump| RE([rule_engine_init, rule_engine task]):::spawn
   Q -->|nothing| NN([log: nothing to start])
-  classDef spawn fill:#def7ec,stroke:#046c4e,color:#046c4e;
+  classDef spawn fill:#def7ec,stroke:#046c4e,color:#046c4e
     </div>
   </div>
 
@@ -128,8 +128,8 @@ flowchart TD
       <tr><th>Task</th><th>Prio / stack</th><th>Job</th></tr>
       <tr><td><code>display</code></td><td><span class="pill p1">P1</span> 4096</td><td>OLED carousel</td></tr>
       <tr><td><code>network</code></td><td><span class="pill p1">P1</span> 8192</td><td>Ethernet (W5500) + WiFi</td></tr>
-      <tr><td><code>web_server</code></td><td><span class="pill p1">P1</span> 8192</td><td>Web UI + /api</td></tr>
-      <tr><td><code>web_socket</code></td><td><span class="pill p1">P1</span> 8192</td><td>WebSocket &rarr; server</td></tr>
+      <tr><td><code>web_server</code></td><td><span class="pill p1">P1</span> 8192</td><td>Web UI + api</td></tr>
+      <tr><td><code>web_socket</code></td><td><span class="pill p1">P1</span> 8192</td><td>WebSocket to server</td></tr>
       <tr><td><code>bluetooth</code></td><td><span class="pill p1">P1</span> 8192</td><td>BLE (Niklas)</td></tr>
       <tr><td><code>serial_cmd</code></td><td><span class="pill p1">P1</span> 4096</td><td>Serial debug console</td></tr>
       <tr><td><code>ota</code></td><td><span class="pill p1">P1</span> ~8K</td><td>Firmware update (idle until asked)</td></tr>
@@ -137,16 +137,16 @@ flowchart TD
     <h3>Started only if config needs it (up to 4)</h3>
     <table>
       <tr><th>Task</th><th>Prio / stack</th><th>Starts when</th></tr>
-      <tr><td><code>probes</code></td><td><span class="pill p2">P2</span> 4096</td><td>probe groups &gt; 0</td></tr>
-      <tr><td><code>flow_guard</code></td><td><span class="pill p1">P1</span> 2048</td><td>probe groups &gt; 0</td></tr>
-      <tr><td><code>pumps</code></td><td><span class="pill p2">P2</span> 4096</td><td>pump groups &gt; 0</td></tr>
-      <tr><td><code>rule_engine</code></td><td><span class="pill p2">P2</span> 6144</td><td>probe OR pump</td></tr>
+      <tr><td><code>probes</code></td><td><span class="pill p2">P2</span> 4096</td><td>probe groups present</td></tr>
+      <tr><td><code>flow_guard</code></td><td><span class="pill p1">P1</span> 2048</td><td>probe groups present</td></tr>
+      <tr><td><code>pumps</code></td><td><span class="pill p2">P2</span> 4096</td><td>pump groups present</td></tr>
+      <tr><td><code>rule_engine</code></td><td><span class="pill p2">P2</span> 6144</td><td>probe or pump</td></tr>
     </table>
     <h3>Special</h3>
     <table>
-      <tr><td><code>sampler ISR</code></td><td><span class="pill isr">timer ISR</span></td><td>4 kHz — not a task</td></tr>
+      <tr><td><code>sampler ISR</code></td><td><span class="pill isr">timer ISR</span></td><td>4 kHz, not a task</td></tr>
       <tr><td><code>io</code></td><td><span class="pill p2">P2</span></td><td>Exists, not auto-started yet (coming)</td></tr>
-      <tr><td><code>service_ap</code></td><td>polled in network</td><td>Module intact; needs a new trigger</td></tr>
+      <tr><td><code>service_ap</code></td><td>polled in network</td><td>Module intact, needs a new trigger</td></tr>
     </table>
   </div>
 
@@ -154,214 +154,257 @@ flowchart TD
     <h2>Data flow</h2>
     <div class="mermaid">
 flowchart LR
-  HW([Field inputs<br/>probes, pulses, nozzle]):::hw --> ISR([sampler ISR<br/>4 kHz]):::isr
+  HW([Field inputs: probes, pulses, nozzle]):::hw --> ISR([sampler ISR 4 kHz]):::isr
   HW --> ADC([ADS1115 ADC]):::hw
-  ADC --> PRB([probes task<br/>mA to mm to L]):::task
+  ADC --> PRB([probes task mA to mm to L]):::task
   ISR --> PMP([pumps task]):::task
   ISR --> FG([flow_guard]):::task
   PRB --> RE([rule_engine]):::task
   PMP --> RE
   RE --> OUT([relays, buzzer, notify]):::hub
-  PRB --> FS([function_silo<br/>dispatcher]):::hub
-  PMP --> FS
-  FS --> WEB([web_server]):::hub
-  FS --> WS([web_socket]):::hub
-  FS --> BLE([bluetooth]):::hub
+  PRB --> FSL([function_silo dispatcher]):::hub
+  PMP --> FSL
+  FSL --> WEB([web_server]):::hub
+  FSL --> WS([web_socket]):::hub
+  FSL --> BLE([bluetooth]):::hub
   PRB --> OLED([display task]):::task
   PMP --> OLED
-  classDef hw fill:#fff4e5,stroke:#b76e00,color:#8a5300;
-  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318;
-  classDef task fill:#def7ec,stroke:#046c4e,color:#046c4e;
-  classDef hub fill:#e7f1fb,stroke:#047cd2,color:#0362a6;
+  classDef hw fill:#fff4e5,stroke:#b76e00,color:#8a5300
+  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318
+  classDef task fill:#def7ec,stroke:#046c4e,color:#046c4e
+  classDef hub fill:#e7f1fb,stroke:#047cd2,color:#0362a6
     </div>
-    <p class="note"><b>function_silo</b> is the one door in: web / websocket / BLE send a "subject" (e.g. <code>cloudgauge_get_all</code>, <code>pump_get_all</code>, <code>state_get_all</code>) and it routes to the right app. (Subject strings kept the old names so the web UI + config are unchanged.)</p>
+    <p class="note"><b>function_silo</b> is the one door in: web, websocket and BLE send a subject (e.g. cloudgauge_get_all, pump_get_all, state_get_all) and it routes to the right app. Subject strings kept the old names so the web UI and config are unchanged.</p>
   </div>
-
-  <!-- ===================== PER-TASK ===================== -->
 
   <div class="card" id="t-display">
     <h2>display <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/apps/display/display.cpp</code> · owns the OLED · ~250 ms redraw</p>
+    <p class="meta">src/apps/display/display.cpp · owns the OLED · 250 ms redraw</p>
     <div class="mermaid">
 flowchart TD
-  S([display_task]) --> A{any probe<br/>in alarm?}
-  A -->|yes| AL([wake panel, draw blinking alarm<br/>cycle if several, reset dwell]) --> W([wait 250 ms]) --> A
-  A -->|no| C([count tanks + pumps]) --> D([draw current screen<br/>HOME, tank, pump, INFO])
-  D --> T{held past DWELL<br/>4s?}
-  T -->|yes| N([advance to next screen]) --> W2([wait 250 ms]) --> A
+  S([display_task]) --> A{any probe in alarm}
+  A -->|yes| AL([wake panel, draw blinking alarm, cycle if several])
+  AL --> W([wait 250 ms])
+  W --> A
+  A -->|no| C([count tanks and pumps])
+  C --> D([draw current screen: HOME, tank, pump, INFO])
+  D --> T{held past dwell 4s}
+  T -->|yes| N([advance to next screen])
+  N --> W2([wait 250 ms])
   T -->|no| W2
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,AL,C,D,N,W,W2 d;
+  W2 --> A
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,AL,C,D,N,W,W2 d
     </div>
   </div>
 
   <div class="card" id="t-network">
     <h2>network <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/platform/network_task.cpp</code> · 10 ms poll</p>
+    <p class="meta">src/platform/network_task.cpp · 10 ms poll</p>
     <div class="mermaid">
 flowchart TD
-  S([network_task]) --> I([w5500.init + wifi.init<br/>once]) --> R([set network_initialized])
-  R --> P([w5500 poll, wifi poll, service_ap poll])
-  P --> W([wait 10 ms]) --> P
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,I,R,P,W d;
+  S([network_task]) --> I([w5500 init and wifi init, once])
+  I --> R([set network_initialized])
+  R --> P([poll w5500, wifi, service_ap])
+  P --> W([wait 10 ms])
+  W --> P
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,I,R,P,W d
     </div>
   </div>
 
   <div class="card" id="t-webserver">
     <h2>web_server <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/platform/network_task.cpp</code> · 10 ms poll</p>
+    <p class="meta">src/platform/network_task.cpp · 10 ms poll</p>
     <div class="mermaid">
 flowchart TD
-  S([web_server_task]) --> WN([wait until<br/>network ready])
-  WN --> I([web_server.init]) --> P([web_server.poll<br/>serve pages and api]) --> W([wait 10 ms]) --> P
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,WN,I,P,W d;
+  S([web_server_task]) --> WN([wait until network ready])
+  WN --> I([web_server init])
+  I --> P([web_server poll, serve pages and api])
+  P --> W([wait 10 ms])
+  W --> P
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,WN,I,P,W d
     </div>
   </div>
 
   <div class="card" id="t-websocket">
     <h2>web_socket <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/platform/network_task.cpp</code> · 10 ms poll</p>
+    <p class="meta">src/platform/network_task.cpp · 10 ms poll</p>
     <div class="mermaid">
 flowchart TD
-  S([web_socket_task]) --> WN([wait until<br/>network ready])
-  WN --> I([web_socket.init + queues.init]) --> P([web_socket.poll<br/>link to server]) --> W([wait 10 ms]) --> P
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,WN,I,P,W d;
+  S([web_socket_task]) --> WN([wait until network ready])
+  WN --> I([web_socket init and queues init])
+  I --> P([web_socket poll, link to server])
+  P --> W([wait 10 ms])
+  W --> P
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,WN,I,P,W d
     </div>
   </div>
 
   <div class="card" id="t-bluetooth">
     <h2>bluetooth <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/platform/network_task.cpp</code> + <code>lib/5_bluetooth</code> (Niklas) · 10 ms poll</p>
+    <p class="meta">src/platform/network_task.cpp + lib/5_bluetooth (Niklas) · 10 ms poll</p>
     <div class="mermaid">
 flowchart TD
-  S([bluetooth_task]) --> WN([wait until<br/>network ready])
-  WN --> I([bluetooth.init<br/>BLEDevice.init]) --> P([bluetooth.poll]) --> W([wait 10 ms]) --> P
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,WN,I,P,W d;
+  S([bluetooth_task]) --> WN([wait until network ready])
+  WN --> I([bluetooth init, BLEDevice init])
+  I --> P([bluetooth poll])
+  P --> W([wait 10 ms])
+  W --> P
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,WN,I,P,W d
     </div>
   </div>
 
   <div class="card" id="t-serial">
     <h2>serial_cmd <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/platform/serial_cmd.cpp</code> · 50 ms poll</p>
+    <p class="meta">src/platform/serial_cmd.cpp · 50 ms poll</p>
     <div class="mermaid">
 flowchart TD
-  S([serial_cmd_task]) --> A{chars<br/>available?}
-  A -->|yes| B{end of line?}
-  B -->|yes| C([process_command]) --> A
-  B -->|no| D([buffer char]) --> A
-  A -->|no| W([wait 50 ms]) --> A
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,C,D,W d;
+  S([serial_cmd_task]) --> A{chars available}
+  A -->|yes| B{end of line}
+  B -->|yes| C([process_command])
+  C --> A
+  B -->|no| D([buffer char])
+  D --> A
+  A -->|no| W([wait 50 ms])
+  W --> A
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,C,D,W d
     </div>
   </div>
 
   <div class="card" id="t-ota">
     <h2>ota <span class="pill p1">P1</span></h2>
-    <p class="meta">File <code>src/apps/ota/ota.cpp</code> · idle until a web/UI request · fueling-safe</p>
+    <p class="meta">src/apps/ota/ota.cpp · idle until a web request · fueling-safe</p>
     <div class="mermaid">
 flowchart TD
-  S([otaTaskFn]) --> RB{reboot<br/>pending?}
-  RB -->|yes, time up| RST([ESP.restart])
-  RB -->|no| ACT{pending<br/>action?}
-  ACT -->|CHECK| CK([runCheck]) --> W([wait poll])
-  ACT -->|UPDATE| UP([runUpdate<br/>blocks if fueling]) --> W
+  S([otaTaskFn]) --> RB{reboot pending}
+  RB -->|yes, time up| RST([ESP restart])
+  RB -->|no| ACT{pending action}
+  ACT -->|CHECK| CK([runCheck])
+  CK --> W([wait poll])
+  ACT -->|UPDATE| UP([runUpdate, blocks if fueling])
+  UP --> W
   ACT -->|none| W
   W --> RB
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,RST,CK,UP,W d;
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,RST,CK,UP,W d
     </div>
   </div>
 
   <div class="card" id="t-probes">
     <h2>probes <span class="pill p2">P2</span> <span class="pill cond">conditional</span></h2>
-    <p class="meta">File <code>src/apps/probes/probes.cpp</code> (was cloudgauge) · measures 4–20 mA probes</p>
+    <p class="meta">src/apps/probes/probes.cpp (was cloudgauge) · measures 4-20 mA probes</p>
     <div class="mermaid">
 flowchart TD
-  S([probes_task]) --> Z{any probes<br/>configured?}
+  S([probes_task]) --> Z{any probes configured}
   Z -->|no| SUS([suspend self])
   Z -->|yes| K([turn on first probe])
   K --> L([wait sample interval])
-  L --> RD([read all probes<br/>A-B alternating, mA to mm to L])
+  L --> RD([read all probes, A-B alternating, mA to mm to L])
   RD --> AL([update alarm latch per probe])
-  AL --> PU([push status periodically]) --> L
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,K,L,RD,AL,PU d;
+  AL --> PU([push status periodically])
+  PU --> L
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,K,L,RD,AL,PU d
     </div>
   </div>
 
   <div class="card" id="t-flowguard">
     <h2>flow_guard <span class="pill p1">P1</span> <span class="pill cond">conditional</span></h2>
-    <p class="meta">File <code>src/apps/flow_guard/flow_guard.cpp</code> · watches sampler for unauthorised flow</p>
+    <p class="meta">src/apps/flow_guard/flow_guard.cpp · watches sampler for unauthorised flow</p>
     <div class="mermaid">
 flowchart TD
-  S([flow_guard_task]) --> RE([read new sampler events<br/>count edges])
-  RE --> C{pulses over<br/>noise threshold?}
-  C -->|yes| AL([unauthorised flow<br/>TODO: send alarm]) --> RS([reset count]) --> W([wait interval])
+  S([flow_guard_task]) --> RE([read new sampler events, count edges])
+  RE --> C{pulses over noise threshold}
+  C -->|yes| AL([unauthorised flow, TODO send alarm])
+  AL --> RS([reset count])
+  RS --> W([wait interval])
   C -->|no| W
   W --> RE
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,RE,AL,RS,W d;
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,RE,AL,RS,W d
     </div>
-    <p class="note">&#9888; The alarm-send is still a <code>TODO</code> — it detects but doesn't report yet.</p>
+    <p class="note">The alarm-send is still a TODO: it detects but does not report yet.</p>
   </div>
 
   <div class="card" id="t-pumps">
     <h2>pumps <span class="pill p2">P2</span> <span class="pill cond">conditional</span></h2>
-    <p class="meta">File <code>src/apps/pumps/pumps.cpp</code> (was pump) · samples pulses for status; rule_engine owns the logic</p>
+    <p class="meta">src/apps/pumps/pumps.cpp (was pump) · samples pulses for status, rule_engine owns the logic</p>
     <div class="mermaid">
 flowchart TD
-  S([pumps_task]) --> Z{any pumps<br/>configured?}
+  S([pumps_task]) --> Z{any pumps configured}
   Z -->|no| SUS([suspend self])
   Z -->|yes| L([wait sample interval])
-  L --> SP([sample each pump<br/>count pulses])
-  SP --> NT{new transaction<br/>started?}
-  NT -->|yes| RST([reset display counters]) --> PU([push status]) --> L
+  L --> SP([sample each pump, count pulses])
+  SP --> NT{new transaction started}
+  NT -->|yes| RST([reset display counters])
+  RST --> PU([push status])
   NT -->|no| PU
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,L,SP,RST,PU d;
+  PU --> L
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,L,SP,RST,PU d
     </div>
   </div>
 
   <div class="card" id="t-ruleengine">
     <h2>rule_engine <span class="pill p2">P2</span> <span class="pill cond">conditional</span></h2>
-    <p class="meta">File <code>src/apps/rule_engine/rule_engine.cpp</code> · runs config rules[] for probes + pumps</p>
+    <p class="meta">src/apps/rule_engine/rule_engine.cpp · runs config rules for probes and pumps</p>
     <div class="mermaid">
 flowchart TD
-  S([rule_engine_task]) --> Z{any rule<br/>groups?}
+  S([rule_engine_task]) --> Z{any rule groups}
   Z -->|no| SUS([suspend self])
   Z -->|yes| L([wait rule tick])
-  L --> EV([evaluate each group<br/>IF-THEN-ELSE])
-  EV --> M([clear one-tick comm message]) --> L
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,L,EV,M d;
+  L --> EV([evaluate each group, IF-THEN-ELSE])
+  EV --> M([clear one-tick comm message])
+  M --> L
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,L,EV,M d
     </div>
   </div>
 
   <div class="card" id="t-io">
     <h2>io <span class="pill p2">P2</span> <span class="pill cond">not auto-started yet</span></h2>
-    <p class="meta">File <code>src/apps/io/io.cpp</code> (was poseidon) · generic I/O · "coming"</p>
+    <p class="meta">src/apps/io/io.cpp (was poseidon) · generic I/O · coming</p>
     <div class="mermaid">
 flowchart TD
-  S([io_task]) --> L([wait 1 s]) --> RD([read each input pin])
-  RD --> T{report interval<br/>reached?}
-  T -->|yes| PU([push to server<br/>currently commented out]) --> RU([evaluate IFTTT rules]) --> L
+  S([io_task]) --> L([wait 1 s])
+  L --> RD([read each input pin])
+  RD --> T{report interval reached}
+  T -->|yes| PU([push to server, currently commented out])
+  PU --> RU([evaluate IFTTT rules])
+  RU --> L
   T -->|no| RU
-  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e; class S,L,RD,PU,RU d;
+  classDef d fill:#def7ec,stroke:#046c4e,color:#046c4e
+  class S,L,RD,PU,RU d
     </div>
-    <p class="note">&#9888; Server push is commented out, and the task isn't started by the router yet.</p>
+    <p class="note">Server push is commented out, and the task is not started by the router yet.</p>
   </div>
 
   <div class="card" id="t-sampler">
     <h2>sampler <span class="pill isr">timer ISR</span></h2>
-    <p class="meta">File <code>src/platform/sampler.cpp</code> · fires every 250 µs (4 kHz) · not a task</p>
+    <p class="meta">src/platform/sampler.cpp · fires every 250 us (4 kHz) · not a task</p>
     <div class="mermaid">
 flowchart TD
-  T([timer fires<br/>every 250 us]) --> R([read all 8 digital inputs])
-  R --> C{state changed?}
-  C -->|yes| W([write event to ring buffer]) --> I([index++]) --> E([return])
+  T([timer fires every 250 us]) --> R([read all 8 digital inputs])
+  R --> C{state changed}
+  C -->|yes| WR([write event to ring buffer])
+  WR --> I([index plus plus])
+  I --> E([return])
   C -->|no| I
-  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318; class T,R,W,I,E isr;
+  classDef isr fill:#ffe3e3,stroke:#b42318,color:#b42318
+  class T,R,WR,I,E isr
     </div>
-    <p class="note">pumps + flow_guard read this ring buffer to count pulses.</p>
+    <p class="note">pumps and flow_guard read this ring buffer to count pulses.</p>
   </div>
 
 </main>
 </div>
 <footer>
-  Generated from source on branch hw/drop-topboard-buttons. Priorities/stack sizes read from the <code>xTaskCreate</code> calls; loops read from each task function. Keep in sync when tasks change.
+  Generated from source on branch hw/drop-topboard-buttons. Priorities and stack sizes read from the xTaskCreate calls; loops read from each task function. Keep in sync when tasks change.
 </footer>
 
 <script>
