@@ -456,6 +456,8 @@ static const Transition TRANSITION = TRANSITION_SLIDE;
 
 static const int      SLIDE_FRAMES   = 14;   // frames from off-screen to settled
 static const uint32_t SLIDE_FRAME_MS = 18;
+static const int      SLIDE_GAP      = 12;   // black gutter between the two
+                                             // screens while they slide
 
 // Animate from `fromStep` to `toStep`: both are drawn into the same frame, the
 // old one sliding out and the new one sliding in, along the chosen axis.
@@ -472,24 +474,25 @@ static void slide_to(uint16_t fromStep, uint16_t toStep,
     uint8_t secT = step_section(toStep, nTanks, nPumps);
     bool vertical = (secF == secT) && (secF == 1 || secF == 2);
     const int span = vertical ? 64 : 128;       // panel height vs width
+    const int travel = span + SLIDE_GAP;         // + gap so there's air between
 
     for (int f = 1; f <= SLIDE_FRAMES; f++) {
         float t = (float)f / SLIDE_FRAMES;
         float eased = 1.0f - (1.0f - t) * (1.0f - t);   // easeOut quad
-        int shift = (int)(span * eased + 0.5f);          // 0 -> span
+        int shift = (int)(travel * eased + 0.5f);        // 0 -> travel
 
         oled_begin();
         if (vertical) {
-            // Old slides up and out (0 -> -span), new comes up from below.
+            // Old slides up and out, new comes up from below a gap underneath.
             oled_set_offset(0, -shift);
             render_body(fromStep, nTanks, nPumps);
-            oled_set_offset(0, span - shift);
+            oled_set_offset(0, travel - shift);
             render_body(toStep, nTanks, nPumps);
         } else {
-            // Old slides left and out (0 -> -span), new enters from the right.
+            // Old slides left and out, new enters from the right past a gap.
             oled_set_offset(-shift, 0);
             render_body(fromStep, nTanks, nPumps);
-            oled_set_offset(span - shift, 0);
+            oled_set_offset(travel - shift, 0);
             render_body(toStep, nTanks, nPumps);
         }
         oled_end();
