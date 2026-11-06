@@ -1,102 +1,613 @@
 {
-  "config": {
-    "guide": "sapphire_lite_mini",
-    "connection": {
-        "server": {
-            "local": {
-                "host": "192.168.1.183",
-                "port": 3000
-            },
-            "global": {
-                "host": "stage.nexus.mcsbackend.com",
-                "port": 443
-            }
-        },
-
-        "internet_client": "ethernet",
-
-        "settings": {
-            "wifi": {
-                "enabled": false,
-                "ssid": "MCS_Dev",
-                "password": ""
-            },
-            "ethernet": {
-                "mode": "dhcp"
-            },
-            "bluetooth": {
-                "enabled": false
-            }
-        }
+ "config": {
+  "guide": "sapphire_lite_mini",
+  "connection": {
+   "server": {
+    "local": {
+     "host": "192.168.1.183",
+     "port": 3000
     },
-    "channels": {
-      "A": { "voltage": 24 },
-      "B": { "voltage": 24 }
+    "global": {
+     "host": "stage.nexus.mcsbackend.com",
+     "port": 443
     }
+   },
+   "internet_client": "ethernet",
+   "settings": {
+    "wifi": {
+     "enabled": false,
+     "ssid": "MCS_Dev",
+     "password": ""
+    },
+    "ethernet": {
+     "mode": "dhcp"
+    },
+    "bluetooth": {
+     "enabled": false
+    }
+   }
   },
-
-  "groups": [
+  "channels": {
+   "A": {
+    "voltage": 24
+   },
+   "B": {
+    "voltage": 24
+   }
+  }
+ },
+ "groups": [
+  {
+   "id": "fueling_1",
+   "type": "pump",
+   "channel": "A",
+   "pump": {
+    "name": "Pump 1",
+    "channel": "A",
+    "nozzle": "A1",
+    "pulse": "A2",
+    "relay": "relay_a",
+    "pulses_per_litre": 10,
+    "preset_litres": 0
+   },
+   "rules": [
     {
-      "id": "fueling_1",
-      "type": "pump",
-      "channel": "A",
-      "pump": {
-        "name": "Pump 1",
-        "channel": "A",
-        "nozzle": "A1",
-        "pulse": "A2",
-        "relay": "relay_a",
-        "pulses_per_litre": 10,
-        "preset_litres": 0
+     "id": "auth_ok",
+     "enabled": true,
+     "trigger": {
+      "domain": "comm",
+      "match": "AUTH_OK:Pump 1"
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_value",
+       "key": "fueling_1.state",
+       "value": "authorised"
       },
-      "rules": []
+      {
+       "do": "buzzer",
+       "sound": "ok"
+      }
+     ],
+     "else": []
     },
     {
-      "id": "fueling_2",
-      "type": "pump",
-      "channel": "B",
-      "pump": {
-        "name": "Pump 2",
-        "channel": "B",
-        "nozzle": "B1",
-        "pulse": "B2",
-        "relay": "relay_b",
-        "pulses_per_litre": 10,
-        "preset_litres": 0
+     "id": "nozzle_lift_start",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "A1",
+      "type": "edge",
+      "edge": "rising"
+     },
+     "conditions": [
+      {
+       "source": "fueling_1.state",
+       "op": "eq",
+       "value": "authorised"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_a",
+       "state": "on"
       },
-      "rules": []
+      {
+       "do": "set_value",
+       "key": "fueling_1.state",
+       "value": "pumping"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_1.litres",
+       "value": 0
+      }
+     ],
+     "else": []
     },
     {
-      "id": "probe_1",
-      "type": "probe",
-      "probe": {
-        "name": "Tank 1",
-        "input": "A3",
-        "probe_type": "mcs_level",
-        "media": "Diesel",
-        "density": 0.84,
-        "alarm_unit": "%",
-        "low_level": 10,
-        "overfill": 95,
-        "lut": [ [0,0],[1000,2000],[2000,4000],[3000,5000] ]
-      },
-      "rules": []
+     "id": "count_litres",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "A2",
+      "type": "pulse_count",
+      "value": 10,
+      "reset": "yes"
+     },
+     "conditions": [
+      {
+       "source": "fueling_1.state",
+       "op": "eq",
+       "value": "pumping"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_value",
+       "key": "fueling_1.litres",
+       "op": "increment",
+       "value": 1
+      }
+     ],
+     "else": []
     },
     {
-      "id": "probe_2",
-      "type": "probe",
-      "probe": {
-        "name": "Tank 2",
-        "input": "B3",
-        "probe_type": "mcs_level",
-        "media": "AdBlue",
-        "density": 1.09,
-        "alarm_unit": "%",
-        "low_level": 10,
-        "overfill": 95,
-        "lut": [ [0,0],[1000,2000],[2000,4000],[3000,5000] ]
+     "id": "nozzle_return_stop",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "A1",
+      "type": "edge",
+      "edge": "falling"
+     },
+     "conditions": [
+      {
+       "source": "fueling_1.state",
+       "op": "eq",
+       "value": "pumping"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_a",
+       "state": "off"
       },
-      "rules": []
+      {
+       "do": "set_value",
+       "key": "fueling_1.state",
+       "value": "done"
+      },
+      {
+       "do": "log",
+       "what": "transaction"
+      },
+      {
+       "do": "buzzer",
+       "sound": "complete"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "auth_timeout",
+     "enabled": true,
+     "trigger": {
+      "domain": "timer",
+      "type": "elapsed",
+      "since": "fueling_1.state",
+      "state": "authorised",
+      "value": 60
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_a",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_1.state",
+       "value": "idle"
+      },
+      {
+       "do": "buzzer",
+       "sound": "error"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "no_flow_timeout",
+     "enabled": true,
+     "trigger": {
+      "domain": "timer",
+      "type": "no_activity",
+      "watch": "A2",
+      "since": "fueling_1.state",
+      "state": "pumping",
+      "value": 30
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_a",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_1.state",
+       "value": "idle"
+      },
+      {
+       "do": "buzzer",
+       "sound": "warning"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "flow_guard",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "A2",
+      "type": "pulse_rate",
+      "min_pulses": 5,
+      "window_ms": 2000
+     },
+     "conditions": [
+      {
+       "source": "fueling_1.state",
+       "op": "neq",
+       "value": "pumping"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_a",
+       "state": "off"
+      },
+      {
+       "do": "buzzer",
+       "sound": "error"
+      },
+      {
+       "do": "notify",
+       "level": "alarm",
+       "message": "Unauthorised flow on Pump 1"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "recover_on_boot",
+     "enabled": true,
+     "trigger": {
+      "domain": "system",
+      "type": "boot"
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_a",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_1.state",
+       "value": "idle"
+      }
+     ],
+     "else": []
     }
-  ]
+   ]
+  },
+  {
+   "id": "fueling_2",
+   "type": "pump",
+   "channel": "B",
+   "pump": {
+    "name": "Pump 2",
+    "channel": "B",
+    "nozzle": "B1",
+    "pulse": "B2",
+    "relay": "relay_b",
+    "pulses_per_litre": 10,
+    "preset_litres": 0
+   },
+   "rules": [
+    {
+     "id": "auth_ok",
+     "enabled": true,
+     "trigger": {
+      "domain": "comm",
+      "match": "AUTH_OK:Pump 2"
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_value",
+       "key": "fueling_2.state",
+       "value": "authorised"
+      },
+      {
+       "do": "buzzer",
+       "sound": "ok"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "nozzle_lift_start",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "B1",
+      "type": "edge",
+      "edge": "rising"
+     },
+     "conditions": [
+      {
+       "source": "fueling_2.state",
+       "op": "eq",
+       "value": "authorised"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_b",
+       "state": "on"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_2.state",
+       "value": "pumping"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_2.litres",
+       "value": 0
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "count_litres",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "B2",
+      "type": "pulse_count",
+      "value": 10,
+      "reset": "yes"
+     },
+     "conditions": [
+      {
+       "source": "fueling_2.state",
+       "op": "eq",
+       "value": "pumping"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_value",
+       "key": "fueling_2.litres",
+       "op": "increment",
+       "value": 1
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "nozzle_return_stop",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "B1",
+      "type": "edge",
+      "edge": "falling"
+     },
+     "conditions": [
+      {
+       "source": "fueling_2.state",
+       "op": "eq",
+       "value": "pumping"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_b",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_2.state",
+       "value": "done"
+      },
+      {
+       "do": "log",
+       "what": "transaction"
+      },
+      {
+       "do": "buzzer",
+       "sound": "complete"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "auth_timeout",
+     "enabled": true,
+     "trigger": {
+      "domain": "timer",
+      "type": "elapsed",
+      "since": "fueling_2.state",
+      "state": "authorised",
+      "value": 60
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_b",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_2.state",
+       "value": "idle"
+      },
+      {
+       "do": "buzzer",
+       "sound": "error"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "no_flow_timeout",
+     "enabled": true,
+     "trigger": {
+      "domain": "timer",
+      "type": "no_activity",
+      "watch": "B2",
+      "since": "fueling_2.state",
+      "state": "pumping",
+      "value": 30
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_b",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_2.state",
+       "value": "idle"
+      },
+      {
+       "do": "buzzer",
+       "sound": "warning"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "flow_guard",
+     "enabled": true,
+     "trigger": {
+      "domain": "io",
+      "input": "B2",
+      "type": "pulse_rate",
+      "min_pulses": 5,
+      "window_ms": 2000
+     },
+     "conditions": [
+      {
+       "source": "fueling_2.state",
+       "op": "neq",
+       "value": "pumping"
+      }
+     ],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_b",
+       "state": "off"
+      },
+      {
+       "do": "buzzer",
+       "sound": "error"
+      },
+      {
+       "do": "notify",
+       "level": "alarm",
+       "message": "Unauthorised flow on Pump 2"
+      }
+     ],
+     "else": []
+    },
+    {
+     "id": "recover_on_boot",
+     "enabled": true,
+     "trigger": {
+      "domain": "system",
+      "type": "boot"
+     },
+     "conditions": [],
+     "actions": [
+      {
+       "do": "set_relay",
+       "target": "relay_b",
+       "state": "off"
+      },
+      {
+       "do": "set_value",
+       "key": "fueling_2.state",
+       "value": "idle"
+      }
+     ],
+     "else": []
+    }
+   ]
+  },
+  {
+   "id": "probe_1",
+   "type": "probe",
+   "probe": {
+    "name": "Tank 1",
+    "input": "A3",
+    "probe_type": "mcs_level",
+    "media": "Diesel",
+    "density": 0.84,
+    "alarm_unit": "%",
+    "low_level": 10,
+    "overfill": 95,
+    "lut": [
+     [
+      0,
+      0
+     ],
+     [
+      1000,
+      2000
+     ],
+     [
+      2000,
+      4000
+     ],
+     [
+      3000,
+      5000
+     ]
+    ]
+   },
+   "rules": []
+  },
+  {
+   "id": "probe_2",
+   "type": "probe",
+   "probe": {
+    "name": "Tank 2",
+    "input": "B3",
+    "probe_type": "mcs_level",
+    "media": "AdBlue",
+    "density": 1.09,
+    "alarm_unit": "%",
+    "low_level": 10,
+    "overfill": 95,
+    "lut": [
+     [
+      0,
+      0
+     ],
+     [
+      1000,
+      2000
+     ],
+     [
+      2000,
+      4000
+     ],
+     [
+      3000,
+      5000
+     ]
+    ]
+   },
+   "rules": []
+  }
+ ]
 }
