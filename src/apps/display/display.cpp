@@ -482,12 +482,15 @@ static void display_task(void*) {
     uint8_t  alarm_idx = 0;
     uint32_t alarm_cycle_ms = 0;
     bool     ap_started = false;     // one-shot service-AP start
+    uint32_t boot_ms = millis();
 
     for (;;) {
-        // Start the service access point once the network stack is up (gives
-        // the QR screen something to show). No button to toggle it anymore, so
-        // it auto-starts. Done here (not in setup) to avoid racing WiFi init.
-        if (!ap_started && network_initialized) {
+        // Start the service access point ~3s after boot (gives the WiFi radio
+        // a moment to settle). We deliberately do NOT wait for
+        // network_initialized: on Ethernet-only setups w5500::init() can block
+        // on DHCP for a long time, and the AP only needs the WiFi radio, not
+        // Ethernet. No button to toggle it anymore, so it auto-starts.
+        if (!ap_started && millis() - boot_ms > 3000) {
             service_ap::start();
             ap_started = true;
         }
