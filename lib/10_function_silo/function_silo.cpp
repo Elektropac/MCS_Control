@@ -12,6 +12,7 @@
 #include "apps/pumps/pumps.h"
 #include "apps/rule_engine/rule_engine.h"
 #include "apps/state/state.h"
+#include "apps/fueling_auth/fueling_auth.h"
 #include "apps/test_api/test_api.h"
 #include "apps/ota/ota.h"
 
@@ -177,6 +178,28 @@ namespace function_silo
         else if (function_name == "state_get_all")
         {
             return state_get_all();
+        }
+
+        // -- fuelling authorization + transaction delivery --
+        else if (function_name == "auth_challenge")
+        {
+            return fueling_auth_challenge();
+        }
+        else if (function_name == "fuel_authorize")
+        {
+            return fueling_auth_authorize(json_packet["data"].as<JsonObject>());
+        }
+        else if (function_name == "fuel_cancel")
+        {
+            return fueling_auth_cancel(json_packet["data"].as<JsonObject>());
+        }
+        else if (function_name == "txn_pending")
+        {
+            return fueling_auth_pending();
+        }
+        else if (function_name == "txn_ack")
+        {
+            return fueling_auth_ack(json_packet["data"].as<JsonObject>());
         }
 
         // -- hardware test API (web/test.html) --

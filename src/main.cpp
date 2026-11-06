@@ -23,6 +23,7 @@ namespace config {
 #include "apps/display/display.h"
 #include "apps/capability_router/capability_router.h"
 #include "apps/ota/ota.h"
+#include "apps/fueling_auth/fueling_auth.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
 #include "bluetooth.h"
@@ -53,6 +54,7 @@ void setup() {
 
     channels_setup();               // device-level: set channel supply voltage
     start_apps();           // start the apps for what the config contains
+    fueling_auth_init();            // transaction authorization + delivery store
 
     // Bring up BLE BEFORE the network stack. BLE's controller needs a large
     // contiguous heap block, which only exists before WiFi/lwIP/Ethernet
