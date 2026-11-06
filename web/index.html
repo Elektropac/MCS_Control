@@ -1,119 +1,116 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>esp32 web app</title>
+  <title>MCS Control</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #f0f0f0;
+    :root{
+      --mcs-blue:#047cd2; --mcs-blue-d:#0362a6; --heading:#2a3139;
+      --body:#4d5968; --bg:#f6f8fa; --card:#fff; --line:#e3e8ee;
+      --ok:#046c4e; --warn:#b76e00; --alarm:#b42318;
     }
-
-    .main {
-      display: flex;
-      justify-content: start;
-      align-items: start;
-      padding: 10px;
-      height: 100vh;
-      gap: 20px;
-    }
-
-    .wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-
-      border: #007bff 1px solid;
-      padding: 20px;
-      border-radius: 8px;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-
-    #config {
-      padding: 10px;
-      field-sizing: content;
-      width: max-content;
-      min-width: 150px;
-      /* Prevents it from collapsing entirely when empty */
-      max-width: 100%;
-      /* Keeps it from breaking the page layout */
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      background:var(--bg);color:var(--body)}
+    header{background:linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d));
+      color:#fff;padding:18px 20px}
+    header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.2px}
+    header .sub{opacity:.9;font-size:13px;margin-top:2px}
+    nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line)}
+    nav a{padding:8px 14px;border-radius:8px;background:#eef4fb;color:var(--mcs-blue-d);
+      font-weight:700;font-size:13px;text-decoration:none}
+    nav a.active{background:var(--mcs-blue);color:#fff}
+    main{max-width:720px;margin:0 auto;padding:18px 16px 40px}
+    h2{color:var(--heading);font-size:15px;font-weight:800;margin:18px 0 8px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+      padding:14px 16px;box-shadow:0 1px 3px rgba(16,40,70,.05)}
+    .card .name{font-weight:800;color:var(--heading);font-size:14px}
+    .card .big{font-size:26px;font-weight:800;color:var(--mcs-blue-d);margin:6px 0 2px}
+    .card .sub{font-size:12px;color:#8a94a0}
+    .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;
+      border-radius:999px;margin-top:8px}
+    .badge.ok{background:#def7ec;color:var(--ok)}
+    .badge.low{background:#fde8e8;color:var(--alarm)}
+    .badge.overfill{background:#fdf0e3;color:var(--warn)}
+    .badge.fault{background:#efe7fb;color:#6b27b4}
+    .empty{color:#8a94a0;font-size:13px;padding:8px 0}
+    .foot{margin-top:24px;font-size:12px;color:#9aa4b0}
   </style>
-  <script>
-    const api_url = "/api/function_silo";
-    const api_client = (data) => fetch(api_url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        return data;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        return false;
-      });
-
-    const ledOn = () => api_client({ subject: "led_on" });
-    const ledOff = () => api_client({ subject: "led_off" });
-    const ledToggle = () => api_client({ subject: "led_toggle" });
-
-    const getConfig = async () => {
-      const r = await api_client({ subject: "get_config" });
-      if (!r) return;
-      const ele = document.getElementById("config");
-      ele.value = JSON.stringify(r, null, 2);
-    }
-    const setConfig = async () => {
-      const config = document.getElementById("config").value;
-      const r = await api_client({ subject: "set_config", data: { value: JSON.parse(config) } });
-      if (!r) return;
-      console.log("Config set:", r);
-    }
-  </script>
 </head>
-
 <body>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 10px 0;">
-    <a href="/" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#e7f1ff;color:#0056b3;font-weight:700;font-size:13px;text-decoration:none;">Home</a>
-    <a href="/tanks.html" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#fff;color:#0056b3;font-weight:700;font-size:13px;text-decoration:none;">Tanks</a>
-    <a href="/pumps.html" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#fff;color:#0056b3;font-weight:700;font-size:13px;text-decoration:none;">Pumps</a>
-    <a href="/setup.html" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#fff;color:#0056b3;font-weight:700;font-size:13px;text-decoration:none;">Setup</a>
-    <a href="/test.html" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#fff;color:#0056b3;font-weight:700;font-size:13px;text-decoration:none;">Test</a>
-    <a href="/ota.html" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#fff;color:#0056b3;font-weight:700;font-size:13px;text-decoration:none;">Update</a>
-  </div>
-  <div class="main">
-    <div class="wrapper">
-      <p>led</p>
-      <button class="btn" onclick="ledOn()">LED ON</button>
-      <button class="btn" onclick="ledOff()">LED OFF</button>
-      <button class="btn" onclick="ledToggle()">LED TOGGLE</button>
-    </div>
+  <header>
+    <h1>MCS Control</h1>
+    <div class="sub" id="devsub">Live overview</div>
+  </header>
+  <nav>
+    <a href="/" class="active">Home</a>
+    <a href="/tanks.html">Tanks</a>
+    <a href="/pumps.html">Pumps</a>
+    <a href="/setup.html">Setup</a>
+    <a href="/test.html">Test</a>
+    <a href="/ota.html">Update</a>
+  </nav>
+  <main>
+    <h2>Tanks</h2>
+    <div class="grid" id="tanks"><div class="empty">Loading…</div></div>
 
-    <div class="wrapper">
-      <p>config</p>
-      <button class="btn" onclick="getConfig()">get config</button>
-      <button class="btn" onclick="setConfig()">set config</button>
-      <textarea id="config"></textarea>
-    </div>
-  </div>
+    <h2>Pumps</h2>
+    <div class="grid" id="pumps"><div class="empty">Loading…</div></div>
+
+    <div class="foot" id="foot"></div>
+  </main>
+
+  <script>
+    const API = "/api/function_silo";
+    const call = (subject, data) => fetch(API, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(data ? {subject, data} : {subject})
+    }).then(r => r.json()).catch(() => null);
+
+    function tankCard(p){
+      const pct = Math.round(p.pct ?? 0);
+      const hasLut = p.has_lut && (p.liters ?? 0) > 0;
+      const main = hasLut ? (p.liters + " L") : ((p.mm ?? 0) + " mm");
+      let badge = '<span class="badge ok">OK</span>';
+      if (p.state === "low_level") badge = '<span class="badge low">LOW</span>';
+      else if (p.state === "overfill") badge = '<span class="badge overfill">OVERFILL</span>';
+      else if (p.state === "fault") badge = '<span class="badge fault">FAULT</span>';
+      return `<div class="card">
+        <div class="name">${p.id ?? "Tank"}</div>
+        <div class="big">${pct}%</div>
+        <div class="sub">${main}${p.media ? " · " + p.media : ""}</div>
+        ${badge}</div>`;
+    }
+
+    function pumpCard(p){
+      const noz = p.nozzle_lifted ? "LIFTED" : "hung";
+      const relay = p.relay_on ? "ON" : "off";
+      return `<div class="card">
+        <div class="name">${p.name ?? "Pump"}</div>
+        <div class="big">${(p.litres ?? 0).toFixed(2)} L</div>
+        <div class="sub">Nozzle ${noz} · Pump ${relay}</div></div>`;
+    }
+
+    async function refresh(){
+      const t = await call("cloudgauge_get_all");
+      const tanks = document.getElementById("tanks");
+      if (t && Array.isArray(t.probes) && t.probes.length){
+        tanks.innerHTML = t.probes.map(tankCard).join("");
+      } else { tanks.innerHTML = '<div class="empty">No tanks configured</div>'; }
+
+      const u = await call("pump_get_all");
+      const pumps = document.getElementById("pumps");
+      if (u && Array.isArray(u.pumps) && u.pumps.length){
+        pumps.innerHTML = u.pumps.map(pumpCard).join("");
+      } else { pumps.innerHTML = '<div class="empty">No pumps configured</div>'; }
+
+      document.getElementById("foot").textContent =
+        "Updated " + new Date().toLocaleTimeString();
+    }
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
 </body>
-
 </html>
