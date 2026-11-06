@@ -62,6 +62,33 @@ static Txn* find_pump_txn(const char* pump) {
         if (t.status != TXN_FREE && strcmp(t.pump, pump) == 0) return &t;
     return nullptr;
 }
+
+// Reconcile the auth store with the rule-engine's transaction state. The engine
+// owns the live fuelling state machine; it can move a pump back to "idle" on an
+// auth-timeout / no-flow-timeout WITHOUT telling us. An AUTHORIZED txn whose
+// pump is no longer authorised/pumping in the engine is stale (it timed out and
+// never fuelled) -> free the slot so the pump isn't seen as occupied forever.
+// (Txns that actually fuelled become PENDING elsewhere and are NOT freed here;
+// those must still be delivered + acked.)
+static void reconcile_with_engine() {
+    JsonDocument doc;
+    if (deserializeJson(doc, pumps_get_all()) != DeserializationError::Ok) return;
+    for (auto& t : s_txns) {
+        if (t.status != TXN_AUTHORIZED) continue;
+        for (JsonObject p : doc["pumps"].as<JsonArray>()) {
+            if (strcmp(p["name"] | "", t.pump) != 0) continue;
+            const char* st = p["state"] | "idle";
+            // Still live in the engine? leave it. Back to idle/done? it timed
+            // out before fuelling -> free the slot.
+            if (strcmp(st, "authorised") != 0 && strcmp(st, "pumping") != 0) {
+                log_info("[fueling_auth] txn %u freed (engine state '%s')", t.id, st);
+                t.status = TXN_FREE;
+                s_txn_count--;
+            }
+            break;
+        }
+    }
+}
 static uint8_t count_unacked() {
     uint8_t n = 0;
     for (auto& t : s_txns)
@@ -127,6 +154,10 @@ String fueling_auth_challenge() {
 }
 
 String fueling_auth_authorize(JsonObject data) {
+    // 0) Reconcile with the engine so timed-out authorizations don't leave a
+    //    pump looking occupied forever.
+    reconcile_with_engine();
+
     // 1) Queue full? Refuse everything (checked first).
     if (fueling_auth_queue_full())
         return err(51, "transaction queue full");
