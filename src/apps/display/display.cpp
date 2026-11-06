@@ -601,15 +601,13 @@ static void display_task(void*) {
         uint8_t nPumps = count_pumps();
         uint16_t total = step_count(nTanks, nPumps);
 
-        // Nothing configured to show (no tanks, no pumps): show the guide
-        // screen as a holding pattern rather than cycling an empty list (which
-        // would divide by zero below).
+        // Nothing to show yet (no tanks, no pumps). This also happens briefly
+        // right after boot, before start_apps() has spawned the probe/pump
+        // apps, so the counts read 0 for a moment. Just wait quietly without
+        // redrawing — redrawing the guide screen here made it flash again just
+        // before the carousel began. (Also avoids a divide-by-zero below.)
         if (total == 0) {
-            oled_set_offset(0, 0);
-            oled_begin();
-            render_guide_name_body();
-            oled_end();
-            vTaskDelay(pdMS_TO_TICKS(500));
+            vTaskDelay(pdMS_TO_TICKS(200));
             continue;
         }
 
