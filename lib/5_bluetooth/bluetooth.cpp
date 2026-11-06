@@ -173,7 +173,10 @@ namespace bluetooth_services
                     return;
                 }
 
+                String subj = doc["subject"].as<String>();
                 String result = function_silo::run_function_silo(doc);
+                log_info("[Bluetooth] DIAG decrypt OK subject=%s result_len=%u",
+                         subj.c_str(), (unsigned)result.length());
                 // Encrypt the function RESULT (not the request doc). Previously
                 // this encrypted `doc`, so the device echoed the request back
                 // instead of returning the data. result is already-serialized JSON.
