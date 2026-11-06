@@ -32,15 +32,9 @@ namespace config {
 
 // How long the MCS brand logo shows at boot.
 static const uint32_t LOGO_HOLD_MS = 2000;
-// How long the guide/product name shows at boot (after the logo).
-static const uint32_t GUIDE_HOLD_MS = 2500;
 
 // The OLED is a fixed display (no buttons, no inactivity sleep) — always on.
 static bool s_panel_on = true;
-
-// Forward declaration: the guide-name renderer lives further down with the
-// other screen bodies (it needs guide_display_name()).
-static void render_guide_name_body();
 
 void display_boot_splash() {
     log_info("[display] showing MCS logo splash");
@@ -48,15 +42,6 @@ void display_boot_splash() {
     oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
     oled_end();
     vTaskDelay(pdMS_TO_TICKS(LOGO_HOLD_MS));
-
-    // Then the guide/product name — shown ONLY here at boot (not in the
-    // carousel), so a technician can see which guide the device runs.
-    log_info("[display] showing guide name");
-    oled_set_offset(0, 0);
-    oled_begin();
-    render_guide_name_body();
-    oled_end();
-    vTaskDelay(pdMS_TO_TICKS(GUIDE_HOLD_MS));
 }
 
 bool display_panel_on() {
@@ -106,10 +91,7 @@ static String guide_display_name() {
 
 // Draw the guide name screen body (vertical MCS logo down the left edge + the
 // guide name filling the rest, auto-sized + word-wrapped up to 3 lines). No
-// begin/end — the caller wraps it. Shown at BOOT only (see display_boot_splash)
-// so a technician can confirm which guide/product the device is running. It is
-// deliberately NOT part of the carousel anymore: Jesper wants the guide name on
-// startup but not cycling through forever.
+// begin/end — the caller wraps it. This is the carousel HOME screen.
 static void render_guide_name_body() {
     String name = guide_display_name();
 
@@ -163,10 +145,11 @@ static void render_guide_name_body() {
     }
 }
 
-// HOME screen (carousel): just the MCS logo, centered. The guide name used to
-// live here but it only shows at boot now, so HOME is a clean brand screen.
+// HOME screen (carousel): the guide/product screen — vertical MCS logo down
+// the left edge + the guide name. This is the brand/identity screen at the
+// top of the carousel.
 static void render_home() {
-    oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
+    render_guide_name_body();
 }
 
 // TANK screen for probe index `idx`. Shows name, reading, percent + an
