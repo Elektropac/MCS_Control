@@ -7,7 +7,6 @@
 #include <ArduinoJson.h>
 
 #include "logging.h"
-#include "memreport.h"
 #include <esp_heap_caps.h>
 #include "my_wifi.h"
 #include "encryption.h"
@@ -115,9 +114,6 @@ namespace bluetooth_services
 
         if (inputValue.length() > 0)
         {
-            // DIAG (temp): hvad modtog vi faktisk?
-            log_info("[Bluetooth] RX len=%u avail=%d head=%.30s",
-                     (unsigned)inputValue.length(), serial.is_available ? 1 : 0, inputValue.c_str());
             if (serial.is_available == true)
             {
                 // then the input need to be "take:<encryption_key:16>"
@@ -173,10 +169,7 @@ namespace bluetooth_services
                     return;
                 }
 
-                String subj = doc["subject"].as<String>();
                 String result = function_silo::run_function_silo(doc);
-                log_info("[Bluetooth] DIAG decrypt OK subject=%s result_len=%u",
-                         subj.c_str(), (unsigned)result.length());
                 // Encrypt the function RESULT (not the request doc). Previously
                 // this encrypted `doc`, so the device echoed the request back
                 // instead of returning the data. result is already-serialized JSON.
@@ -290,18 +283,14 @@ namespace bluetooth
         String mac = wifi::make_mac();
         String _name = "Control_" + mac;
 
-        memreport_mark("BLE: before init");
         // arduino-esp32 3.2.0's BLEDevice::init() takes an Arduino String.
         BLEDevice::init(_name);
-        memreport_mark("BLE: after BLEDevice::init");
         // Create server
         pServer = BLEDevice::createServer();
         pServer->setCallbacks(new MyServerCallbacks());
-        memreport_mark("BLE: after createServer");
 
         // Create services
         bluetooth_services::init(pServer);
-        memreport_mark("BLE: after services");
 
         // Start advertising
         pServer->getAdvertising()->start();

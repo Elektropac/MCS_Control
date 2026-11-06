@@ -25,7 +25,6 @@ namespace config {
 #include "apps/ota/ota.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
-#include "platform/memreport.h"
 #include "bluetooth.h"
 
 #include "file_system.h"
@@ -34,12 +33,10 @@ namespace config {
 void setup() {
     Serial.begin(115200);
     log_init();                     // log system (serial + ring buffer)
-    memreport_mark("boot");
 
     // Filesystem + config (must be before apps that read config)
     file_system::init();
     config::init();
-    memreport_mark("after config");
 
     // Hardware
     i2c_init(I2C_SDA, I2C_SCL);    // I2C bus + mutex
@@ -47,24 +44,21 @@ void setup() {
     flow_guard_init();              // flow guard state (cursor synced to sampler)
     all_drivers_init();             // probe I2C chips + init all peripherals
 
-    display_boot_splash();          // MCS brand logo at boot (~2s)
-    // Boot shows the MCS logo splash; the carousel then takes over the OLED,
-    // auto-scrolling through the config-defined screens (no buttons — the
-    // TopBoard with its 5 buttons + display has been removed; the OLED is now
-    // a fixed display driven entirely by config / web / BLE).
-    display_start();                // OLED carousel (auto-scrolling, config-defined)
-    memreport_mark("after drivers+display");
+    display_boot_splash();          // guide screen + startup jingle, then system info
+    // Boot shows the guide screen (+ jingle) and the system-info screen; the
+    // carousel then takes over the OLED, auto-scrolling through tanks + pumps
+    // (no buttons — the TopBoard with its 5 buttons + display has been removed;
+    // the OLED is now a fixed display driven entirely by config / web / BLE).
+    display_start();                // OLED carousel (auto-scrolling)
 
     channels_setup();               // device-level: set channel supply voltage
     start_apps();           // start the apps for what the config contains
-    memreport_mark("after start_apps");
 
     // Bring up BLE BEFORE the network stack. BLE's controller needs a large
     // contiguous heap block, which only exists before WiFi/lwIP/Ethernet
     // fragment the heap. (Previously BLE init waited for network_initialized
     // and then aborted the device when the block was too small.)
     bluetooth::init();
-    memreport_mark("after bluetooth init");
 
     // Platform tasks (always run regardless of product)
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)
@@ -75,8 +69,6 @@ void setup() {
     // start here — it won't touch the network until the user triggers it.
     otaInit();
     ota_start_task();
-
-    memreport_start();              // TEMP diagnostic: heap + task stacks over serial
 }
 
 // All work runs in FreeRTOS tasks. Arduino loop is not used.
