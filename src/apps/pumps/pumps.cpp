@@ -359,6 +359,7 @@ String pumps_get_all() {
         pump_to_json(obj, s_pumps[i]);
     }
     String result;
+    result.reserve(512);              // pre-size to avoid realloc churn (heap fragmentation)
     serializeJson(doc, result);
     return result;
 }

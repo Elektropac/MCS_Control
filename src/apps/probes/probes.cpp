@@ -909,6 +909,7 @@ String probes_get_all() {
     }
 
     String result;
+    result.reserve(512);              // pre-size to avoid realloc churn (heap fragmentation)
     serializeJson(doc, result);
     return result;
 }
