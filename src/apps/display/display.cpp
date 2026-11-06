@@ -32,24 +32,35 @@ namespace config {
 
 // How long the guide/product screen shows at boot.
 static const uint32_t BOOT_HOLD_MS = 2500;
+// How long the system-info screen shows at boot (after the guide screen).
+static const uint32_t INFO_HOLD_MS = 2500;
 
 // The OLED is a fixed display (no buttons, no inactivity sleep) — always on.
 static bool s_panel_on = true;
 
-// Forward declaration: the guide-screen renderer lives further down with the
-// other screen bodies (it needs guide_display_name()).
+// Forward declarations: these renderers live further down with the other
+// screen bodies; the boot splash shows them before the carousel starts.
 static void render_guide_name_body();
+static void render_info();
 
 void display_boot_splash() {
-    // Boot screen = the guide/product screen (logo stripe + guide name). The
-    // plain MCS-logo splash was dropped; this is the single brand screen and it
-    // is shown ONLY at boot, not in the carousel.
+    // Boot sequence = guide/product screen, then the system-info screen. Both
+    // are shown ONLY here at boot, not in the carousel: the guide name and the
+    // FW/HW/MAC/IP are things a technician checks on startup, not info that
+    // needs to keep cycling during normal operation.
     log_info("[display] showing guide splash");
     oled_set_offset(0, 0);
     oled_begin();
     render_guide_name_body();
     oled_end();
     vTaskDelay(pdMS_TO_TICKS(BOOT_HOLD_MS));
+
+    log_info("[display] showing system info");
+    oled_set_offset(0, 0);
+    oled_begin();
+    render_info();
+    oled_end();
+    vTaskDelay(pdMS_TO_TICKS(INFO_HOLD_MS));
 }
 
 bool display_panel_on() {
@@ -417,18 +428,18 @@ static uint8_t count_pumps() {
 
 // Draw the screen body at virtual position `step` (NO begin/end — the caller
 // wraps it, so two screens can be composited into one frame for the slide).
-// Sequence: each TANK, each PUMP, INFO.
+// Sequence: each TANK, each PUMP.
 //
-// NOT in the carousel:
-//   * The guide/HOME screen — it is shown only at boot (display_boot_splash).
-//   * The SERVICE (WiFi-AP QR) screen — the service AP is disabled (WiFi softAP
-//     + BLE can't coexist on this board). render_service() is kept for if/when
-//     the AP comes back.
+// NOT in the carousel (shown only at boot, see display_boot_splash):
+//   * The guide/HOME screen.
+//   * The system-info (FW/HW/MAC/IP) screen.
+// Also not in the carousel: the SERVICE (WiFi-AP QR) screen — the service AP is
+// disabled (WiFi softAP + BLE can't coexist on this board). render_service() /
+// render_info() are kept for boot + if/when the AP comes back.
 static void render_body(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step < nTanks) { render_tank((uint8_t)step); return; }
     uint16_t s = step - nTanks;
-    if (s < nPumps) { render_pump((uint8_t)s); return; }
-    render_info();
+    render_pump((uint8_t)s);
 }
 
 // Draw one screen in place (single frame, no slide).
@@ -439,20 +450,18 @@ static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     oled_end();
 }
 
-// Total number of screens in one full cycle (tanks + pumps + INFO).
+// Total number of screens in one full cycle (tanks + pumps).
 static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
-    return nTanks + nPumps + 1 /*INFO*/;
+    return nTanks + nPumps;
 }
 
-// Section id for a step: 1=TANKS, 2=PUMPS, 3=INFO. Used to decide the slide
-// direction: moving to a DIFFERENT section slides sideways (like switching
-// menu items); moving within the TANKS/PUMPS group (sub-item to sub-item)
-// slides UP from the bottom (like a sub-menu).
+// Section id for a step: 1=TANKS, 2=PUMPS. Used to decide the slide direction:
+// moving to a DIFFERENT section slides sideways (like switching menu items);
+// moving within the TANKS/PUMPS group (sub-item to sub-item) slides UP from the
+// bottom (like a sub-menu).
 static uint8_t step_section(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step < nTanks) return 1;                  // TANKS
-    uint16_t s = step - nTanks;
-    if (s < nPumps) return 2;                     // PUMPS
-    return 3;                                     // INFO
+    return 2;                                     // PUMPS
 }
 
 // -----------------------------------------------------------------
@@ -591,6 +600,19 @@ static void display_task(void*) {
         uint8_t nTanks = count_tanks();
         uint8_t nPumps = count_pumps();
         uint16_t total = step_count(nTanks, nPumps);
+
+        // Nothing configured to show (no tanks, no pumps): show the guide
+        // screen as a holding pattern rather than cycling an empty list (which
+        // would divide by zero below).
+        if (total == 0) {
+            oled_set_offset(0, 0);
+            oled_begin();
+            render_guide_name_body();
+            oled_end();
+            vTaskDelay(pdMS_TO_TICKS(500));
+            continue;
+        }
+
         if (step >= total) step = 0;
 
         if (millis() - dwell_start >= DWELL_MS) {
