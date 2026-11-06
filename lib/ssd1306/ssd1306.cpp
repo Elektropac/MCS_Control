@@ -274,7 +274,7 @@ bool oled_draw_qr(const uint8_t* qrcode) {
     // White background behind the whole code (quiet zone included) so the QR
     // reads correctly regardless of what was on screen before.
     s_oled->setDrawColor(1);
-    s_oled->drawBox(originX, originY, pxCode, pxCode);
+    s_oled->drawBox(s_x_offset + originX, s_y_offset + originY, pxCode, pxCode);
 
     // Draw dark modules in black (draw color 0) on top of the white box.
     s_oled->setDrawColor(0);
@@ -283,7 +283,7 @@ bool oled_draw_qr(const uint8_t* qrcode) {
             if (qrcodegen_getModule(qrcode, x, y)) {
                 const int px = originX + (x + QUIET) * scale;
                 const int py = originY + (y + QUIET) * scale;
-                s_oled->drawBox(px, py, scale, scale);
+                s_oled->drawBox(s_x_offset + px, s_y_offset + py, scale, scale);
             }
         }
     }
