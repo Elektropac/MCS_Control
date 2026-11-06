@@ -95,8 +95,10 @@ void network_start_task() {
     // Kept with a generous safety margin over the worst observed usage.
     int networkSize    = 1024 * 4;   // used ~2.0K
     int webServerSize  = 1024 * 6;   // used ~4.1K (HTTP parsing peaks)
-    int webSocketSize  = 1024 * 4;   // used ~0.8K (margin for TLS call depth)
-    int bluetoothSize  = 1024 * 4;   // used ~0.8K
+    int webSocketSize  = 1024 * 6;   // TLS/mbedtls call depth under handshake
+    int bluetoothSize  = 1024 * 8;   // BLE + mbedtls GCM under active session
+                                     // (idle ~0.8K but spikes to ~3.3K+ with a
+                                     // connected client doing encrypt/decrypt)
 
     xTaskCreate(
         network_task,

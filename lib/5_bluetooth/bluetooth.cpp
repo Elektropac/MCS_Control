@@ -170,7 +170,10 @@ namespace bluetooth_services
                 }
 
                 String result = function_silo::run_function_silo(doc);
-                String encrypted_result = Encrypt_Json(doc, serial.encryption_key);
+                // Encrypt the function RESULT (not the request doc). Previously
+                // this encrypted `doc`, so the device echoed the request back
+                // instead of returning the data. result is already-serialized JSON.
+                String encrypted_result = Encrypt(result, serial.encryption_key);
                 if (encrypted_result.length() > 0)
                 {
                     serial.output->setValue(encrypted_result.c_str());
