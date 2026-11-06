@@ -128,6 +128,7 @@ namespace bluetooth_services
                         // Valid encryption key, handle it as needed
                         serial.is_available = false;            // Mark the serial as no longer available
                         serial.encryption_key = encryption_key; // Store the encryption key
+                        serial.last_message_millis = millis();  // start the inactivity timeout from NOW
                         log_info("[Bluetooth] Serial marked as unavailable and encryption key stored.");
                         
                         JsonDocument doc;
