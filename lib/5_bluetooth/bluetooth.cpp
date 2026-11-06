@@ -115,6 +115,9 @@ namespace bluetooth_services
 
         if (inputValue.length() > 0)
         {
+            // DIAG (temp): hvad modtog vi faktisk?
+            log_info("[Bluetooth] RX len=%u avail=%d head=%.30s",
+                     (unsigned)inputValue.length(), serial.is_available ? 1 : 0, inputValue.c_str());
             if (serial.is_available == true)
             {
                 // then the input need to be "take:<encryption_key:16>"
