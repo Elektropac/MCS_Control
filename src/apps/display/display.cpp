@@ -54,20 +54,20 @@ void display_boot_splash() {
     oled_begin();
     render_guide_name_body();
     oled_end();
-    vTaskDelay(pdMS_TO_TICKS(BOOT_HOLD_MS));
+    // Play the boot jingle as soon as the first (guide) screen is up.
+    // buzzer_sound_startup() is blocking (~0.6s), so it counts as part of the
+    // guide hold; wait the rest of BOOT_HOLD_MS afterwards.
+    uint32_t t0 = millis();
+    buzzer_sound_startup();
+    uint32_t spent = millis() - t0;
+    if (spent < BOOT_HOLD_MS) vTaskDelay(pdMS_TO_TICKS(BOOT_HOLD_MS - spent));
 
     log_info("[display] showing system info");
     oled_set_offset(0, 0);
     oled_begin();
     render_info();
     oled_end();
-    // Play the boot jingle while the info screen is up. buzzer_sound_startup()
-    // is blocking (~0.6s), so it also counts as part of the info hold; wait the
-    // rest of INFO_HOLD_MS afterwards.
-    uint32_t t0 = millis();
-    buzzer_sound_startup();
-    uint32_t spent = millis() - t0;
-    if (spent < INFO_HOLD_MS) vTaskDelay(pdMS_TO_TICKS(INFO_HOLD_MS - spent));
+    vTaskDelay(pdMS_TO_TICKS(INFO_HOLD_MS));
 }
 
 bool display_panel_on() {
