@@ -1,5 +1,6 @@
 {
   "config": {
+    "guide": "sapphire_lite_mini",
     "connection": {
         "server": {
             "local": {
@@ -35,5 +36,67 @@
   },
 
   "groups": [
+    {
+      "id": "fueling_1",
+      "type": "pump",
+      "channel": "A",
+      "pump": {
+        "name": "Pump 1",
+        "channel": "A",
+        "nozzle": "A1",
+        "pulse": "A2",
+        "relay": "relay_a",
+        "pulses_per_litre": 10,
+        "preset_litres": 0
+      },
+      "rules": []
+    },
+    {
+      "id": "fueling_2",
+      "type": "pump",
+      "channel": "B",
+      "pump": {
+        "name": "Pump 2",
+        "channel": "B",
+        "nozzle": "B1",
+        "pulse": "B2",
+        "relay": "relay_b",
+        "pulses_per_litre": 10,
+        "preset_litres": 0
+      },
+      "rules": []
+    },
+    {
+      "id": "probe_1",
+      "type": "probe",
+      "probe": {
+        "name": "Tank 1",
+        "input": "A3",
+        "probe_type": "mcs_level",
+        "media": "Diesel",
+        "density": 0.84,
+        "alarm_unit": "%",
+        "low_level": 10,
+        "overfill": 95,
+        "lut": [ [0,0],[1000,2000],[2000,4000],[3000,5000] ]
+      },
+      "rules": []
+    },
+    {
+      "id": "probe_2",
+      "type": "probe",
+      "probe": {
+        "name": "Tank 2",
+        "input": "B3",
+        "probe_type": "mcs_level",
+        "media": "AdBlue",
+        "density": 1.09,
+        "alarm_unit": "%",
+        "low_level": 10,
+        "overfill": 95,
+        "lut": [ [0,0],[1000,2000],[2000,4000],[3000,5000] ]
+      },
+      "rules": []
+    }
   ]
 }
