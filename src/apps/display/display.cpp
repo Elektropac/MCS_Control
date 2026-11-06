@@ -201,7 +201,8 @@ static void render_tank(uint8_t idx) {
     oled_draw_frame(neckX, neckY, neckW, neckH);
     oled_draw_box(leftFootX, footY, footW, footH);
     oled_draw_box(rightFootX, footY, footW, footH);
-    oled_draw_line(leftFootX - 6, footY + footH, rightFootX + footW + 6, footY + footH);
+    // (No standalone ground line — as a lone horizontal line far below the
+    // tank it read as a stray streak sweeping through during the slide.)
 
     if (fillHeight > 0) {
         const int innerBottom = innerY + innerH - 1;
