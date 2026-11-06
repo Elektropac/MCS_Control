@@ -94,10 +94,13 @@ void network_start_task() {
     TaskHandle_t webServerHandle = nullptr;
     TaskHandle_t webSocketHandle = nullptr;
     TaskHandle_t bluetoothHandle = nullptr;
-    int networkSize = 1024 * 8;
-    int webServerSize = 1024 * 8;
-    int webSocketSize = 1024 * 8;
-    int bluetoothSize = 1024 * 8;
+    // Stack sizes right-sized from measured high-water marks (memreport):
+    //   network ~2.0K used, web_server ~4.1K, web_socket ~0.8K, bluetooth ~0.8K.
+    // Kept with a generous safety margin over the worst observed usage.
+    int networkSize    = 1024 * 4;   // used ~2.0K
+    int webServerSize  = 1024 * 6;   // used ~4.1K (HTTP parsing peaks)
+    int webSocketSize  = 1024 * 4;   // used ~0.8K (margin for TLS call depth)
+    int bluetoothSize  = 1024 * 4;   // used ~0.8K
 
     xTaskCreate(
         network_task,

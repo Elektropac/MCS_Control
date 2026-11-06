@@ -8,7 +8,7 @@
 #include "LittleFS.h"
 #include <ArduinoJson.h>
 
-static char s_cmd_buf[2048];
+static char s_cmd_buf[256];
 static uint16_t s_cmd_pos = 0;
 
 static void process_command(const char* cmd) {
@@ -231,6 +231,6 @@ static void serial_cmd_task(void* param) {
 
 void serial_cmd_start_task() {
     TaskHandle_t handle = nullptr;
-    xTaskCreate(serial_cmd_task, "serial_cmd", 4096, nullptr, 1, &handle);
-    task_register(handle, "serial_cmd", 1, 4096);
+    xTaskCreate(serial_cmd_task, "serial_cmd", 2048, nullptr, 1, &handle);
+    task_register(handle, "serial_cmd", 1, 2048);
 }

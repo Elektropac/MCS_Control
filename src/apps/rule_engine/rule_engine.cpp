@@ -716,8 +716,8 @@ void rule_engine_init() {
 }
 
 void rule_engine_start_task() {
-    xTaskCreate(rule_engine_task, "rule_engine", 6144, nullptr, 2, &s_task_handle);
-    task_register(s_task_handle, "rule_engine", 2, 6144);
+    xTaskCreate(rule_engine_task, "rule_engine", 4096, nullptr, 2, &s_task_handle);
+    task_register(s_task_handle, "rule_engine", 2, 4096);
 }
 
 void rule_engine_stop()  { if (s_task_handle) vTaskSuspend(s_task_handle); }
