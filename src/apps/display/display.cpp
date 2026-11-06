@@ -30,18 +30,26 @@ namespace config {
 // Boot splash + panel power (merged from the former product_display app)
 // -----------------------------------------------------------------
 
-// How long the MCS brand logo shows at boot.
-static const uint32_t LOGO_HOLD_MS = 2000;
+// How long the guide/product screen shows at boot.
+static const uint32_t BOOT_HOLD_MS = 2500;
 
 // The OLED is a fixed display (no buttons, no inactivity sleep) — always on.
 static bool s_panel_on = true;
 
+// Forward declaration: the guide-screen renderer lives further down with the
+// other screen bodies (it needs guide_display_name()).
+static void render_guide_name_body();
+
 void display_boot_splash() {
-    log_info("[display] showing MCS logo splash");
+    // Boot screen = the guide/product screen (logo stripe + guide name). The
+    // plain MCS-logo splash was dropped; this is the single brand screen and it
+    // is shown ONLY at boot, not in the carousel.
+    log_info("[display] showing guide splash");
+    oled_set_offset(0, 0);
     oled_begin();
-    oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
+    render_guide_name_body();
     oled_end();
-    vTaskDelay(pdMS_TO_TICKS(LOGO_HOLD_MS));
+    vTaskDelay(pdMS_TO_TICKS(BOOT_HOLD_MS));
 }
 
 bool display_panel_on() {
@@ -143,13 +151,6 @@ static void render_guide_name_body() {
         }
         break;
     }
-}
-
-// HOME screen (carousel): the guide/product screen — vertical MCS logo down
-// the left edge + the guide name. This is the brand/identity screen at the
-// top of the carousel.
-static void render_home() {
-    render_guide_name_body();
 }
 
 // TANK screen for probe index `idx`. Shows name, reading, percent + an
@@ -416,17 +417,16 @@ static uint8_t count_pumps() {
 
 // Draw the screen body at virtual position `step` (NO begin/end — the caller
 // wraps it, so two screens can be composited into one frame for the slide).
-// Sequence: HOME, each TANK, each PUMP, INFO.
+// Sequence: each TANK, each PUMP, INFO.
 //
-// The SERVICE (WiFi-AP QR) screen is NOT in the carousel: the service AP is
-// disabled (WiFi softAP + BLE can't coexist on this board), so cycling to an
-// "AP starting..." screen that never comes up is misleading. render_service()
-// is kept for if/when the AP comes back.
+// NOT in the carousel:
+//   * The guide/HOME screen — it is shown only at boot (display_boot_splash).
+//   * The SERVICE (WiFi-AP QR) screen — the service AP is disabled (WiFi softAP
+//     + BLE can't coexist on this board). render_service() is kept for if/when
+//     the AP comes back.
 static void render_body(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
-    if (step == 0) { render_home(); return; }
-    uint16_t s = step - 1;
-    if (s < nTanks) { render_tank((uint8_t)s); return; }
-    s -= nTanks;
+    if (step < nTanks) { render_tank((uint8_t)step); return; }
+    uint16_t s = step - nTanks;
     if (s < nPumps) { render_pump((uint8_t)s); return; }
     render_info();
 }
@@ -439,20 +439,18 @@ static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     oled_end();
 }
 
-// Total number of screens in one full cycle (HOME + tanks + pumps + INFO).
+// Total number of screens in one full cycle (tanks + pumps + INFO).
 static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
-    return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/;
+    return nTanks + nPumps + 1 /*INFO*/;
 }
 
-// Section id for a step: 0=HOME, 1=TANKS, 2=PUMPS, 3=INFO. Used to decide the
-// slide direction: moving to a DIFFERENT section slides sideways (like
-// switching menu items); moving within the TANKS/PUMPS group (sub-item to
-// sub-item) slides UP from the bottom (like a sub-menu).
+// Section id for a step: 1=TANKS, 2=PUMPS, 3=INFO. Used to decide the slide
+// direction: moving to a DIFFERENT section slides sideways (like switching
+// menu items); moving within the TANKS/PUMPS group (sub-item to sub-item)
+// slides UP from the bottom (like a sub-menu).
 static uint8_t step_section(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
-    if (step == 0) return 0;                      // HOME
-    uint16_t s = step - 1;
-    if (s < nTanks) return 1;                     // TANKS
-    s -= nTanks;
+    if (step < nTanks) return 1;                  // TANKS
+    uint16_t s = step - nTanks;
     if (s < nPumps) return 2;                     // PUMPS
     return 3;                                     // INFO
 }
