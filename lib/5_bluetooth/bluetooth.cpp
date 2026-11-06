@@ -183,7 +183,22 @@ namespace bluetooth_services
                 String encrypted_result = Encrypt(result, serial.encryption_key);
                 if (encrypted_result.length() > 0)
                 {
-                    serial.output->setValue(encrypted_result.c_str());
+                    // The encrypted payload (hex) is often > one BLE notify can
+                    // carry, so send it in chunks and terminate with '\n' (hex
+                    // never contains newline). The app concatenates until '\n'.
+                    const size_t CHUNK = 180;   // safe at negotiated MTU (>=185)
+                    size_t total = encrypted_result.length();
+                    for (size_t off = 0; off < total; off += CHUNK)
+                    {
+                        size_t n = (total - off < CHUNK) ? (total - off) : CHUNK;
+                        serial.output->setValue(
+                            (uint8_t*)encrypted_result.c_str() + off, n);
+                        serial.output->notify();
+                        delay(12);   // let the stack flush each notify
+                    }
+                    // end-of-message marker
+                    uint8_t nl = '\n';
+                    serial.output->setValue(&nl, 1);
                     serial.output->notify();
                 }
             }
