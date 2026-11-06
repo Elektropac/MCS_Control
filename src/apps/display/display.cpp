@@ -32,9 +32,15 @@ namespace config {
 
 // How long the MCS brand logo shows at boot.
 static const uint32_t LOGO_HOLD_MS = 2000;
+// How long the guide/product name shows at boot (after the logo).
+static const uint32_t GUIDE_HOLD_MS = 2500;
 
 // The OLED is a fixed display (no buttons, no inactivity sleep) — always on.
 static bool s_panel_on = true;
+
+// Forward declaration: the guide-name renderer lives further down with the
+// other screen bodies (it needs guide_display_name()).
+static void render_guide_name_body();
 
 void display_boot_splash() {
     log_info("[display] showing MCS logo splash");
@@ -42,6 +48,15 @@ void display_boot_splash() {
     oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
     oled_end();
     vTaskDelay(pdMS_TO_TICKS(LOGO_HOLD_MS));
+
+    // Then the guide/product name — shown ONLY here at boot (not in the
+    // carousel), so a technician can see which guide the device runs.
+    log_info("[display] showing guide name");
+    oled_set_offset(0, 0);
+    oled_begin();
+    render_guide_name_body();
+    oled_end();
+    vTaskDelay(pdMS_TO_TICKS(GUIDE_HOLD_MS));
 }
 
 bool display_panel_on() {
@@ -89,9 +104,13 @@ static String guide_display_name() {
     return g;   // custom/unknown: show the raw name
 }
 
-// HOME screen: vertical MCS logo down the left edge + the guide name filling
-// the rest of the screen (auto-sized, word-wrapped up to 3 lines).
-static void render_home() {
+// Draw the guide name screen body (vertical MCS logo down the left edge + the
+// guide name filling the rest, auto-sized + word-wrapped up to 3 lines). No
+// begin/end — the caller wraps it. Shown at BOOT only (see display_boot_splash)
+// so a technician can confirm which guide/product the device is running. It is
+// deliberately NOT part of the carousel anymore: Jesper wants the guide name on
+// startup but not cycling through forever.
+static void render_guide_name_body() {
     String name = guide_display_name();
 
     oled_draw_bitmap(1, (64 - mcs_logo_vert_h) / 2,
@@ -142,6 +161,12 @@ static void render_home() {
         }
         break;
     }
+}
+
+// HOME screen (carousel): just the MCS logo, centered. The guide name used to
+// live here but it only shows at boot now, so HOME is a clean brand screen.
+static void render_home() {
+    oled_draw_bitmap(0, 0, mcs_logo_horizontal, 128, 64);
 }
 
 // TANK screen for probe index `idx`. Shows name, reading, percent + an
@@ -286,7 +311,7 @@ static void render_info() {
 // SERVICE screen: the WiFi-join QR for the service AP. A technician scans it
 // with a phone camera to join the device's AP and reach the web UI — no app,
 // no internet. The AP is auto-started at boot (no buttons to toggle it now).
-static void render_service() {
+static void __attribute__((unused)) render_service() {
     if (!service_ap::is_active()) {
         oled_draw_str_center(26, "Service AP");
         oled_draw_str_center(42, "starting...");
@@ -408,16 +433,19 @@ static uint8_t count_pumps() {
 
 // Draw the screen body at virtual position `step` (NO begin/end — the caller
 // wraps it, so two screens can be composited into one frame for the slide).
-// Sequence: HOME, each TANK, each PUMP, INFO, SERVICE (QR).
+// Sequence: HOME, each TANK, each PUMP, INFO.
+//
+// The SERVICE (WiFi-AP QR) screen is NOT in the carousel: the service AP is
+// disabled (WiFi softAP + BLE can't coexist on this board), so cycling to an
+// "AP starting..." screen that never comes up is misleading. render_service()
+// is kept for if/when the AP comes back.
 static void render_body(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step == 0) { render_home(); return; }
     uint16_t s = step - 1;
     if (s < nTanks) { render_tank((uint8_t)s); return; }
     s -= nTanks;
     if (s < nPumps) { render_pump((uint8_t)s); return; }
-    s -= nPumps;
-    if (s == 0) { render_info(); return; }
-    render_service();
+    render_info();
 }
 
 // Draw one screen in place (single frame, no slide).
@@ -428,24 +456,22 @@ static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     oled_end();
 }
 
-// Total number of screens in one full cycle.
+// Total number of screens in one full cycle (HOME + tanks + pumps + INFO).
 static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
-    return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/ + 1 /*SERVICE*/;
+    return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/;
 }
 
-// Section id for a step: 0=HOME, 1=TANKS, 2=PUMPS, 3=INFO, 4=SERVICE. Used to
-// decide the slide direction: moving to a DIFFERENT section slides sideways
-// (like switching menu items); moving within the TANKS/PUMPS group (sub-item
-// to sub-item) slides UP from the bottom (like a sub-menu).
+// Section id for a step: 0=HOME, 1=TANKS, 2=PUMPS, 3=INFO. Used to decide the
+// slide direction: moving to a DIFFERENT section slides sideways (like
+// switching menu items); moving within the TANKS/PUMPS group (sub-item to
+// sub-item) slides UP from the bottom (like a sub-menu).
 static uint8_t step_section(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step == 0) return 0;                      // HOME
     uint16_t s = step - 1;
     if (s < nTanks) return 1;                     // TANKS
     s -= nTanks;
     if (s < nPumps) return 2;                     // PUMPS
-    s -= nPumps;
-    if (s == 0) return 3;                         // INFO
-    return 4;                                     // SERVICE
+    return 3;                                     // INFO
 }
 
 // -----------------------------------------------------------------
