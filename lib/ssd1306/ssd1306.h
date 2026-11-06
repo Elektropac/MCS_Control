@@ -45,6 +45,12 @@ void oled_set_draw_color(uint8_t color);
 // Fill the entire 128x64 screen (uses current draw color).
 void oled_fill_screen();
 
+// Shift every subsequent draw horizontally by `px` pixels. Positive = right.
+// Used for the carousel slide transition (render a screen off to the side,
+// then animate the offset to 0). Does NOT affect oled_fill_screen or the QR
+// code (those stay full-screen / centered). Reset to 0 when done.
+void oled_set_x_offset(int px);
+
 // Large bold title text, horizontally centered at baseline y. size picks the
 // bold Helvetica face: 18, 14 or 12 px (falls back to 12). Returns the pixel
 // width drawn. After drawing, the font is restored to the default 6x10.

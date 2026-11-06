@@ -385,6 +385,44 @@ static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
     return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/;
 }
 
+// -----------------------------------------------------------------
+// Transition between carousel screens.
+//
+// TRANSITION_SLIDE: the new screen slides in from the right (push). The old
+// screen is cleared as the new one comes in (renderers self-clear the buffer),
+// so it reads as "the next card slides in". After the slide the screen holds
+// still for the full dwell time (hybrid: quick motion, then readable).
+//
+// TRANSITION_NONE: instant swap (no animation) — kept so it can be compared.
+// -----------------------------------------------------------------
+enum Transition : uint8_t { TRANSITION_NONE, TRANSITION_SLIDE };
+static const Transition TRANSITION = TRANSITION_SLIDE;
+
+// Slide duration + smoothness. ~18 ms per frame keeps the SW-SPI panel smooth.
+static const int      SLIDE_FRAMES = 14;   // steps from off-screen to centered
+static const uint32_t SLIDE_FRAME_MS = 18;
+
+// Animate `step` sliding in from the right. Ends with the offset back at 0 and
+// the screen drawn in place. No-op slide for TRANSITION_NONE (just draws).
+static void slide_in(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
+    if (TRANSITION == TRANSITION_NONE) {
+        oled_set_x_offset(0);
+        render_step(step, nTanks, nPumps);
+        return;
+    }
+    // Ease-out: start fast, settle gently. offset goes 128 -> 0.
+    for (int f = 1; f <= SLIDE_FRAMES; f++) {
+        // easeOut quad: 1-(1-t)^2
+        float t = (float)f / SLIDE_FRAMES;
+        float eased = 1.0f - (1.0f - t) * (1.0f - t);
+        int off = (int)(128.0f * (1.0f - eased) + 0.5f);
+        oled_set_x_offset(off);
+        render_step(step, nTanks, nPumps);   // self begin()/end()
+        vTaskDelay(pdMS_TO_TICKS(SLIDE_FRAME_MS));
+    }
+    oled_set_x_offset(0);                     // settled, exact
+}
+
 static void display_task(void*) {
     uint16_t step = 0;               // current carousel position
     uint32_t dwell_start = millis(); // when the current screen started
@@ -396,6 +434,7 @@ static void display_task(void*) {
         // carousel. It redraws fast (blink) and never advances the carousel. ---
         uint8_t alarms = collect_alarms();
         if (alarms > 0) {
+            oled_set_x_offset(0);   // ensure no leftover slide offset
             display_wake();
             if (alarm_idx >= alarms) alarm_idx = 0;
             if (alarms > 1 && millis() - alarm_cycle_ms > ALARM_CYCLE_MS) {
@@ -411,22 +450,25 @@ static void display_task(void*) {
         }
         alarm_idx = 0;
 
-        // --- Normal carousel: draw the current screen, advance after DWELL. ---
+        // --- Normal carousel: hold the current screen (redraw at ~4 fps for
+        // live liquid animation), and when the dwell elapses, advance to the
+        // next screen with a slide-in transition. ---
         uint8_t nTanks = count_tanks();
         uint8_t nPumps = count_pumps();
         uint16_t total = step_count(nTanks, nPumps);
         if (step >= total) step = 0;
 
-        render_step(step, nTanks, nPumps);
-
         if (millis() - dwell_start >= DWELL_MS) {
+            // Advance + animate the new screen sliding in.
             step = (step + 1) % total;
+            slide_in(step, nTanks, nPumps);
             dwell_start = millis();
+        } else {
+            // Hold: redraw in place (offset already 0) so tank liquid animates.
+            oled_set_x_offset(0);
+            render_step(step, nTanks, nPumps);
+            vTaskDelay(pdMS_TO_TICKS(250));
         }
-
-        // Redraw at ~4 fps so the tank liquid animation stays lively while a
-        // screen is held. (Transition animations come in the next step.)
-        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
