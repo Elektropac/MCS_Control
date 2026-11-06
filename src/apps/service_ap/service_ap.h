@@ -34,6 +34,9 @@ namespace service_ap
 
     bool is_active();
 
+    // Number of phones/clients currently joined to the AP (0 when none/off).
+    int client_count();
+
     // Active AP details (empty / "0.0.0.0" when not active).
     String ssid();
     String password();

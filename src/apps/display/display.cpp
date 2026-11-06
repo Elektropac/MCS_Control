@@ -318,8 +318,20 @@ static void render_service() {
     }
 }
 
+// Shown (carousel paused) while a phone is joined to the service AP: tells the
+// user to open their browser at the device IP.
+static void render_connected() {
+    String ip = service_ap::ip();
+    oled_draw_str_center(12, "Connected!");
+    oled_draw_line(14, 16, 114, 16);
+    oled_draw_str_center(30, "Open your browser at");
+    // IP in the big bold font, centered, so it's easy to read/type.
+    int w = oled_title_width(ip.c_str(), 14);
+    oled_draw_title_at((128 - w) / 2, 50, ip.c_str(), 14);
+}
+
 // -----------------------------------------------------------------
-// Alarm overlay (unchanged — no input needed). When any probe is in a level
+// Alarm overlay (no input needed). When any probe is in a level
 // alarm (low / overfill), this takes over the screen, blinks, and cycles
 // through multiple alarms. Clears automatically when readings return to range.
 // -----------------------------------------------------------------
@@ -547,6 +559,18 @@ static void display_task(void*) {
             continue;
         }
         alarm_idx = 0;
+
+        // --- Phone joined the service AP: pause the carousel and show a
+        // "Connected! open your browser at <ip>" screen until they leave. ---
+        if (service_ap::client_count() > 0) {
+            oled_set_offset(0, 0);
+            oled_begin();
+            render_connected();
+            oled_end();
+            dwell_start = millis();   // resume carousel fresh once they leave
+            vTaskDelay(pdMS_TO_TICKS(500));
+            continue;
+        }
 
         // --- Normal carousel: hold the current screen (redraw at ~4 fps for
         // live liquid animation), and when the dwell elapses, advance to the

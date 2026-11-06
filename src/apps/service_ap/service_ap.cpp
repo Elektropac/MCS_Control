@@ -139,6 +139,8 @@ namespace service_ap
     String password()  { return s_password; }
     String ip()        { return s_ip; }
 
+    int client_count() { return s_active ? WiFi.softAPgetStationNum() : 0; }
+
     String qr_payload()
     {
         if (!s_active) return String();
