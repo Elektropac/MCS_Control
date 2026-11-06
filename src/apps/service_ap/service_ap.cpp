@@ -28,27 +28,22 @@ namespace service_ap
 
     // ---- Helpers -----------------------------------------------------------
 
-    // Unique SSID from the last 3 MAC bytes: "MCS-Control-7A3F1C".
+    // SSID "MCS Control XXXX" from the last 2 MAC bytes (last 4 hex digits).
     static String make_ssid()
     {
         uint8_t mac[6];
         WiFi.macAddress(mac);
-        char suffix[7];
-        snprintf(suffix, sizeof(suffix), "%02X%02X%02X", mac[3], mac[4], mac[5]);
-        return String("MCS-Control-") + suffix;
+        char suffix[5];
+        snprintf(suffix, sizeof(suffix), "%02X%02X", mac[4], mac[5]);
+        return String("MCS Control ") + suffix;
     }
 
-    // 8-char password from an unambiguous set (no 0/O/1/I/l). esp_random() is
-    // hardware-backed on the ESP32-S3.
+    // Simple fixed password for now (easy to type in the field). WPA2 requires
+    // at least 8 characters, so "MCS123" alone is too short — pad to 8.
+    // TODO: revisit before production — a per-device password is more secure.
     static String make_password()
     {
-        static const char charset[] =
-            "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz";
-        const size_t n = sizeof(charset) - 1;
-        String out;
-        out.reserve(8);
-        for (int i = 0; i < 8; i++) out += charset[esp_random() % n];
-        return out;
+        return String("MCS12345");
     }
 
     // Escape the WIFI: URI special chars (\ ; , : ").
