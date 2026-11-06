@@ -76,10 +76,22 @@ namespace service_ap
         // AP_STA: run the service AP ALONGSIDE whatever station-mode WiFi is
         // configured, so we never tear down normal networking. Ethernet is a
         // separate interface and is unaffected either way.
+        //
+        // In Ethernet-only setups (wifi disabled in config) the WiFi radio was
+        // never initialised, so the first softAP() can fail before the netif is
+        // ready. Set the mode, give the radio a moment, and retry a few times.
         WiFi.mode(WIFI_AP_STA);
-        bool ok = WiFi.softAP(s_ssid.c_str(), s_password.c_str());
+        delay(100);
+        bool ok = false;
+        for (int attempt = 0; attempt < 5 && !ok; attempt++) {
+            ok = WiFi.softAP(s_ssid.c_str(), s_password.c_str());
+            if (!ok) {
+                log_error("[service_ap] softAP() attempt %d failed, retrying", attempt + 1);
+                delay(300);
+            }
+        }
         if (!ok) {
-            log_error("[service_ap] softAP() failed");
+            log_error("[service_ap] softAP() failed after retries");
             return false;
         }
 
