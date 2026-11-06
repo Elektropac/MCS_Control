@@ -9,6 +9,7 @@
 #include "apps/service_ap/service_ap.h"
 #include "qrcodegen.h"
 #include "hardware/version.h"
+#include "buzzer.h"
 
 // Read-only access to Niklas' network state (same pattern as the OTA app:
 // we only READ these, never modify his code).
@@ -60,7 +61,13 @@ void display_boot_splash() {
     oled_begin();
     render_info();
     oled_end();
-    vTaskDelay(pdMS_TO_TICKS(INFO_HOLD_MS));
+    // Play the boot jingle while the info screen is up. buzzer_sound_startup()
+    // is blocking (~0.6s), so it also counts as part of the info hold; wait the
+    // rest of INFO_HOLD_MS afterwards.
+    uint32_t t0 = millis();
+    buzzer_sound_startup();
+    uint32_t spent = millis() - t0;
+    if (spent < INFO_HOLD_MS) vTaskDelay(pdMS_TO_TICKS(INFO_HOLD_MS - spent));
 }
 
 bool display_panel_on() {
