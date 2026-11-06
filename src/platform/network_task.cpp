@@ -35,7 +35,14 @@ static void network_task(void* param) {
 static void web_server_task(void* param) {
     (void)param;
 
-    while(!network_initialized) {
+    // Wait for the network stack, but DON'T block indefinitely: w5500::init()
+    // can sit in DHCP for ~60s on a bench / Ethernet-less install, and the
+    // local web UI (served over the service-AP WiFi) must not be held hostage
+    // by that. Cap the wait at ~5s, then start listening regardless. poll()
+    // re-checks wifi::connected each loop, so AP clients get served once the
+    // service AP flips it true.
+    uint32_t t0 = millis();
+    while (!network_initialized && (millis() - t0) < 5000) {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 
