@@ -215,6 +215,17 @@ namespace bluetooth_services
             availableCharacteristic->notify();
         }
     }
+
+    // Release both channels. Call when a BLE client disconnects so the next
+    // client's `take:` is handled fresh (otherwise a stale "unavailable" state
+    // makes the next take get mis-routed into the decrypt branch).
+    void reset_channels()
+    {
+        main_serial.is_available = true;
+        main_serial.encryption_key = "";
+        secondary_serial.is_available = true;
+        secondary_serial.encryption_key = "";
+    }
 }
 
 namespace bluetooth
@@ -232,6 +243,7 @@ namespace bluetooth
         void onDisconnect(BLEServer *_server)
         {
             log_info("[Bluetooth] Device Disconnected");
+            bluetooth_services::reset_channels();   // free channels for next client
             _server->getAdvertising()->start();
         }
     };
