@@ -24,6 +24,7 @@ namespace config {
 #include "apps/ota/ota.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
+#include "platform/memreport.h"
 
 #include "file_system.h"
 #include "config.h"
@@ -61,6 +62,8 @@ void setup() {
     // start here — it won't touch the network until the user triggers it.
     otaInit();
     ota_start_task();
+
+    memreport_start();              // TEMP diagnostic: heap + task stacks over serial
 }
 
 // All work runs in FreeRTOS tasks. Arduino loop is not used.
