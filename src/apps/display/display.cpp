@@ -535,8 +535,14 @@ static void display_task(void*) {
         // network_initialized: on Ethernet-only setups w5500::init() can block
         // on DHCP for a long time, and the AP only needs the WiFi radio, not
         // Ethernet. No button to toggle it anymore, so it auto-starts.
+        //
+        // DISABLED 2026-11-06: WiFi softAP + BLE cannot run concurrently on
+        // this board (shared radio, no PSRAM) — softAP crashes in
+        // ieee80211_hostap_attach when BT is up. Plan: driver/tank status moves
+        // to a Nexus web page the QR points to, so the device only needs BLE.
+        // Re-enable only if we switch to a BLE<->WiFi on-demand model.
         if (!ap_started && millis() - boot_ms > 3000) {
-            service_ap::start();
+            // service_ap::start();
             ap_started = true;
         }
 
