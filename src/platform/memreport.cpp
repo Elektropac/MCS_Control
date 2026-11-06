@@ -40,3 +40,10 @@ static void memreport_task(void*) {
 void memreport_start() {
     xTaskCreate(memreport_task, "memreport", 3072, nullptr, 1, nullptr);
 }
+
+void memreport_mark(const char* where) {
+    size_t freeHeap = esp_get_free_heap_size();
+    size_t largest  = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+    log_info("[mem] @%-18s free=%6u  largest_block=%6u",
+             where, (unsigned)freeHeap, (unsigned)largest);
+}

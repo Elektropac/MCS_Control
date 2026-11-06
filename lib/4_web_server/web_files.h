@@ -13,6 +13,10 @@ extern const uint8_t web_index_html_start[] asm("_binary_web_index_html_start");
 extern const uint8_t web_index_html_end[] asm("_binary_web_index_html_end");
 extern const uint8_t web_index_html_size[] asm("_binary_web_index_html_size");
 
+extern const uint8_t web_logo_png_start[] asm("_binary_web_logo_png_start");
+extern const uint8_t web_logo_png_end[] asm("_binary_web_logo_png_end");
+extern const uint8_t web_logo_png_size[] asm("_binary_web_logo_png_size");
+
 extern const uint8_t web_ota_html_start[] asm("_binary_web_ota_html_start");
 extern const uint8_t web_ota_html_end[] asm("_binary_web_ota_html_end");
 extern const uint8_t web_ota_html_size[] asm("_binary_web_ota_html_size");
@@ -47,6 +51,7 @@ static const EmbeddedWebFile WEB_FILES[] = {
 	{"/favicon.ico", web_favicon_ico_start, web_favicon_ico_end, web_favicon_ico_size, "image/x-icon", false},
 	{"/", web_index_html_start, web_index_html_end, web_index_html_size, "text/html", false},
 	{"/index.html", web_index_html_start, web_index_html_end, web_index_html_size, "text/html", false},
+	{"/logo.png", web_logo_png_start, web_logo_png_end, web_logo_png_size, "image/png", false},
 	{"/ota.html", web_ota_html_start, web_ota_html_end, web_ota_html_size, "text/html", false},
 	{"/pumps.html", web_pumps_html_start, web_pumps_html_end, web_pumps_html_size, "text/html", false},
 	{"/setup.html", web_setup_html_start, web_setup_html_end, web_setup_html_size, "text/html", false},

@@ -32,10 +32,12 @@ namespace config {
 void setup() {
     Serial.begin(115200);
     log_init();                     // log system (serial + ring buffer)
+    memreport_mark("boot");
 
     // Filesystem + config (must be before apps that read config)
     file_system::init();
     config::init();
+    memreport_mark("after config");
 
     // Hardware
     i2c_init(I2C_SDA, I2C_SCL);    // I2C bus + mutex
@@ -49,9 +51,11 @@ void setup() {
     // TopBoard with its 5 buttons + display has been removed; the OLED is now
     // a fixed display driven entirely by config / web / BLE).
     display_start();                // OLED carousel (auto-scrolling, config-defined)
+    memreport_mark("after drivers+display");
 
     channels_setup();               // device-level: set channel supply voltage
     start_apps();           // start the apps for what the config contains
+    memreport_mark("after start_apps");
 
     // Platform tasks (always run regardless of product)
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)

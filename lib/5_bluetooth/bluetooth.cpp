@@ -7,6 +7,7 @@
 #include <ArduinoJson.h>
 
 #include "logging.h"
+#include "memreport.h"
 #include "my_wifi.h"
 #include "encryption.h"
 #include "function_silo.h"
@@ -235,14 +236,18 @@ namespace bluetooth
         String mac = wifi::make_mac();
         String _name = "Control_" + mac;
 
+        memreport_mark("BLE: before init");
         // arduino-esp32 3.2.0's BLEDevice::init() takes an Arduino String.
         BLEDevice::init(_name);
+        memreport_mark("BLE: after BLEDevice::init");
         // Create server
         pServer = BLEDevice::createServer();
         pServer->setCallbacks(new MyServerCallbacks());
+        memreport_mark("BLE: after createServer");
 
         // Create services
         bluetooth_services::init(pServer);
+        memreport_mark("BLE: after services");
 
         // Start advertising
         pServer->getAdvertising()->start();
