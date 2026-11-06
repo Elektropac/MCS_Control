@@ -5,21 +5,29 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MCS Control — Test</title>
   <style>
+    :root{
+      --mcs-blue:#047cd2; --mcs-blue-d:#0362a6; --heading:#2a3139;
+      --body:#4d5968; --bg:#f6f8fa; --card:#fff; --line:#e3e8ee;
+      --ok:#046c4e; --warn:#b76e00; --alarm:#b42318;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    h1 { font-size: 22px; font-weight: 900; color: #173447; }
-    .nav { display: flex; gap: 8px; flex-wrap: wrap; }
-    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
-    .nav a.active { background: #dcefeb; color: #184654; }
-    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #617381; font-weight: 800; margin: 18px 0 8px; }
+    body { font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background: var(--bg); color: var(--body); }
+    header { background: linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d)); color:#fff; padding:16px 20px; }
+    header .logo { height:34px; display:block; filter:brightness(0) invert(1); }
+    header .sub { opacity:.9; font-size:13px; margin-top:6px; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); }
+    nav a { padding:8px 14px; border-radius:8px; background:#eef4fb; color:var(--mcs-blue-d); font-weight:700; font-size:13px; text-decoration:none; }
+    nav a.active { background:var(--mcs-blue); color:#fff; }
+    main { padding: 18px 20px 40px; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #8a94a0; font-weight: 800; margin: 18px 0 8px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 8px; }
-    .btn { padding: 11px 10px; font-size: 14px; font-weight: 700; cursor: pointer; background: #f7f1e6; color: #173447; border: 2px solid #0c1b24; border-radius: 12px; box-shadow: 3px 3px 0 #cfc7ba; transition: transform .1s; }
-    .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #cfc7ba; }
-    select, input { padding: 8px 10px; background: #fffdf8; color: #173447; border: 2px solid #cad6dc; border-radius: 10px; font-size: 14px; }
-    label { color: #476071; font-weight: 700; font-size: 13px; }
-    #output { background: #10202b; color: #7fe0a0; border-radius: 12px; padding: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre-wrap; overflow-y: auto; line-height: 1.5; }
-    .pass { color: #3fb950; } .fail { color: #f85149; } .info { color: #79c0ff; } .warn { color: #d29922; }
+    .btn { padding: 11px 10px; font-size: 14px; font-weight: 700; cursor: pointer; background: #eef4fb; color: var(--mcs-blue-d); border: 1px solid var(--line); border-radius: 10px; transition: transform .1s, background .1s; }
+    .btn:hover { background: #e2eefb; }
+    .btn:active { transform: translate(1px,1px); }
+    select, input { padding: 8px 10px; background: var(--card); color: var(--heading); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
+    label { color: var(--body); font-weight: 700; font-size: 13px; }
+    #output { background: #0f1b2b; color: #8fe0a8; border: 1px solid var(--line); border-radius: 12px; padding: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre-wrap; overflow-y: auto; line-height: 1.5; }
+    .pass { color: #4ec97a; } .fail { color: #ff7b72; } .info { color: #79c0ff; } .warn { color: #e3b341; }
 
     /* Two-column layout: controls left, output pinned right */
     .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
@@ -33,17 +41,19 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>&#9889; Test</h1>
-    <div class="nav">
-      <a href="/">Home</a>
-      <a href="/tanks.html">Tanks</a>
-      <a href="/pumps.html">Pumps</a>
-      <a href="/setup.html">Setup</a>
-      <a href="/test.html" class="active">Test</a>
-      <a href="/ota.html">Update</a>
-    </div>
-  </div>
+  <header>
+    <img class="logo" alt="MCS" src="/logo.png">
+    <div class="sub">Test</div>
+  </header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/tanks.html">Tanks</a>
+    <a href="/pumps.html">Pumps</a>
+    <a href="/setup.html">Setup</a>
+    <a href="/test.html" class="active">Test</a>
+    <a href="/ota.html">Update</a>
+  </nav>
+  <main>
 
   <div class="layout">
   <div class="left">
@@ -66,8 +76,8 @@
 
   <h2>I/O Control</h2>
   <div style="margin-bottom:8px;">
-    <label style="color:#7ec8e3;">Port: </label>
-    <select id="port" style="padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+    <label style="color:var(--body);">Port: </label>
+    <select id="port" style="padding:8px;background:var(--card);color:var(--heading);border:1px solid var(--line);border-radius:8px;font-size:14px;">
       <option value="0">A1</option><option value="1">A2</option><option value="2">A3</option><option value="3">A4</option>
       <option value="4">B1</option><option value="5">B2</option><option value="6">B3</option><option value="7">B4</option>
     </select>
@@ -93,8 +103,8 @@
 
   <h2>Probe Live (all 8 channels)</h2>
   <div style="margin-bottom:8px;">
-    <label style="color:#7ec8e3;">Mode: </label>
-    <select id="probe-mode" style="padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+    <label style="color:var(--body);">Mode: </label>
+    <select id="probe-mode" style="padding:8px;background:var(--card);color:var(--heading);border:1px solid var(--line);border-radius:8px;font-size:14px;">
       <option value="ma">4-20 mA</option>
       <option value="voltage">Voltage</option>
     </select>
@@ -106,8 +116,8 @@
 
   <h2>Fueling Simulation (A1=nozzle, A4=pulses, Relay A=pump)</h2>
   <div style="margin-bottom:8px;">
-    <label style="color:#7ec8e3;">Pulses/liter: </label>
-    <input id="ppl" type="number" value="10" min="1" max="10000" style="width:80px;padding:8px;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;font-size:14px;">
+    <label style="color:var(--body);">Pulses/liter: </label>
+    <input id="ppl" type="number" value="10" min="1" max="10000" style="width:80px;padding:8px;background:var(--card);color:var(--heading);border:1px solid var(--line);border-radius:8px;font-size:14px;">
   </div>
   <div class="grid">
     <button class="btn" onclick="fuelStart()">▶ Start Pump</button>
@@ -167,6 +177,8 @@
     <div id="output"><span class="info">Ready. Click a test to begin.</span></div>
   </div><!-- /.right -->
   </div><!-- /.layout -->
+
+  </main>
 
   <script>
     const out = document.getElementById('output');

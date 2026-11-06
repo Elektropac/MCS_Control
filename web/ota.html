@@ -5,59 +5,68 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MCS Control — Firmware Update</title>
   <style>
+    :root{
+      --mcs-blue:#047cd2; --mcs-blue-d:#0362a6; --heading:#2a3139;
+      --body:#4d5968; --bg:#f6f8fa; --card:#fff; --line:#e3e8ee;
+      --ok:#046c4e; --warn:#b76e00; --alarm:#b42318;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    h1 { font-size: 22px; font-weight: 900; color: #173447; }
-    .nav { display: flex; gap: 8px; flex-wrap: wrap; }
-    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
-    .nav a.active { background: #dcefeb; color: #184654; }
-    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    body { font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background: var(--bg); color: var(--body); }
+    header { background: linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d)); color:#fff; padding:16px 20px; }
+    header .logo { height:34px; display:block; filter:brightness(0) invert(1); }
+    header .sub { opacity:.9; font-size:13px; margin-top:6px; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); }
+    nav a { padding:8px 14px; border-radius:8px; background:#eef4fb; color:var(--mcs-blue-d); font-weight:700; font-size:13px; text-decoration:none; }
+    nav a.active { background:var(--mcs-blue); color:#fff; }
+    main { padding: 18px 20px 40px; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #8a94a0; font-weight: 600; }
     .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .dot.ok { background: #2ecc71; }
-    .dot.err { background: #e74c3c; }
-    .dot.busy { background: #df9542; }
+    .dot.ok { background: var(--ok); }
+    .dot.err { background: var(--alarm); }
+    .dot.busy { background: var(--warn); }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
-    .card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
-    .card h2 { font-size: 15px; font-weight: 800; color: #173447; }
+    .card { border: 1px solid var(--line); border-radius: 12px; background: var(--card); box-shadow: 0 1px 3px rgba(16,40,70,.05); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .card h2 { font-size: 15px; font-weight: 800; color: var(--heading); }
     .kv { display: flex; justify-content: space-between; font-size: 13px; }
-    .kv .k { color: #617381; font-weight: 600; }
-    .kv .v { color: #173447; font-weight: 800; }
-    .big { font-size: 26px; font-weight: 900; color: #173447; line-height: 1.1; }
-    .msg { font-size: 13px; color: #476071; min-height: 18px; }
-    .btn { padding: 10px 16px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 3px 3px 0 #cfc7ba; }
-    .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #cfc7ba; }
-    .btn.primary { background: #dcefeb; }
+    .kv .k { color: #8a94a0; font-weight: 600; }
+    .kv .v { color: var(--heading); font-weight: 800; }
+    .big { font-size: 26px; font-weight: 900; color: var(--mcs-blue-d); line-height: 1.1; }
+    .msg { font-size: 13px; color: var(--body); min-height: 18px; }
+    .btn { padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px; background: #eef4fb; color: var(--mcs-blue-d); font-weight: 800; font-size: 13px; cursor: pointer; }
+    .btn:active { transform: translate(1px,1px); }
+    .btn.primary { background: var(--mcs-blue); color: #fff; border-color: var(--mcs-blue); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .progress-wrap { background: #e8e1d4; border-radius: 10px; height: 18px; overflow: hidden; border: 1px solid #cfc7ba; }
-    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #2a9fe0, #1478d4); transition: width 0.3s; }
+    .progress-wrap { background: #eef4fb; border-radius: 10px; height: 18px; overflow: hidden; border: 1px solid var(--line); }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--mcs-blue), var(--mcs-blue-d)); transition: width 0.3s; }
     .state-pill { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; padding: 3px 10px; border-radius: 8px; }
-    .state-pill.idle, .state-pill.ready { background: #7f97a5; }
-    .state-pill.checking, .state-pill.updating, .state-pill.waiting { background: #df9542; }
-    .state-pill.success { background: #2ecc71; }
-    .state-pill.error { background: #e74c3c; }
+    .state-pill.idle, .state-pill.ready { background: #9aa7b0; }
+    .state-pill.checking, .state-pill.updating, .state-pill.waiting { background: var(--warn); }
+    .state-pill.success { background: var(--ok); }
+    .state-pill.error { background: var(--alarm); }
     .releases { display: flex; flex-direction: column; gap: 8px; }
-    .release { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1.5px solid #d7cfc0; border-radius: 12px; background: #fffdf8; }
-    .release.sel { border-color: #1478d4; background: #eef7fd; }
-    .release .ver { font-weight: 800; font-size: 14px; }
-    .release .meta { font-size: 11px; color: #617381; }
-    .warn { background: #fdf0e3; border: 1.5px solid #e3b887; border-radius: 12px; padding: 10px 12px; font-size: 12px; color: #8a5a1f; }
+    .release { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fbfdff; }
+    .release.sel { border-color: var(--mcs-blue); background: #eef4fb; }
+    .release .ver { font-weight: 800; font-size: 14px; color: var(--heading); }
+    .release .meta { font-size: 11px; color: #8a94a0; }
+    .warn { background: #fdf0e3; border: 1px solid #f0c47a; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: var(--warn); }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>&#128260; Firmware Update</h1>
-    <div class="nav">
-      <a href="/">Home</a>
-      <a href="/tanks.html">Tanks</a>
-      <a href="/pumps.html">Pumps</a>
-      <a href="/setup.html">Setup</a>
-      <a href="/test.html">Test</a>
-      <a href="/ota.html" class="active">Update</a>
-    </div>
-  </div>
+  <header>
+    <img class="logo" alt="MCS" src="/logo.png">
+    <div class="sub">Firmware update</div>
+  </header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/tanks.html">Tanks</a>
+    <a href="/pumps.html">Pumps</a>
+    <a href="/setup.html">Setup</a>
+    <a href="/test.html">Test</a>
+    <a href="/ota.html" class="active">Update</a>
+  </nav>
+  <main>
 
   <div class="status-bar">
     <span class="dot" id="dot"></span>
@@ -98,6 +107,8 @@
       <div class="kv"><span class="k">Manifest</span><span class="v" style="font-size:11px;word-break:break-all;" id="manifestUrl">—</span></div>
     </div>
   </div>
+
+  </main>
 
   <script>
     const API = '/api/';

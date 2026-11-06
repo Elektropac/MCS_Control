@@ -5,56 +5,77 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MCS Control — Pumps</title>
   <style>
+    :root{
+      --mcs-blue:#047cd2; --mcs-blue-d:#0362a6; --heading:#2a3139;
+      --body:#4d5968; --bg:#f6f8fa; --card:#fff; --line:#e3e8ee;
+      --ok:#046c4e; --warn:#b76e00; --alarm:#b42318;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f4f1eb; color: #173447; padding: 20px; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    h1 { font-size: 22px; font-weight: 900; color: #173447; }
-    .nav { display: flex; gap: 8px; }
-    .nav a { padding: 8px 14px; border: 2px solid #0c1b24; border-radius: 12px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 13px; text-decoration: none; box-shadow: 3px 3px 0 #cfc7ba; }
-    .nav a.active { background: #dcefeb; color: #184654; }
-    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #617381; font-weight: 600; }
+    body { font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background: var(--bg); color: var(--body); }
+    header { background: linear-gradient(135deg,var(--mcs-blue),var(--mcs-blue-d)); color:#fff; padding:16px 20px; }
+    header .logo { height:34px; display:block; filter:brightness(0) invert(1); }
+    header .sub { opacity:.9; font-size:13px; margin-top:6px; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; padding:12px 16px; background:#fff; border-bottom:1px solid var(--line); }
+    nav a { padding:8px 14px; border-radius:8px; background:#eef4fb; color:var(--mcs-blue-d); font-weight:700; font-size:13px; text-decoration:none; }
+    nav a.active { background:var(--mcs-blue); color:#fff; }
+    main { padding: 18px 20px 40px; }
+    .status-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; font-size: 13px; color: #8a94a0; font-weight: 600; }
     .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .dot.ok { background: #2ecc71; }
-    .dot.err { background: #e74c3c; }
+    .dot.ok { background: var(--ok); }
+    .dot.err { background: var(--alarm); }
     .pump-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
     @media (max-width: 900px) { .pump-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 500px) { .pump-grid { grid-template-columns: 1fr; } }
-    .pump-card { border: 2px solid #cad6dc; border-radius: 18px; background: linear-gradient(180deg, #fffefb 0%, #fbf7ef 100%); box-shadow: 2px 2px 0 #ddd6ca; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-    .pump-card .id { font-size: 15px; font-weight: 800; color: #173447; }
-    .pump-card .value { font-size: 28px; font-weight: 900; color: #173447; line-height: 1; }
-    .pump-card .value small { font-size: 14px; font-weight: 700; color: #476071; }
-    .pump-card .sub { font-size: 12px; color: #617381; }
+    .pump-card { border: 1px solid var(--line); border-radius: 12px; background: var(--card); box-shadow: 0 1px 3px rgba(16,40,70,.05); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .pump-card .id { font-size: 15px; font-weight: 800; color: var(--heading); }
+    .pump-card .value { font-size: 28px; font-weight: 900; color: var(--mcs-blue-d); line-height: 1; }
+    .pump-card .value small { font-size: 14px; font-weight: 700; color: #8a94a0; }
+    .pump-card .sub { font-size: 12px; color: #8a94a0; }
     .row { display: flex; align-items: center; justify-content: space-between; }
     .badge { font-size: 10px; color: #fff; padding: 3px 9px; border-radius: 8px; font-weight: 700; }
-    .badge.on { background: #2ecc71; }
+    .badge.on { background: var(--ok); }
     .badge.off { background: #9aa7b0; }
-    .badge.lifted { background: #df9542; }
-    .badge.returned { background: #7f97a5; }
-    .no-pumps { text-align: center; padding: 60px 20px; color: #617381; font-size: 16px; }
+    .badge.lifted { background: var(--warn); }
+    .badge.returned { background: #9aa7b0; }
+    .no-pumps { text-align: center; padding: 60px 20px; color: #8a94a0; font-size: 16px; }
+    .no-pumps a { color: var(--mcs-blue-d); }
     /* Pulse quality */
     .qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .qchip { display: flex; flex-direction: column; gap: 2px; padding: 7px 9px; border-radius: 10px; cursor: pointer; border: 1.5px solid #cad6dc; background: #fbfdfc; transition: transform .05s; }
+    .qchip { display: flex; flex-direction: column; gap: 2px; padding: 7px 9px; border-radius: 10px; cursor: pointer; border: 1px solid var(--line); background: #fbfdff; transition: transform .05s; }
     .qchip:active { transform: translateY(1px); }
     .qchip .qlabel { font-size: 12px; font-weight: 800; }
     .qchip .qstat { font-size: 11px; font-weight: 700; }
     .qchip.ok  { border-color: #bfe6cf; background: #f1faf4; }
-    .qchip.ok .qlabel { color: #1f8a4c; } .qchip.ok .qstat { color: #2ecc71; }
-    .qchip.bad { border-color: #e9b4ad; background: #fdf1ef; }
-    .qchip.bad .qlabel { color: #c0392b; } .qchip.bad .qstat { color: #e74c3c; }
-    .qchip.info { border-color: #b9d4e6; background: #f0f7fc; }
-    .qchip.info .qlabel { color: #1f6a9c; } .qchip.info .qstat { color: #2a7fb8; }
+    .qchip.ok .qlabel { color: var(--ok); } .qchip.ok .qstat { color: var(--ok); }
+    .qchip.bad { border-color: #f3d1cd; background: #fdf1ef; }
+    .qchip.bad .qlabel { color: var(--alarm); } .qchip.bad .qstat { color: var(--alarm); }
+    .qchip.info { border-color: #c5ddf0; background: #eef4fb; }
+    .qchip.info .qlabel { color: var(--mcs-blue-d); } .qchip.info .qstat { color: var(--mcs-blue); }
     .qmeta { grid-column: 1 / -1; font-size: 10px; color: #8a9aa6; margin-top: 2px; }
-    .qreset { grid-column: 1 / -1; margin-top: 4px; padding: 6px; border: 1.5px solid #cad6dc; border-radius: 10px; background: #f7f1e6; color: #173447; font-weight: 700; font-size: 11px; cursor: pointer; }
+    .qreset { grid-column: 1 / -1; margin-top: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 10px; background: #eef4fb; color: var(--mcs-blue-d); font-weight: 700; font-size: 11px; cursor: pointer; }
     /* Modal */
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(10,20,30,.45); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
     .modal-bg.show { display: flex; }
-    .modal { background: #fffefb; border-radius: 16px; max-width: 420px; padding: 22px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
-    .modal h2 { font-size: 18px; color: #173447; margin-bottom: 10px; }
-    .modal p { font-size: 14px; color: #3a5160; line-height: 1.55; margin-bottom: 8px; }
-    .modal .close { margin-top: 12px; padding: 9px 16px; border: 2px solid #0c1b24; border-radius: 10px; background: #dcefeb; font-weight: 800; cursor: pointer; }
+    .modal { background: var(--card); border-radius: 12px; max-width: 420px; padding: 22px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+    .modal h2 { font-size: 18px; color: var(--heading); margin-bottom: 10px; }
+    .modal p { font-size: 14px; color: var(--body); line-height: 1.55; margin-bottom: 8px; }
+    .modal .close { margin-top: 12px; padding: 9px 16px; border: none; border-radius: 8px; background: var(--mcs-blue); color: #fff; font-weight: 800; cursor: pointer; }
   </style>
 </head>
 <body>
+  <header>
+    <img class="logo" alt="MCS" src="/logo.png">
+    <div class="sub">Pumps</div>
+  </header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/tanks.html">Tanks</a>
+    <a href="/pumps.html" class="active">Pumps</a>
+    <a href="/setup.html">Setup</a>
+    <a href="/test.html">Test</a>
+    <a href="/ota.html">Update</a>
+  </nav>
+  <main>
   <div class="modal-bg" id="qmodal" onclick="if(event.target===this)this.classList.remove('show')">
     <div class="modal">
       <h2 id="qmodal-title">—</h2>
@@ -62,17 +83,6 @@
       <p id="qmodal-cause"></p>
       <p id="qmodal-action"></p>
       <button class="close" onclick="document.getElementById('qmodal').classList.remove('show')">Close</button>
-    </div>
-  </div>
-  <div class="header">
-    <h1>&#9981; Pumps</h1>
-    <div class="nav">
-      <a href="/">Home</a>
-      <a href="/tanks.html">Tanks</a>
-      <a href="/pumps.html" class="active">Pumps</a>
-      <a href="/setup.html">Setup</a>
-      <a href="/test.html">Test</a>
-      <a href="/ota.html">Update</a>
     </div>
   </div>
 
@@ -83,6 +93,8 @@
 
   <div class="pump-grid" id="pumps"></div>
   <div class="no-pumps" id="no-pumps" style="display:none;">No pumps configured. <a href="/setup.html">Open Setup</a></div>
+
+  </main>
 
   <script>
     const API = '/api/';
