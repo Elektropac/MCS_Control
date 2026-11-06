@@ -63,12 +63,6 @@ void setup() {
     // contiguous heap block, which only exists before WiFi/lwIP/Ethernet
     // fragment the heap. (Previously BLE init waited for network_initialized
     // and then aborted the device when the block was too small.)
-    //
-    // Set the WiFi mode FIRST so WiFi+BT coexistence is established in the
-    // right order — otherwise a later WiFi.softAP() (service_ap) crashes in
-    // the WiFi driver once BT already holds the radio. This also gives BLE a
-    // valid MAC for its advertised name.
-    WiFi.mode(WIFI_AP_STA);
     bluetooth::init();
     memreport_mark("after bluetooth init");
 
