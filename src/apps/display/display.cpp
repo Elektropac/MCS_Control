@@ -436,10 +436,6 @@ static uint8_t step_section(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     return 4;                                     // SERVICE
 }
 
-static bool step_is_service(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
-    return step_section(step, nTanks, nPumps) == 4;
-}
-
 // -----------------------------------------------------------------
 // Transition between carousel screens.
 //
@@ -464,8 +460,7 @@ static const int      SLIDE_GAP      = 12;   // black gutter between the two
 // old one sliding out and the new one sliding in, along the chosen axis.
 static void slide_to(uint16_t fromStep, uint16_t toStep,
                      uint8_t nTanks, uint8_t nPumps) {
-    // QR must land centered + still to scan → no slide into/within SERVICE.
-    if (TRANSITION == TRANSITION_NONE || step_is_service(toStep, nTanks, nPumps)) {
+    if (TRANSITION == TRANSITION_NONE) {
         render_step(toStep, nTanks, nPumps);
         return;
     }
