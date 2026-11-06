@@ -8,6 +8,7 @@
 
 #include "logging.h"
 #include "memreport.h"
+#include <esp_heap_caps.h>
 #include "my_wifi.h"
 #include "encryption.h"
 #include "function_silo.h"
@@ -231,8 +232,24 @@ namespace bluetooth
         }
     };
 
+    static bool s_ble_ready = false;
+
     void init()
     {
+        // BLE's controller + stack need a large *contiguous* block. If we are
+        // called after the network stack has fragmented the heap, that block
+        // may not exist and operator new would throw -> abort() -> device reset.
+        // Guard it: skip BLE rather than crash the whole device. (The real fix
+        // is to call init() early, before the network stack fragments the heap.)
+        const size_t kNeededContiguous = 40 * 1024;
+        size_t largest = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+        if (largest < kNeededContiguous) {
+            log_error("[Bluetooth] skipping init: largest free block %u < %u "
+                      "needed (heap too fragmented) - BLE disabled this boot",
+                      (unsigned)largest, (unsigned)kNeededContiguous);
+            return;
+        }
+
         String mac = wifi::make_mac();
         String _name = "Control_" + mac;
 
@@ -253,10 +270,12 @@ namespace bluetooth
         pServer->getAdvertising()->start();
         log_info("[Bluetooth] advertising started");
         log_info("[Bluetooth] name: %s", _name.c_str());
+        s_ble_ready = true;
     }
 
     void poll()
     {
+        if (!s_ble_ready) return;   // init skipped (low heap) -> nothing to poll
         bluetooth_services::poll();
     }
 }

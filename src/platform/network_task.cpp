@@ -75,13 +75,9 @@ static void web_socket_task(void* param) {
 static void bluetooth_task(void* param) {
     (void)param;
 
-    while(!network_initialized) {
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-
-    bluetooth::init();
-
-    // Poll loop
+    // NOTE: bluetooth::init() is now called early in setup() — before the
+    // network stack fragments the heap — so BLE gets the large contiguous
+    // block it needs. This task only runs the poll loop.
     for (;;) {
         bluetooth::poll();
         vTaskDelay(pdMS_TO_TICKS(10));

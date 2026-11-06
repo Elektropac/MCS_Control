@@ -25,6 +25,7 @@ namespace config {
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
 #include "platform/memreport.h"
+#include "bluetooth.h"
 
 #include "file_system.h"
 #include "config.h"
@@ -56,6 +57,13 @@ void setup() {
     channels_setup();               // device-level: set channel supply voltage
     start_apps();           // start the apps for what the config contains
     memreport_mark("after start_apps");
+
+    // Bring up BLE BEFORE the network stack. BLE's controller needs a large
+    // contiguous heap block, which only exists before WiFi/lwIP/Ethernet
+    // fragment the heap. (Previously BLE init waited for network_initialized
+    // and then aborted the device when the block was too small.)
+    bluetooth::init();
+    memreport_mark("after bluetooth init");
 
     // Platform tasks (always run regardless of product)
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)
