@@ -6,12 +6,16 @@
 #include "mcs_logo_vert.h"
 #include "apps/probes/probes.h"
 #include "apps/pumps/pumps.h"
+#include "apps/service_ap/service_ap.h"
+#include "qrcodegen.h"
 #include "hardware/version.h"
 
 // Read-only access to Niklas' network state (same pattern as the OTA app:
 // we only READ these, never modify his code).
 namespace w5500 { extern bool connected; extern String mac; extern IPAddress local_ip; }
 namespace wifi  { extern bool connected; extern String mac; extern IPAddress local_ip; }
+// Set true by the network task once the WiFi/Ethernet stack is initialised.
+extern bool network_initialized;
 #include <ArduinoJson.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -294,6 +298,45 @@ static void render_info() {
     oled_end();
 }
 
+// SERVICE screen: the WiFi-join QR for the service AP. A technician scans it
+// with a phone camera to join the device's AP and reach the web UI — no app,
+// no internet. The AP is auto-started at boot (no buttons to toggle it now).
+static void render_service() {
+    oled_begin();
+
+    if (!service_ap::is_active()) {
+        oled_draw_str_center(26, "Service AP");
+        oled_draw_str_center(42, "starting...");
+        oled_end();
+        return;
+    }
+
+    String payload = service_ap::qr_payload();
+    const int kMaxVer = 6;
+    uint8_t qr[qrcodegen_BUFFER_LEN_FOR_VERSION(kMaxVer)];
+    uint8_t tmp[qrcodegen_BUFFER_LEN_FOR_VERSION(kMaxVer)];
+    bool ok = qrcodegen_encodeText(
+        payload.c_str(), tmp, qr,
+        qrcodegen_Ecc_LOW, qrcodegen_VERSION_MIN, kMaxVer,
+        qrcodegen_Mask_AUTO, true);
+
+    if (ok && oled_draw_qr(qr)) {
+        // QR drawn centered — maximise scannable area, nothing else.
+    } else {
+        // Fallback: show credentials as text if the QR won't fit.
+        oled_draw_str_center(12, "Service AP");
+        oled_draw_line(0, 16, 127, 16);
+        char l[26];
+        snprintf(l, sizeof(l), "%s", service_ap::ssid().c_str());
+        oled_draw_str_center(30, l);
+        snprintf(l, sizeof(l), "pw %s", service_ap::password().c_str());
+        oled_draw_str_center(44, l);
+        snprintf(l, sizeof(l), "%s", service_ap::ip().c_str());
+        oled_draw_str_center(58, l);
+    }
+    oled_end();
+}
+
 // -----------------------------------------------------------------
 // Alarm overlay (unchanged — no input needed). When any probe is in a level
 // alarm (low / overfill), this takes over the screen, blinks, and cycles
@@ -371,18 +414,27 @@ static uint8_t count_pumps() {
 }
 
 // Draw the screen at virtual position `step` for the current live counts.
+// Sequence: HOME, each TANK, each PUMP, INFO, SERVICE (QR).
 static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step == 0) { render_home(); return; }
     uint16_t s = step - 1;
     if (s < nTanks) { render_tank((uint8_t)s); return; }
     s -= nTanks;
     if (s < nPumps) { render_pump((uint8_t)s); return; }
-    render_info();
+    s -= nPumps;
+    if (s == 0) { render_info(); return; }
+    render_service();
 }
 
 // Total number of screens in one full cycle.
 static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
-    return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/;
+    return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/ + 1 /*SERVICE*/;
+}
+
+// Is this virtual step the SERVICE (QR) screen? The QR must stay centered and
+// still to be scannable, so we skip the slide animation for it.
+static bool step_is_service(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
+    return step == (uint16_t)(1 + nTanks + nPumps + 1);
 }
 
 // -----------------------------------------------------------------
@@ -405,7 +457,8 @@ static const uint32_t SLIDE_FRAME_MS = 18;
 // Animate `step` sliding in from the right. Ends with the offset back at 0 and
 // the screen drawn in place. No-op slide for TRANSITION_NONE (just draws).
 static void slide_in(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
-    if (TRANSITION == TRANSITION_NONE) {
+    // The QR screen must land centered and still to be scannable — no slide.
+    if (TRANSITION == TRANSITION_NONE || step_is_service(step, nTanks, nPumps)) {
         oled_set_x_offset(0);
         render_step(step, nTanks, nPumps);
         return;
@@ -428,8 +481,17 @@ static void display_task(void*) {
     uint32_t dwell_start = millis(); // when the current screen started
     uint8_t  alarm_idx = 0;
     uint32_t alarm_cycle_ms = 0;
+    bool     ap_started = false;     // one-shot service-AP start
 
     for (;;) {
+        // Start the service access point once the network stack is up (gives
+        // the QR screen something to show). No button to toggle it anymore, so
+        // it auto-starts. Done here (not in setup) to avoid racing WiFi init.
+        if (!ap_started && network_initialized) {
+            service_ap::start();
+            ap_started = true;
+        }
+
         // --- Alarm handling first: an alarm takes over regardless of the
         // carousel. It redraws fast (blink) and never advances the carousel. ---
         uint8_t alarms = collect_alarms();
