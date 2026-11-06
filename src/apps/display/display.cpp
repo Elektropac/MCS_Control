@@ -94,8 +94,6 @@ static String guide_display_name() {
 static void render_home() {
     String name = guide_display_name();
 
-    oled_begin();
-
     oled_draw_bitmap(1, (64 - mcs_logo_vert_h) / 2,
                      mcs_logo_vert, mcs_logo_vert_w, mcs_logo_vert_h);
 
@@ -144,8 +142,6 @@ static void render_home() {
         }
         break;
     }
-
-    oled_end();
 }
 
 // TANK screen for probe index `idx`. Shows name, reading, percent + an
@@ -156,12 +152,9 @@ static void render_tank(uint8_t idx) {
     JsonArray probes = doc["probes"].as<JsonArray>();
     uint8_t n = probes.size();
 
-    oled_begin();
-
     if (n == 0) {
         oled_print_center(1, "TANKS");
         oled_print_center(3, "No tanks connected");
-        oled_end();
         return;
     }
 
@@ -227,8 +220,6 @@ static void render_tank(uint8_t idx) {
             oled_draw_line(innerX + x, waveY, x2, waveY);
         }
     }
-
-    oled_end();
 }
 
 // PUMP screen for pump index `idx`.
@@ -238,12 +229,9 @@ static void render_pump(uint8_t idx) {
     JsonArray pumps = doc["pumps"].as<JsonArray>();
     uint8_t n = pumps.size();
 
-    oled_begin();
-
     if (n == 0) {
         oled_print_center(1, "PUMPS");
         oled_print_center(3, "No pumps connected");
-        oled_end();
         return;
     }
 
@@ -261,8 +249,6 @@ static void render_pump(uint8_t idx) {
     oled_printf_left(1, "Nozzle: %s", nozzle_lifted ? "LIFTED" : "HUNG");
     oled_printf_left(2, "Pump:   %s", relay_on ? "ON" : "OFF");
     oled_printf_left(3, "%.2f L", litres);
-
-    oled_end();
 }
 
 // INFO screen: firmware, hardware + module revision, MAC, IP. All read-only.
@@ -277,7 +263,6 @@ static void render_info() {
     if      (w5500::connected) ip = w5500::local_ip.toString();
     else if (wifi::connected)  ip = wifi::local_ip.toString();
 
-    oled_begin();
     oled_draw_str(2, 11, "System Info");
     oled_draw_line(0, 15, 127, 15);
 
@@ -295,19 +280,15 @@ static void render_info() {
     char ipline[28];
     snprintf(ipline, sizeof(ipline), "IP  %s", ip.c_str());
     oled_draw_str(2, 63, ipline);
-    oled_end();
 }
 
 // SERVICE screen: the WiFi-join QR for the service AP. A technician scans it
 // with a phone camera to join the device's AP and reach the web UI — no app,
 // no internet. The AP is auto-started at boot (no buttons to toggle it now).
 static void render_service() {
-    oled_begin();
-
     if (!service_ap::is_active()) {
         oled_draw_str_center(26, "Service AP");
         oled_draw_str_center(42, "starting...");
-        oled_end();
         return;
     }
 
@@ -334,7 +315,6 @@ static void render_service() {
         snprintf(l, sizeof(l), "%s", service_ap::ip().c_str());
         oled_draw_str_center(58, l);
     }
-    oled_end();
 }
 
 // -----------------------------------------------------------------
@@ -413,9 +393,10 @@ static uint8_t count_pumps() {
     return doc["pumps"].as<JsonArray>().size();
 }
 
-// Draw the screen at virtual position `step` for the current live counts.
+// Draw the screen body at virtual position `step` (NO begin/end — the caller
+// wraps it, so two screens can be composited into one frame for the slide).
 // Sequence: HOME, each TANK, each PUMP, INFO, SERVICE (QR).
-static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
+static void render_body(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step == 0) { render_home(); return; }
     uint16_t s = step - 1;
     if (s < nTanks) { render_tank((uint8_t)s); return; }
@@ -426,54 +407,96 @@ static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     render_service();
 }
 
+// Draw one screen in place (single frame, no slide).
+static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
+    oled_set_offset(0, 0);
+    oled_begin();
+    render_body(step, nTanks, nPumps);
+    oled_end();
+}
+
 // Total number of screens in one full cycle.
 static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
     return 1 /*HOME*/ + nTanks + nPumps + 1 /*INFO*/ + 1 /*SERVICE*/;
 }
 
-// Is this virtual step the SERVICE (QR) screen? The QR must stay centered and
-// still to be scannable, so we skip the slide animation for it.
+// Section id for a step: 0=HOME, 1=TANKS, 2=PUMPS, 3=INFO, 4=SERVICE. Used to
+// decide the slide direction: moving to a DIFFERENT section slides sideways
+// (like switching menu items); moving within the TANKS/PUMPS group (sub-item
+// to sub-item) slides UP from the bottom (like a sub-menu).
+static uint8_t step_section(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
+    if (step == 0) return 0;                      // HOME
+    uint16_t s = step - 1;
+    if (s < nTanks) return 1;                     // TANKS
+    s -= nTanks;
+    if (s < nPumps) return 2;                     // PUMPS
+    s -= nPumps;
+    if (s == 0) return 3;                         // INFO
+    return 4;                                     // SERVICE
+}
+
 static bool step_is_service(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
-    return step == (uint16_t)(1 + nTanks + nPumps + 1);
+    return step_section(step, nTanks, nPumps) == 4;
 }
 
 // -----------------------------------------------------------------
 // Transition between carousel screens.
 //
-// TRANSITION_SLIDE: the new screen slides in from the right (push). The old
-// screen is cleared as the new one comes in (renderers self-clear the buffer),
-// so it reads as "the next card slides in". After the slide the screen holds
-// still for the full dwell time (hybrid: quick motion, then readable).
+// TRANSITION_SLIDE: the outgoing screen slides out while the incoming screen
+// slides in (both visible at once — a real push). Direction:
+//   * different section  -> horizontal (new enters from the right)
+//   * same section, next sub-item (tank->tank, pump->pump) -> vertical
+//     (new enters from the bottom, like opening a sub-menu)
+// After the slide the screen holds still for the dwell (readable).
 //
-// TRANSITION_NONE: instant swap (no animation) — kept so it can be compared.
+// TRANSITION_NONE: instant swap — kept so it can be compared.
 // -----------------------------------------------------------------
 enum Transition : uint8_t { TRANSITION_NONE, TRANSITION_SLIDE };
 static const Transition TRANSITION = TRANSITION_SLIDE;
 
-// Slide duration + smoothness. ~18 ms per frame keeps the SW-SPI panel smooth.
-static const int      SLIDE_FRAMES = 14;   // steps from off-screen to centered
+static const int      SLIDE_FRAMES   = 14;   // frames from off-screen to settled
 static const uint32_t SLIDE_FRAME_MS = 18;
 
-// Animate `step` sliding in from the right. Ends with the offset back at 0 and
-// the screen drawn in place. No-op slide for TRANSITION_NONE (just draws).
-static void slide_in(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
-    // The QR screen must land centered and still to be scannable — no slide.
-    if (TRANSITION == TRANSITION_NONE || step_is_service(step, nTanks, nPumps)) {
-        oled_set_x_offset(0);
-        render_step(step, nTanks, nPumps);
+// Animate from `fromStep` to `toStep`: both are drawn into the same frame, the
+// old one sliding out and the new one sliding in, along the chosen axis.
+static void slide_to(uint16_t fromStep, uint16_t toStep,
+                     uint8_t nTanks, uint8_t nPumps) {
+    // QR must land centered + still to scan → no slide into/within SERVICE.
+    if (TRANSITION == TRANSITION_NONE || step_is_service(toStep, nTanks, nPumps)) {
+        render_step(toStep, nTanks, nPumps);
         return;
     }
-    // Ease-out: start fast, settle gently. offset goes 128 -> 0.
+
+    // Vertical if staying inside the same TANKS or PUMPS group; else horizontal.
+    uint8_t secF = step_section(fromStep, nTanks, nPumps);
+    uint8_t secT = step_section(toStep, nTanks, nPumps);
+    bool vertical = (secF == secT) && (secF == 1 || secF == 2);
+    const int span = vertical ? 64 : 128;       // panel height vs width
+
     for (int f = 1; f <= SLIDE_FRAMES; f++) {
-        // easeOut quad: 1-(1-t)^2
         float t = (float)f / SLIDE_FRAMES;
-        float eased = 1.0f - (1.0f - t) * (1.0f - t);
-        int off = (int)(128.0f * (1.0f - eased) + 0.5f);
-        oled_set_x_offset(off);
-        render_step(step, nTanks, nPumps);   // self begin()/end()
+        float eased = 1.0f - (1.0f - t) * (1.0f - t);   // easeOut quad
+        int shift = (int)(span * eased + 0.5f);          // 0 -> span
+
+        oled_begin();
+        if (vertical) {
+            // Old slides up and out (0 -> -span), new comes up from below.
+            oled_set_offset(0, -shift);
+            render_body(fromStep, nTanks, nPumps);
+            oled_set_offset(0, span - shift);
+            render_body(toStep, nTanks, nPumps);
+        } else {
+            // Old slides left and out (0 -> -span), new enters from the right.
+            oled_set_offset(-shift, 0);
+            render_body(fromStep, nTanks, nPumps);
+            oled_set_offset(span - shift, 0);
+            render_body(toStep, nTanks, nPumps);
+        }
+        oled_end();
         vTaskDelay(pdMS_TO_TICKS(SLIDE_FRAME_MS));
     }
-    oled_set_x_offset(0);                     // settled, exact
+    oled_set_offset(0, 0);                       // settle exact
+    render_step(toStep, nTanks, nPumps);
 }
 
 static void display_task(void*) {
@@ -499,7 +522,7 @@ static void display_task(void*) {
         // carousel. It redraws fast (blink) and never advances the carousel. ---
         uint8_t alarms = collect_alarms();
         if (alarms > 0) {
-            oled_set_x_offset(0);   // ensure no leftover slide offset
+            oled_set_offset(0, 0);   // ensure no leftover slide offset
             display_wake();
             if (alarm_idx >= alarms) alarm_idx = 0;
             if (alarms > 1 && millis() - alarm_cycle_ms > ALARM_CYCLE_MS) {
@@ -517,20 +540,19 @@ static void display_task(void*) {
 
         // --- Normal carousel: hold the current screen (redraw at ~4 fps for
         // live liquid animation), and when the dwell elapses, advance to the
-        // next screen with a slide-in transition. ---
+        // next screen with a slide transition (old out + new in). ---
         uint8_t nTanks = count_tanks();
         uint8_t nPumps = count_pumps();
         uint16_t total = step_count(nTanks, nPumps);
         if (step >= total) step = 0;
 
         if (millis() - dwell_start >= DWELL_MS) {
-            // Advance + animate the new screen sliding in.
-            step = (step + 1) % total;
-            slide_in(step, nTanks, nPumps);
+            uint16_t next = (step + 1) % total;
+            slide_to(step, next, nTanks, nPumps);
+            step = next;
             dwell_start = millis();
         } else {
-            // Hold: redraw in place (offset already 0) so tank liquid animates.
-            oled_set_x_offset(0);
+            // Hold: redraw in place so tank liquid animates.
             render_step(step, nTanks, nPumps);
             vTaskDelay(pdMS_TO_TICKS(250));
         }

@@ -51,6 +51,10 @@ void oled_fill_screen();
 // code (those stay full-screen / centered). Reset to 0 when done.
 void oled_set_x_offset(int px);
 
+// Shift every subsequent draw by (x,y) pixels. Used for the carousel slide:
+// horizontal for section changes, vertical for sub-item changes. Reset to 0,0.
+void oled_set_offset(int x, int y);
+
 // Large bold title text, horizontally centered at baseline y. size picks the
 // bold Helvetica face: 18, 14 or 12 px (falls back to 12). Returns the pixel
 // width drawn. After drawing, the font is restored to the default 6x10.

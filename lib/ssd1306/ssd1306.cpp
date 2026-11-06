@@ -35,6 +35,9 @@ static bool s_enabled = true;
 // renderer. Used by the display app for the slide/carousel transition.
 static int s_x_offset = 0;
 
+// Global vertical draw offset (same idea, for the up/down sub-item slide).
+static int s_y_offset = 0;
+
 // ------------------------------------------
 // Helpers
 // ------------------------------------------
@@ -95,19 +98,19 @@ void oled_end() {
 }
 
 void oled_print_left(uint8_t line, const char* text) {
-    if (s_oled) s_oled->drawStr(s_x_offset + 0, line_y(line), text);
+    if (s_oled) s_oled->drawStr(s_x_offset + 0, s_y_offset + line_y(line), text);
 }
 
 void oled_print_center(uint8_t line, const char* text) {
     if (!s_oled) return;
     int w = s_oled->getStrWidth(text);
-    s_oled->drawStr(s_x_offset + (DISPLAY_W - w) / 2, line_y(line), text);
+    s_oled->drawStr(s_x_offset + (DISPLAY_W - w) / 2, s_y_offset + line_y(line), text);
 }
 
 void oled_print_right(uint8_t line, const char* text) {
     if (!s_oled) return;
     int w = s_oled->getStrWidth(text);
-    s_oled->drawStr(s_x_offset + DISPLAY_W - w, line_y(line), text);
+    s_oled->drawStr(s_x_offset + DISPLAY_W - w, s_y_offset + line_y(line), text);
 }
 
 void oled_printf_left(uint8_t line, const char* fmt, ...) {
@@ -138,7 +141,7 @@ void oled_printf_right(uint8_t line, const char* fmt, ...) {
 }
 
 void oled_draw_str(int x, int y, const char* text) {
-    if (s_oled) s_oled->drawStr(s_x_offset + x, y, text);
+    if (s_oled) s_oled->drawStr(s_x_offset + x, s_y_offset + y, text);
 }
 
 int oled_text_width(const char* text) {
@@ -148,16 +151,21 @@ int oled_text_width(const char* text) {
 void oled_draw_str_center(int y, const char* text) {
     if (!s_oled) return;
     int w = s_oled->getStrWidth(text);
-    s_oled->drawStr(s_x_offset + (DISPLAY_W - w) / 2, y, text);
+    s_oled->drawStr(s_x_offset + (DISPLAY_W - w) / 2, s_y_offset + y, text);
 }
 
 void oled_set_draw_color(uint8_t color) {
     if (s_oled) s_oled->setDrawColor(color);
 }
 
-// Shift every subsequent draw horizontally by `px` (used for slide animation).
+// Shift every subsequent draw by (x,y) pixels (used for slide animation).
+void oled_set_offset(int x, int y) {
+    s_x_offset = x;
+    s_y_offset = y;
+}
 void oled_set_x_offset(int px) {
     s_x_offset = px;
+    s_y_offset = 0;
 }
 
 void oled_fill_screen() {
@@ -182,7 +190,7 @@ int oled_draw_title_center(int y, const char* text, uint8_t size) {
     if (!s_oled) return 0;
     s_oled->setFont(title_font(size));
     int w = s_oled->getStrWidth(text);
-    s_oled->drawStr(s_x_offset + (DISPLAY_W - w) / 2, y, text);
+    s_oled->drawStr(s_x_offset + (DISPLAY_W - w) / 2, s_y_offset + y, text);
     s_oled->setFont(u8g2_font_6x10_tr);   // restore default for other renderers
     return w;
 }
@@ -190,35 +198,35 @@ int oled_draw_title_center(int y, const char* text, uint8_t size) {
 void oled_draw_title_at(int x, int y, const char* text, uint8_t size) {
     if (!s_oled) return;
     s_oled->setFont(title_font(size));
-    s_oled->drawStr(s_x_offset + x, y, text);
+    s_oled->drawStr(s_x_offset + x, s_y_offset + y, text);
     s_oled->setFont(u8g2_font_6x10_tr);   // restore
 }
 
 void oled_draw_line(int x0, int y0, int x1, int y1) {
-    if (s_oled) s_oled->drawLine(s_x_offset + x0, y0, s_x_offset + x1, y1);
+    if (s_oled) s_oled->drawLine(s_x_offset + x0, s_y_offset + y0, s_x_offset + x1, s_y_offset + y1);
 }
 
 void oled_draw_frame(int x, int y, int w, int h) {
-    if (s_oled) s_oled->drawFrame(s_x_offset + x, y, w, h);
+    if (s_oled) s_oled->drawFrame(s_x_offset + x, s_y_offset + y, w, h);
 }
 
 void oled_draw_box(int x, int y, int w, int h) {
-    if (s_oled) s_oled->drawBox(s_x_offset + x, y, w, h);
+    if (s_oled) s_oled->drawBox(s_x_offset + x, s_y_offset + y, w, h);
 }
 
 void oled_draw_rframe(int x, int y, int w, int h, int r) {
-    if (s_oled) s_oled->drawRFrame(s_x_offset + x, y, w, h, r);
+    if (s_oled) s_oled->drawRFrame(s_x_offset + x, s_y_offset + y, w, h, r);
 }
 
 void oled_draw_rbox(int x, int y, int w, int h, int r) {
-    if (s_oled) s_oled->drawRBox(s_x_offset + x, y, w, h, r);
+    if (s_oled) s_oled->drawRBox(s_x_offset + x, s_y_offset + y, w, h, r);
 }
 
 void oled_draw_bitmap(int x, int y, const uint8_t* bitmap, int w, int h) {
     // U8g2 drawBitmap expects MSB-first data (same as Adafruit drawBitmap).
     // cnt = bytes per row = w / 8.
     if (s_oled && bitmap && w > 0 && h > 0) {
-        s_oled->drawBitmap(s_x_offset + x, y, w / 8, h, bitmap);
+        s_oled->drawBitmap(s_x_offset + x, s_y_offset + y, w / 8, h, bitmap);
     }
 }
 
@@ -233,7 +241,7 @@ void oled_draw_bitmap_scaled(int x, int y, int dstW, int dstH,
             int sx = dx * srcW / dstW;
             uint8_t byte = pgm_read_byte(&bitmap[sy * bytesPerRow + (sx >> 3)]);
             if (byte & (0x80 >> (sx & 7))) {
-                s_oled->drawPixel(s_x_offset + x + dx, y + dy);
+                s_oled->drawPixel(s_x_offset + x + dx, s_y_offset + y + dy);
             }
         }
     }
