@@ -57,6 +57,7 @@ namespace web_server
             WiFiClient wifi_client = wifi_server.available();
             if (wifi_client)
             {
+                log_info("[web_server] WiFi client connected (AP)");
                 Request req(wifi_client);
                 handle_client(wifi_client, req);
                 wifi_client.stop();
