@@ -484,12 +484,23 @@ static void slide_to(uint16_t fromStep, uint16_t toStep,
             render_body(fromStep, nTanks, nPumps);
             oled_set_offset(0, travel - shift);
             render_body(toStep, nTanks, nPumps);
+            // Mask the gap band (between old bottom and new top) so nothing
+            // from either screen bleeds across the seam.
+            oled_set_offset(0, 0);
+            oled_set_draw_color(0);
+            oled_draw_box(0, 64 - shift, 128, SLIDE_GAP);
+            oled_set_draw_color(1);
         } else {
             // Old slides left and out, new enters from the right past a gap.
             oled_set_offset(-shift, 0);
             render_body(fromStep, nTanks, nPumps);
             oled_set_offset(travel - shift, 0);
             render_body(toStep, nTanks, nPumps);
+            // Mask the gap column between the two screens.
+            oled_set_offset(0, 0);
+            oled_set_draw_color(0);
+            oled_draw_box(128 - shift, 0, SLIDE_GAP, 64);
+            oled_set_draw_color(1);
         }
         oled_end();
         vTaskDelay(pdMS_TO_TICKS(SLIDE_FRAME_MS));
