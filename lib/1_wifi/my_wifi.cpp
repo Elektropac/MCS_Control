@@ -1,6 +1,7 @@
 #include "my_wifi.h"
 
 #include <Arduino.h>
+#include <esp_mac.h>
 
 #include "config.h"
 #include "logging.h"
@@ -15,7 +16,19 @@ namespace wifi
 
     String make_mac()
     {
-        mac = WiFi.macAddress();
+        // WiFi.macAddress() returns 00:00:... before the WiFi driver is up.
+        // BLE init now runs early in boot (before the network stack), so read
+        // the MAC straight from eFuse, which is always available.
+        uint8_t m[6] = {0};
+        if (esp_read_mac(m, ESP_MAC_WIFI_STA) == ESP_OK &&
+            (m[0] | m[1] | m[2] | m[3] | m[4] | m[5]) != 0) {
+            char buf[18];
+            snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+                     m[0], m[1], m[2], m[3], m[4], m[5]);
+            mac = String(buf);
+        } else {
+            mac = WiFi.macAddress();   // fallback once WiFi is up
+        }
         return mac;
     }
 
