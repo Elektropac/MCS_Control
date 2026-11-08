@@ -52,6 +52,12 @@ String fueling_auth_pending();
 // direct online delivery or carried back by the app).
 String fueling_auth_ack(JsonObject data);
 
+// Called by the rule-engine when a fuelling finishes (nozzle returned): record
+// the final litres on the pump's AUTHORIZED transaction and move it to PENDING
+// (awaiting delivery to the server). `group_id` is the rule group (e.g.
+// "fueling_1"). No-op if there's no matching open transaction.
+void fueling_auth_complete(const char* group_id, float litres);
+
 // True if the unacked-transaction queue is full. The authorize path refuses new
 // fuellings when this is true (measurement-critical: never drop a transaction).
 bool fueling_auth_queue_full();

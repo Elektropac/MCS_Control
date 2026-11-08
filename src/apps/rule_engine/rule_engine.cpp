@@ -8,6 +8,7 @@
 #include "platform/task_registry.h"
 #include "buzzer.h"
 #include "logging.h"
+#include "apps/fueling_auth/fueling_auth.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <string.h>
@@ -368,6 +369,15 @@ static void run_action(RuleGroup& g, JsonObject a) {
             log_info("[rules] %s: log sent", g.id);
         } else {
             log_info("[rules] %s: log queued (offline)", g.id);
+        }
+
+        // A transaction log closes a fuelling: hand the final litres to the
+        // fueling_auth store so the authorized transaction becomes PENDING
+        // (awaiting delivery to the server). Only for pump groups.
+        if (!strcmp(g.type, "pump")) {
+            char lkey[40];
+            snprintf(lkey, sizeof(lkey), "%s.litres", g.id);
+            fueling_auth_complete(g.id, (float)rule_kv_get_num(lkey, 0.0));
         }
 
     } else {

@@ -38,7 +38,8 @@ enum TxnStatus : uint8_t { TXN_FREE = 0, TXN_AUTHORIZED, TXN_PENDING, TXN_SENT, 
 
 struct Txn {
     uint32_t id;            // unique, device-owned
-    char     pump[16];
+    char     pump[16];      // display name (e.g. "Pump 1")
+    char     group[24];     // rule group id (e.g. "fueling_1")
     float    preset;        // 0 = no preset
     float    litres;        // final/running volume
     TxnStatus status;
@@ -130,6 +131,16 @@ static bool pump_exists(const char* name) {
     return false;
 }
 
+// Resolve a pump's rule-group id (e.g. "fueling_1") from its display name.
+// Returns "" if not found. Used to link a transaction to its engine group.
+static String group_of_pump(const char* name) {
+    JsonDocument doc;
+    deserializeJson(doc, pumps_get_all());
+    for (JsonObject p : doc["pumps"].as<JsonArray>())
+        if (strcmp(p["name"] | "", name) == 0) return String(p["id"] | "");
+    return String("");
+}
+
 // =======================================================
 // Public API
 // =======================================================
@@ -202,6 +213,9 @@ String fueling_auth_authorize(JsonObject data) {
     t->id = s_next_id++;
     strncpy(t->pump, pump, sizeof(t->pump) - 1);
     t->pump[sizeof(t->pump) - 1] = '\0';
+    String gid = group_of_pump(pump);
+    strncpy(t->group, gid.c_str(), sizeof(t->group) - 1);
+    t->group[sizeof(t->group) - 1] = '\0';
     t->preset = preset;
     t->litres = 0.0f;
     t->status = TXN_AUTHORIZED;
@@ -262,4 +276,22 @@ String fueling_auth_ack(JsonObject data) {
     log_info("[fueling_auth] acked txn %u", id);
     // TODO: persist the ack so a reboot doesn't resurrect the transaction.
     return "{\"ok\":true}";
+}
+
+void fueling_auth_complete(const char* group_id, float litres) {
+    if (!group_id || !group_id[0]) return;
+    for (auto& t : s_txns) {
+        if (t.status != TXN_AUTHORIZED) continue;
+        if (strcmp(t.group, group_id) != 0) continue;
+        t.litres = litres;
+        t.status = TXN_PENDING;          // now awaiting delivery to the server
+        log_info("[fueling_auth] txn %u complete on %s: %.2f L -> PENDING",
+                 t.id, t.group, litres);
+        // TODO: persist to flash; kick off delivery (online now, else via app).
+        return;
+    }
+    // No matching authorized txn: a fuelling happened without going through
+    // fuel_authorize (e.g. legacy/local). Nothing to record here.
+    log_info("[fueling_auth] complete on %s but no open txn (%.2f L)",
+             group_id, litres);
 }
