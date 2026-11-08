@@ -58,9 +58,13 @@ static Txn* find_txn(uint32_t id) {
     for (auto& t : s_txns) if (t.status != TXN_FREE && t.id == id) return &t;
     return nullptr;
 }
-static Txn* find_pump_txn(const char* pump) {
+// Does this pump have an ACTIVE (authorised, not-yet-fuelled) transaction?
+// A PENDING/SENT txn is a FINISHED fuelling awaiting delivery to the server —
+// it does NOT occupy the pump, so a new fuelling can start immediately. Only an
+// AUTHORIZED txn (someone currently holds the pump) blocks a new authorization.
+static Txn* find_active_pump_txn(const char* pump) {
     for (auto& t : s_txns)
-        if (t.status != TXN_FREE && strcmp(t.pump, pump) == 0) return &t;
+        if (t.status == TXN_AUTHORIZED && strcmp(t.pump, pump) == 0) return &t;
     return nullptr;
 }
 
@@ -204,8 +208,9 @@ String fueling_auth_authorize(JsonObject data) {
     // 4) Pump exists / configured?
     if (!pump_exists(pump)) return err(20, "unknown pump");
 
-    // 5) Pump occupied?  6) Any unfinished txn on this pump?
-    if (find_pump_txn(pump)) return err(70, "pump occupied");
+    // 5) Pump occupied by an ACTIVE authorization? (A finished-but-undelivered
+    //    PENDING txn does NOT occupy the pump — a new fuelling can start.)
+    if (find_active_pump_txn(pump)) return err(70, "pump occupied");
 
     // All checks passed — create the transaction.
     Txn* t = alloc_txn();
