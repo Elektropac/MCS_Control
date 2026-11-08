@@ -37,9 +37,14 @@ static const uint8_t TXN_QUEUE_MAX = 32;
 enum TxnStatus : uint8_t { TXN_FREE = 0, TXN_AUTHORIZED, TXN_PENDING, TXN_SENT, TXN_ACKED };
 
 struct Txn {
-    uint32_t id;            // unique, device-owned
+    uint32_t id;            // internal lookup id (device-local sequence)
+    char     ref[40];       // globally-unique transaction ref: "<MAC>-<seq>"
     char     pump[16];      // display name (e.g. "Pump 1")
     char     group[24];     // rule group id (e.g. "fueling_1")
+    char     card[20];      // access medium / card id (NOT the PIN)
+    char     driver[24];    // driver id / name
+    char     vehicle[20];   // vehicle / number plate
+    uint32_t odometer;      // odometer reading (0 = not given)
     float    preset;        // 0 = no preset
     float    litres;        // final/running volume
     TxnStatus status;
@@ -124,6 +129,13 @@ static String err(int code, const char* text) {
     d["code"] = code;
     d["text"] = text;
     String s; serializeJson(d, s); return s;
+}
+
+// Copy a JSON string field into a fixed buffer (safe, null-terminated).
+static void copy_field(JsonDocument& o, const char* key, char* dst, size_t n) {
+    const char* v = o[key] | "";
+    strncpy(dst, v, n - 1);
+    dst[n - 1] = '\0';
 }
 
 // Does a pump of this name exist in the live config?
@@ -216,11 +228,23 @@ String fueling_auth_authorize(JsonObject data) {
     Txn* t = alloc_txn();
     if (!t) return err(51, "no free slot");
     t->id = s_next_id++;
+    // Globally-unique ref = device MAC (no colons) + local sequence, so the
+    // server can tell transactions from different devices apart.
+    {
+        String mac = wifi::make_mac(); mac.replace(":", "");
+        snprintf(t->ref, sizeof(t->ref), "%s-%u", mac.c_str(), (unsigned)t->id);
+    }
     strncpy(t->pump, pump, sizeof(t->pump) - 1);
     t->pump[sizeof(t->pump) - 1] = '\0';
     String gid = group_of_pump(pump);
     strncpy(t->group, gid.c_str(), sizeof(t->group) - 1);
     t->group[sizeof(t->group) - 1] = '\0';
+    // Transaction metadata from the (authenticated) request. PIN is deliberately
+    // NOT stored/transmitted — it's only for app-side access validation.
+    copy_field(inner, "card",    t->card,    sizeof(t->card));
+    copy_field(inner, "driver",  t->driver,  sizeof(t->driver));
+    copy_field(inner, "vehicle", t->vehicle, sizeof(t->vehicle));
+    t->odometer = inner["odometer"] | 0u;
     t->preset = preset;
     t->litres = 0.0f;
     t->status = TXN_AUTHORIZED;
@@ -240,6 +264,7 @@ String fueling_auth_authorize(JsonObject data) {
     JsonDocument d;
     d["ok"] = true;
     d["txn_id"] = t->id;
+    d["txn_ref"] = t->ref;
     d["pump"] = pump;
     String s; serializeJson(d, s); return s;
 }
@@ -263,9 +288,15 @@ String fueling_auth_pending() {
     for (auto& t : s_txns) {
         if (t.status == TXN_PENDING || t.status == TXN_SENT) {
             JsonObject o = arr.add<JsonObject>();
-            o["txn_id"] = t.id;
-            o["pump"] = t.pump;
-            o["litres"] = t.litres;
+            o["txn_id"]   = t.id;
+            o["txn_ref"]  = t.ref;
+            o["pump"]     = t.pump;
+            o["litres"]   = serialized(String(t.litres, 2));
+            o["preset"]   = serialized(String(t.preset, 1));
+            if (t.card[0])    o["card"]     = t.card;
+            if (t.driver[0])  o["driver"]   = t.driver;
+            if (t.vehicle[0]) o["vehicle"]  = t.vehicle;
+            if (t.odometer)   o["odometer"] = t.odometer;
         }
     }
     String s; serializeJson(d, s); return s;
