@@ -154,6 +154,18 @@ uint32_t clock_now_utc() {
     return s_utc_at_boot + (millis() / 1000);
 }
 
+String clock_now_string() {
+    if (!s_clock_set) return String("");
+    time_t tt = (time_t)clock_now_utc();
+    struct tm g;
+    gmtime_r(&tt, &g);
+    char buf[24];
+    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02dZ",
+             g.tm_year + 1900, g.tm_mon + 1, g.tm_mday,
+             g.tm_hour, g.tm_min, g.tm_sec);
+    return String(buf);
+}
+
 // Format a timestamp prefix: real UTC if known, else "+seconds since boot".
 static void timestamp_prefix(char* buf, size_t n) {
     if (s_clock_set) {

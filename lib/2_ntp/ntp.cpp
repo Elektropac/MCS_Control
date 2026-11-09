@@ -110,9 +110,9 @@ namespace ntp_ethernet
         return 0;
     }
 
-    void sync(uint8_t retries)
+    void sync(uint8_t retries, bool force)
     {
-        if (has_run)
+        if (has_run && !force)
         {
             log_info("[ntp][ethernet] Sync already executed once, skipping.");
             return;
@@ -126,6 +126,7 @@ namespace ntp_ethernet
             {
                 timeval tv = {(time_t)timestamp, 0};
                 settimeofday(&tv, nullptr);
+                clock_set_utc((uint32_t)timestamp);   // feed the shared clock
                 log_info("[ntp][ethernet] Time synced: %lu", timestamp);
                 has_run = true;
                 udp.stop();
@@ -178,9 +179,9 @@ namespace ntp_wifi
         return 0;
     }
 
-    void sync(uint8_t retries)
+    void sync(uint8_t retries, bool force)
     {
-        if (has_run)
+        if (has_run && !force)
         {
             log_info("[ntp][wifi] Sync already executed once, skipping.");
             return;
@@ -194,6 +195,7 @@ namespace ntp_wifi
             {
                 timeval tv = {(time_t)timestamp, 0};
                 settimeofday(&tv, nullptr);
+                clock_set_utc((uint32_t)timestamp);   // feed the shared clock
                 log_info("[ntp][wifi] Time synced: %lu", timestamp);
                 has_run = true;
                 udp.stop();

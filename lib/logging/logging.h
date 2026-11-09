@@ -69,3 +69,5 @@ void event_log_clear();
 void clock_set_utc(uint32_t epoch_seconds);   // called on connect
 bool clock_has_time();
 uint32_t clock_now_utc();                      // 0 if unknown
+// Formatted "YYYY-MM-DD HH:MM:SSZ" (UTC) if the clock is set, else "".
+String clock_now_string();

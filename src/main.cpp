@@ -27,6 +27,9 @@ namespace config {
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
 #include "bluetooth.h"
+#include "ntp.h"
+#include "w5500.h"
+#include "my_wifi.h"
 
 #include "file_system.h"
 #include "config.h"
@@ -79,6 +82,20 @@ void setup() {
     // start here — it won't touch the network until the user triggers it.
     otaInit();
     ota_start_task();
+
+    // Daily clock re-sync: Control has no RTC, so it keeps time via millis()
+    // relative to the last known UTC (from NTP or a connecting BLE client).
+    // The ESP32 crystal drifts a few seconds/day, so once a day we try NTP
+    // again (whichever transport is up) to stay accurate. BLE clients also
+    // re-sync on every connect. If no source is available, time just keeps
+    // ticking from the last value (events show that until a sync happens).
+    xTaskCreate([](void*) {
+        for (;;) {
+            vTaskDelay(pdMS_TO_TICKS(24UL * 60UL * 60UL * 1000UL));  // 24h
+            if (w5500::connected)      ntp_ethernet::sync(3, true);
+            else if (wifi::connected)  ntp_wifi::sync(3, true);
+        }
+    }, "clock_sync", 4096, nullptr, 1, nullptr);
 }
 
 // All work runs in FreeRTOS tasks. Arduino loop is not used.
