@@ -382,7 +382,14 @@ static void run_action(RuleGroup& g, JsonObject a) {
         if (!strcmp(g.type, "pump")) {
             char lkey[40];
             snprintf(lkey, sizeof(lkey), "%s.litres", g.id);
-            fueling_auth_complete(g.id, (float)rule_kv_get_num(lkey, 0.0));
+            float litres = (float)rule_kv_get_num(lkey, 0.0);
+            // Persist the completed fuelling to the flash event log (sporbar,
+            // survives reboot) — the same place alarms/boot are recorded.
+            char tkey[40];
+            snprintf(tkey, sizeof(tkey), "%s.total_litres", g.id);
+            float total = (float)rule_kv_get_num(tkey, 0.0);
+            event_log_add("FUEL [%s] %.2f L (total %.1f L)", g.id, litres, total);
+            fueling_auth_complete(g.id, litres);
         }
 
     } else {
