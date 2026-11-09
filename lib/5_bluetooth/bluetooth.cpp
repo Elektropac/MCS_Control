@@ -33,6 +33,7 @@ struct bluetooth_serial
     bool is_available;
     String encryption_key;
     unsigned long last_message_millis;
+    String input_buffer;   // accumulates chunked command writes until '\n'
 };
 
 namespace bluetooth_services
@@ -42,14 +43,16 @@ namespace bluetooth_services
         output : NULL,
         is_available : true,
         encryption_key : "",
-        last_message_millis : 0
+        last_message_millis : 0,
+        input_buffer : ""
     };
     bluetooth_serial secondary_serial = {
         input : NULL,
         output : NULL,
         is_available : true,
         encryption_key : "",
-        last_message_millis : 0
+        last_message_millis : 0,
+        input_buffer : ""
     };
 
     // selecter service characteristics
@@ -128,6 +131,7 @@ namespace bluetooth_services
                         serial.is_available = false;            // Mark the serial as no longer available
                         serial.encryption_key = encryption_key; // Store the encryption key
                         serial.last_message_millis = millis();  // start the inactivity timeout from NOW
+                        serial.input_buffer = "";               // fresh command buffer for this session
                         log_info("[Bluetooth] Serial marked as unavailable and encryption key stored.");
                         
                         JsonDocument doc;
@@ -155,6 +159,7 @@ namespace bluetooth_services
                     // Valid encryption key, mark the serial as available again
                     serial.is_available = true;
                     serial.encryption_key = ""; // Clear the stored encryption key
+                    serial.input_buffer = "";   // drop any partial command
                     log_info("[Bluetooth] Serial marked as available again.");
                 }
 
@@ -162,10 +167,33 @@ namespace bluetooth_services
             }
             else if (serial.is_available == false)
             {
-                JsonDocument doc = Decrypt_Json(inputValue, serial.encryption_key);
+                // Commands may exceed one BLE write (the encrypted+hex blob for
+                // e.g. fuel_authorize can be > 512 B). The app now sends every
+                // command in <=CHUNK-byte writes terminated by '\n' (hex never
+                // contains newline), mirroring the output path. Accumulate here
+                // until we see the '\n', then decrypt the complete payload.
+                serial.input_buffer += inputValue;
+                int nl = serial.input_buffer.indexOf('\n');
+                if (nl < 0)
+                {
+                    // Guard against a runaway buffer (missing terminator).
+                    if (serial.input_buffer.length() > 8192)
+                    {
+                        log_error("[Bluetooth] Input buffer overflow, discarding.");
+                        serial.input_buffer = "";
+                    }
+                    serial.last_message_millis = millis();
+                    return;   // wait for more chunks
+                }
+
+                String payload = serial.input_buffer.substring(0, nl);
+                serial.input_buffer = serial.input_buffer.substring(nl + 1);
+
+                JsonDocument doc = Decrypt_Json(payload, serial.encryption_key);
                 if (doc.isNull())
                 {
-                    log_error("[Bluetooth] Failed to decrypt JSON input: %s", inputValue.c_str());
+                    log_error("[Bluetooth] Failed to decrypt JSON input: %s", payload.c_str());
+                    serial.last_message_millis = millis();
                     return;
                 }
 
@@ -202,6 +230,7 @@ namespace bluetooth_services
                 log_error("[Bluetooth] Serial timeout, marking as available.");
                 serial.is_available = true;
                 serial.encryption_key = "";
+                serial.input_buffer = "";
             }
             
             serial.last_message_millis = millis();
