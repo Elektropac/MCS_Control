@@ -139,6 +139,22 @@ namespace function_silo
         {
             return "{\"result\":\"pong\"}";
         }
+        else if (function_name == "log_get")
+        {
+            // Recent firmware log (RAM ring buffer, ~2 KB). Returned as a JSON
+            // string so the app can show it on a Log page.
+            JsonDocument d;
+            d["subject"] = "log";
+            d["text"] = log_recent();
+            String out;
+            serializeJson(d, out);
+            return out;
+        }
+        else if (function_name == "log_clear")
+        {
+            log_clear();
+            return "{\"result\":\"log cleared\"}";
+        }
 
         // -- poseidon io --
 
