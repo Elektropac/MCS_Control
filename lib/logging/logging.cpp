@@ -1,6 +1,7 @@
 #include "logging.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <time.h>
 #include <LittleFS.h>
 
 // ------------------------------------------
@@ -136,6 +137,40 @@ void event_log_init() {
     // the filesystem is available (mounted elsewhere in file_system::init()).
 }
 
+// ---- Clock (no RTC): client-supplied UTC, tracked relative to millis() ----
+static uint32_t s_utc_at_boot = 0;   // UTC epoch that corresponds to millis()=0
+static bool     s_clock_set   = false;
+
+void clock_set_utc(uint32_t epoch_seconds) {
+    if (epoch_seconds < 1700000000UL) return;   // sanity: after ~2023-11
+    s_utc_at_boot = epoch_seconds - (millis() / 1000);
+    s_clock_set = true;
+}
+
+bool clock_has_time() { return s_clock_set; }
+
+uint32_t clock_now_utc() {
+    if (!s_clock_set) return 0;
+    return s_utc_at_boot + (millis() / 1000);
+}
+
+// Format a timestamp prefix: real UTC if known, else "+seconds since boot".
+static void timestamp_prefix(char* buf, size_t n) {
+    if (s_clock_set) {
+        uint32_t t = clock_now_utc();
+        time_t tt = (time_t)t;
+        struct tm g;
+        gmtime_r(&tt, &g);
+        snprintf(buf, n, "%04d-%02d-%02d %02d:%02d:%02dZ",
+                 g.tm_year + 1900, g.tm_mon + 1, g.tm_mday,
+                 g.tm_hour, g.tm_min, g.tm_sec);
+    } else {
+        uint32_t ms = millis();
+        snprintf(buf, n, "+%lu.%03lus (no time)",
+                 (unsigned long)(ms / 1000), (unsigned long)(ms % 1000));
+    }
+}
+
 static void event_log_rollover_if_needed() {
     File f = LittleFS.open(EVENT_LOG_PATH, "r");
     if (!f) return;
@@ -160,16 +195,16 @@ void event_log_add(const char* fmt, ...) {
     vsnprintf(msg, EVENT_LINE_MAX, fmt, args);
     va_end(args);
 
-    // Relative timestamp (seconds since boot) — Control has no RTC.
-    uint32_t ms = millis();
-    char line[EVENT_LINE_MAX + 24];
-    snprintf(line, sizeof(line), "[%lu.%03lus] %s\r\n",
-             (unsigned long)(ms / 1000), (unsigned long)(ms % 1000), msg);
+    // Timestamp: real UTC if a client has set the clock, else "+since boot".
+    char ts[48];
+    timestamp_prefix(ts, sizeof(ts));
+    char line[EVENT_LINE_MAX + 64];
+    snprintf(line, sizeof(line), "[%s] %s\r\n", ts, msg);
 
     event_log_rollover_if_needed();
     File f = LittleFS.open(EVENT_LOG_PATH, "a");
     if (f) { f.print(line); f.close(); }
-    // Also mirror to serial + RAM log so it shows live too.
+    // Also mirror to serial so it shows live too.
     Serial.print(line);
 }
 

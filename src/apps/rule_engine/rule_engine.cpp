@@ -384,11 +384,8 @@ static void run_action(RuleGroup& g, JsonObject a) {
             snprintf(lkey, sizeof(lkey), "%s.litres", g.id);
             float litres = (float)rule_kv_get_num(lkey, 0.0);
             // Persist the completed fuelling to the flash event log (sporbar,
-            // survives reboot) — the same place alarms/boot are recorded.
-            char tkey[40];
-            snprintf(tkey, sizeof(tkey), "%s.total_litres", g.id);
-            float total = (float)rule_kv_get_num(tkey, 0.0);
-            event_log_add("FUEL [%s] %.2f L (total %.1f L)", g.id, litres, total);
+            // survives reboot) — same place alarms/boot are recorded.
+            event_log_add("FUEL [%s] %.2f L", g.id, litres);
             fueling_auth_complete(g.id, litres);
         }
 

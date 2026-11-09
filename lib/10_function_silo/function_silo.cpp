@@ -161,6 +161,20 @@ namespace function_silo
             else { log_clear(); }
             return "{\"result\":\"log cleared\"}";
         }
+        else if (function_name == "clock_set")
+        {
+            // A connecting client supplies the current UTC epoch (seconds) so
+            // the device can stamp events with real time until reboot.
+            JsonObject data = json_packet["data"].as<JsonObject>();
+            uint32_t epoch = data.isNull() ? 0 : (uint32_t)(data["utc"] | 0);
+            clock_set_utc(epoch);
+            JsonDocument d;
+            d["subject"] = "clock";
+            d["has_time"] = clock_has_time();
+            d["utc"] = clock_now_utc();
+            String out; serializeJson(d, out);
+            return out;
+        }
 
         // -- poseidon io --
 

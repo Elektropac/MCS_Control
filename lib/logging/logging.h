@@ -54,8 +54,18 @@ void log_clear();
 // flash wear stays low (events are rare, unlike the RAM log).
 // -------------------------------------------------------
 void event_log_init();
-// Append one event line (a millis() timestamp is prepended).
+// Append one event line (a timestamp is prepended).
 void event_log_add(const char* fmt, ...);
 // Return the whole flash event log (newest handling done app-side).
 String event_log_read();
 void event_log_clear();
+
+// -------------------------------------------------------
+// CLOCK (no RTC) — a connecting client sends the current
+// UTC time; we remember it relative to millis() so we can
+// stamp events with real UTC until reboot. If never set,
+// events fall back to a "+seconds since boot" stamp.
+// -------------------------------------------------------
+void clock_set_utc(uint32_t epoch_seconds);   // called on connect
+bool clock_has_time();
+uint32_t clock_now_utc();                      // 0 if unknown
