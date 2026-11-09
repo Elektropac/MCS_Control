@@ -1,6 +1,7 @@
 #include "logging.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <LittleFS.h>
 
 // ------------------------------------------
 // Config
@@ -121,4 +122,65 @@ void log_clear() {
     s_write_pos = 0;
     s_wrapped = false;
     memset(s_buffer, 0, LOG_BUFFER_SIZE);
+}
+
+// ------------------------------------------
+// FLASH EVENT LOG (persistent, low-rate)
+// ------------------------------------------
+#define EVENT_LOG_PATH      "/events.log"
+#define EVENT_LOG_MAX_BYTES  (256 * 1024)   // cap; rolls over keeping newer half
+#define EVENT_LINE_MAX       160
+
+void event_log_init() {
+    // Nothing to pre-create; file is created on first append. We just make sure
+    // the filesystem is available (mounted elsewhere in file_system::init()).
+}
+
+static void event_log_rollover_if_needed() {
+    File f = LittleFS.open(EVENT_LOG_PATH, "r");
+    if (!f) return;
+    size_t sz = f.size();
+    if (sz < EVENT_LOG_MAX_BYTES) { f.close(); return; }
+    // Keep the newer half: read from the midpoint, rewrite the file.
+    size_t keepFrom = sz / 2;
+    f.seek(keepFrom);
+    String tail = f.readString();
+    f.close();
+    // Drop a partial first line so we start clean.
+    int nl = tail.indexOf('\n');
+    if (nl >= 0) tail = tail.substring(nl + 1);
+    File w = LittleFS.open(EVENT_LOG_PATH, "w");
+    if (w) { w.print(tail); w.close(); }
+}
+
+void event_log_add(const char* fmt, ...) {
+    char msg[EVENT_LINE_MAX];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(msg, EVENT_LINE_MAX, fmt, args);
+    va_end(args);
+
+    // Relative timestamp (seconds since boot) — Control has no RTC.
+    uint32_t ms = millis();
+    char line[EVENT_LINE_MAX + 24];
+    snprintf(line, sizeof(line), "[%lu.%03lus] %s\r\n",
+             (unsigned long)(ms / 1000), (unsigned long)(ms % 1000), msg);
+
+    event_log_rollover_if_needed();
+    File f = LittleFS.open(EVENT_LOG_PATH, "a");
+    if (f) { f.print(line); f.close(); }
+    // Also mirror to serial + RAM log so it shows live too.
+    Serial.print(line);
+}
+
+String event_log_read() {
+    File f = LittleFS.open(EVENT_LOG_PATH, "r");
+    if (!f) return String("");
+    String s = f.readString();
+    f.close();
+    return s;
+}
+
+void event_log_clear() {
+    LittleFS.remove(EVENT_LOG_PATH);
 }

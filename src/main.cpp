@@ -38,6 +38,14 @@ void setup() {
     // Filesystem + config (must be before apps that read config)
     file_system::init();
     config::init();
+    event_log_init();               // flash event log (needs LittleFS mounted)
+    event_log_add("BOOT fw=%s", 
+#ifdef CONTROL_FW_VERSION
+        CONTROL_FW_VERSION
+#else
+        "dev"
+#endif
+    );
 
     // Hardware
     i2c_init(I2C_SDA, I2C_SCL);    // I2C bus + mutex

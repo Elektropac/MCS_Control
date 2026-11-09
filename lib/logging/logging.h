@@ -46,3 +46,16 @@ void log_debug(const char* fmt, ...);
 // Access recent log history (ring buffer)
 String log_recent();
 void log_clear();
+
+// -------------------------------------------------------
+// FLASH EVENT LOG (persistent) — only important, low-rate
+// events (alarms, boot, errors, transactions). Survives
+// reboot. Stored in LittleFS with a size cap + rollover so
+// flash wear stays low (events are rare, unlike the RAM log).
+// -------------------------------------------------------
+void event_log_init();
+// Append one event line (a millis() timestamp is prepended).
+void event_log_add(const char* fmt, ...);
+// Return the whole flash event log (newest handling done app-side).
+String event_log_read();
+void event_log_clear();

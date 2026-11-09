@@ -327,6 +327,11 @@ static void run_action(RuleGroup& g, JsonObject a) {
         const char* msg = a["message"] | "";
         const char* level = a["level"] | "info";
         const char* channel = a["channel"] | "";
+        // Alarms/errors are persisted to the flash event log (survives reboot,
+        // not flushed by routine RAM-log noise).
+        if (!strcmp(level, "alarm") || !strcmp(level, "error")) {
+            event_log_add("ALARM [%s] %s", g.id, msg);
+        }
         if (web_socket::is_connected) {
             JsonDocument n;
             n["subject"] = "notify";

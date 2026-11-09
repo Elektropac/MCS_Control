@@ -141,18 +141,24 @@ namespace function_silo
         }
         else if (function_name == "log_get")
         {
-            // Recent firmware log (RAM ring buffer, ~2 KB). Returned as a JSON
-            // string so the app can show it on a Log page.
+            // Firmware log. data.source = "ram" (default, live ring buffer) or
+            // "flash" (persistent event log: alarms/boot/errors, survives reboot).
+            JsonObject data = json_packet["data"].as<JsonObject>();
+            String source = data.isNull() ? String("ram") : (data["source"] | String("ram"));
             JsonDocument d;
             d["subject"] = "log";
-            d["text"] = log_recent();
+            d["source"] = source;
+            d["text"] = (source == "flash") ? event_log_read() : log_recent();
             String out;
             serializeJson(d, out);
             return out;
         }
         else if (function_name == "log_clear")
         {
-            log_clear();
+            JsonObject data = json_packet["data"].as<JsonObject>();
+            String source = data.isNull() ? String("ram") : (data["source"] | String("ram"));
+            if (source == "flash") { event_log_clear(); }
+            else { log_clear(); }
             return "{\"result\":\"log cleared\"}";
         }
 
