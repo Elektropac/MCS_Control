@@ -207,7 +207,11 @@ namespace bluetooth_services
                     // The encrypted payload (hex) is often > one BLE notify can
                     // carry, so send it in chunks and terminate with '\n' (hex
                     // never contains newline). The app concatenates until '\n'.
-                    const size_t CHUNK = 180;   // safe at negotiated MTU (>=185)
+                    // 120 B is safe even at the iOS default MTU (~185) with ATT
+                    // overhead; larger replies (e.g. the 2 KB RAM log) were
+                    // corrupting at 180. A slightly longer inter-chunk delay
+                    // lets the BLE stack flush each notify reliably.
+                    const size_t CHUNK = 120;
                     size_t total = encrypted_result.length();
                     for (size_t off = 0; off < total; off += CHUNK)
                     {
@@ -215,7 +219,7 @@ namespace bluetooth_services
                         serial.output->setValue(
                             (uint8_t*)encrypted_result.c_str() + off, n);
                         serial.output->notify();
-                        delay(12);   // let the stack flush each notify
+                        delay(20);   // let the stack flush each notify
                     }
                     // end-of-message marker
                     uint8_t nl = '\n';
