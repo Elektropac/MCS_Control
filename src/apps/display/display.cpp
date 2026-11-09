@@ -317,12 +317,14 @@ static void render_clock() {
     oled_draw_str(2, 11, "Date / Time");
     oled_draw_line(0, 15, 127, 15);
     if (clock_has_time()) {
-        String s = clock_now_string();           // "YYYY-MM-DD HH:MM:SSZ"
+        // Show local time if the app told us the timezone; else UTC.
+        const bool local = clock_has_tz();
+        String s = local ? clock_local_string() : clock_now_string();
         String date = s.substring(0, 10);         // YYYY-MM-DD
         String time = (s.length() >= 19) ? s.substring(11, 19) : "";  // HH:MM:SS
-        oled_draw_str_center(38, time.c_str());   // big-ish, centered
+        oled_draw_str_center(38, time.c_str());
         oled_draw_str_center(54, date.c_str());
-        oled_draw_str(2, 63, "UTC");
+        oled_draw_str(2, 63, local ? "Local" : "UTC");
     } else {
         oled_draw_str_center(34, "No time set");
         uint32_t ms = millis();

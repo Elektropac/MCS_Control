@@ -148,6 +148,8 @@ void event_log_init() {
 // ---- Clock (no RTC): client-supplied UTC, tracked relative to millis() ----
 static uint32_t s_utc_at_boot = 0;   // UTC epoch that corresponds to millis()=0
 static bool     s_clock_set   = false;
+static int32_t  s_tz_offset   = 0;   // local = UTC + offset (seconds)
+static bool     s_tz_set      = false;
 
 void clock_set_utc(uint32_t epoch_seconds) {
     if (epoch_seconds < 1700000000UL) return;   // sanity: after ~2023-11
@@ -155,23 +157,41 @@ void clock_set_utc(uint32_t epoch_seconds) {
     s_clock_set = true;
 }
 
+void clock_set_tz_offset(int32_t seconds) {
+    // plausible range -14h..+14h
+    if (seconds < -50400 || seconds > 50400) return;
+    s_tz_offset = seconds;
+    s_tz_set = true;
+}
+
 bool clock_has_time() { return s_clock_set; }
+bool clock_has_tz() { return s_tz_set; }
 
 uint32_t clock_now_utc() {
     if (!s_clock_set) return 0;
     return s_utc_at_boot + (millis() / 1000);
 }
 
+static String fmt_time(uint32_t epoch, bool with_z) {
+    time_t tt = (time_t)epoch;
+    struct tm g;
+    gmtime_r(&tt, &g);   // we already applied any offset into epoch
+    char buf[24];
+    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d%s",
+             g.tm_year + 1900, g.tm_mon + 1, g.tm_mday,
+             g.tm_hour, g.tm_min, g.tm_sec, with_z ? "Z" : "");
+    return String(buf);
+}
+
 String clock_now_string() {
     if (!s_clock_set) return String("");
-    time_t tt = (time_t)clock_now_utc();
-    struct tm g;
-    gmtime_r(&tt, &g);
-    char buf[24];
-    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02dZ",
-             g.tm_year + 1900, g.tm_mon + 1, g.tm_mday,
-             g.tm_hour, g.tm_min, g.tm_sec);
-    return String(buf);
+    return fmt_time(clock_now_utc(), true);
+}
+
+String clock_local_string() {
+    if (!s_clock_set) return String("");
+    if (!s_tz_set) return fmt_time(clock_now_utc(), true);   // fall back to UTC
+    return fmt_time((uint32_t)((int32_t)clock_now_utc() + s_tz_offset), false);
 }
 
 // Format a timestamp prefix: real UTC if known, else "+seconds since boot".

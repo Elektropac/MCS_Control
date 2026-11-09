@@ -168,6 +168,9 @@ namespace function_silo
             JsonObject data = json_packet["data"].as<JsonObject>();
             uint32_t epoch = data.isNull() ? 0 : (uint32_t)(data["utc"] | 0);
             clock_set_utc(epoch);
+            if (!data.isNull() && data["tz_offset"].is<int>()) {
+                clock_set_tz_offset((int32_t)(data["tz_offset"] | 0));
+            }
             JsonDocument d;
             d["subject"] = "clock";
             d["has_time"] = clock_has_time();

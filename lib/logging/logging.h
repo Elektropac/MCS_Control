@@ -67,7 +67,11 @@ void event_log_clear();
 // events fall back to a "+seconds since boot" stamp.
 // -------------------------------------------------------
 void clock_set_utc(uint32_t epoch_seconds);   // called on connect
+void clock_set_tz_offset(int32_t seconds);    // local = UTC + offset (0 if unknown)
 bool clock_has_time();
+bool clock_has_tz();
 uint32_t clock_now_utc();                      // 0 if unknown
 // Formatted "YYYY-MM-DD HH:MM:SSZ" (UTC) if the clock is set, else "".
 String clock_now_string();
+// Local time "YYYY-MM-DD HH:MM:SS" if tz known, else falls back to UTC string.
+String clock_local_string();
