@@ -310,6 +310,28 @@ static void render_info() {
     oled_draw_str(2, 63, ipline);
 }
 
+// CLOCK screen: shows the current date/time so you can see the device has a
+// valid time (synced from NTP or a connecting app). If no time has been set
+// since boot, it says so and shows uptime instead.
+static void render_clock() {
+    oled_draw_str(2, 11, "Date / Time");
+    oled_draw_line(0, 15, 127, 15);
+    if (clock_has_time()) {
+        String s = clock_now_string();           // "YYYY-MM-DD HH:MM:SSZ"
+        String date = s.substring(0, 10);         // YYYY-MM-DD
+        String time = (s.length() >= 19) ? s.substring(11, 19) : "";  // HH:MM:SS
+        oled_draw_str_center(38, time.c_str());   // big-ish, centered
+        oled_draw_str_center(54, date.c_str());
+        oled_draw_str(2, 63, "UTC");
+    } else {
+        oled_draw_str_center(34, "No time set");
+        uint32_t ms = millis();
+        char up[28];
+        snprintf(up, sizeof(up), "uptime %lus", (unsigned long)(ms / 1000));
+        oled_draw_str_center(52, up);
+    }
+}
+
 // SERVICE screen: the WiFi-join QR for the service AP. A technician scans it
 // with a phone camera to join the device's AP and reach the web UI — no app,
 // no internet. The AP is auto-started at boot (no buttons to toggle it now).
@@ -446,7 +468,8 @@ static uint8_t count_pumps() {
 static void render_body(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     if (step < nTanks) { render_tank((uint8_t)step); return; }
     uint16_t s = step - nTanks;
-    render_pump((uint8_t)s);
+    if (s < nPumps) { render_pump((uint8_t)s); return; }
+    render_clock();   // last screen in the cycle
 }
 
 // Draw one screen in place (single frame, no slide).
@@ -457,9 +480,9 @@ static void render_step(uint16_t step, uint8_t nTanks, uint8_t nPumps) {
     oled_end();
 }
 
-// Total number of screens in one full cycle (tanks + pumps).
+// Total number of screens in one full cycle (tanks + pumps + clock).
 static uint16_t step_count(uint8_t nTanks, uint8_t nPumps) {
-    return nTanks + nPumps;
+    return nTanks + nPumps + 1;   // +1 = the clock screen
 }
 
 // Section id for a step: 1=TANKS, 2=PUMPS. Used to decide the slide direction:
