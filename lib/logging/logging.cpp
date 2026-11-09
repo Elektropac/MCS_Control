@@ -108,13 +108,21 @@ void log_debug(const char* fmt, ...) {
 
 String log_recent() {
     String result;
+    // Emit only printable ASCII + CR/LF so the result is always valid UTF-8
+    // (and safe inside JSON). The ring buffer can wrap mid-line or hold stray
+    // bytes; those are skipped rather than corrupting the reply.
+    auto emit = [&](char ch) {
+        if (ch == '\r' || ch == '\n' || (ch >= 0x20 && ch < 0x7F)) {
+            result += ch;
+        }
+    };
     if (s_wrapped) {
         for (size_t i = s_write_pos; i < LOG_BUFFER_SIZE; i++) {
-            if (s_buffer[i]) result += s_buffer[i];
+            if (s_buffer[i]) emit(s_buffer[i]);
         }
     }
     for (size_t i = 0; i < s_write_pos; i++) {
-        if (s_buffer[i]) result += s_buffer[i];
+        if (s_buffer[i]) emit(s_buffer[i]);
     }
     return result;
 }
