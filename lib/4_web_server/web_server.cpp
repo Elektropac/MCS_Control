@@ -31,7 +31,7 @@ namespace web_server
         if (req.path == "" || req.method == "") return;
         if (!req.path.startsWith("/")) return;
 
-        log_info("[web_server] Request: %s %s", req.method, req.path);
+        log_info("[web_server] Request: %s %s", req.method.c_str(), req.path.c_str());
         
         if (req.path.startsWith("/api/") || req.path == "/api")
         {

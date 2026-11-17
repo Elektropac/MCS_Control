@@ -37,11 +37,13 @@ void log_init();
 void log_set_level(LogLevel level);
 LogLevel log_get_level();
 
-// Log functions
-void log_error(const char* fmt, ...);
-void log_info(const char* fmt, ...);
-void log_verbose(const char* fmt, ...);
-void log_debug(const char* fmt, ...);
+// Log functions. Marked printf-style so the compiler checks the arguments
+// (e.g. passing an Arduino String to %s is a warning, not silent garbage).
+#define LOG_PRINTF_FMT __attribute__((format(printf, 1, 2)))
+void log_error(const char* fmt, ...) LOG_PRINTF_FMT;
+void log_info(const char* fmt, ...) LOG_PRINTF_FMT;
+void log_verbose(const char* fmt, ...) LOG_PRINTF_FMT;
+void log_debug(const char* fmt, ...) LOG_PRINTF_FMT;
 
 // Access recent log history (ring buffer)
 String log_recent();
