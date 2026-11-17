@@ -344,8 +344,9 @@ void pumps_init() {
 }
 
 void pumps_start_task() {
-    xTaskCreate(pumps_task, "pump", 4096, nullptr, 2, &s_task_handle);
-    task_register(s_task_handle, "pump", 2, 4096);
+    // 3 KB: measured ~1.5 KB used (2026-11-17, 2 pumps); was 4 KB.
+    xTaskCreate(pumps_task, "pump", 3072, nullptr, 2, &s_task_handle);
+    task_register(s_task_handle, "pump", 2, 3072);
 }
 
 void pumps_stop()  { if (s_task_handle) vTaskSuspend(s_task_handle); }

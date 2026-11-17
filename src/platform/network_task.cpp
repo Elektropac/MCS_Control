@@ -34,16 +34,12 @@ static void network_task(void* param) {
 
     network_initialized = true;
 
-    // Poll loop
-    for (;;) {
-        w5500::poll();
-        wifi::poll();
-        service_ap::poll();        // captive-portal DNS (no-op when AP off)
-        // w5500::poll()/wifi::poll() are empty stubs and the DNS server is off
-        // (service AP disabled), so there is nothing to service at 100 Hz.
-        // 50 ms keeps the captive-portal DNS responsive if the AP comes back.
-        vTaskDelay(pdMS_TO_TICKS(50));
-    }
+    // Nothing left to do: w5500::poll() and wifi::poll() are empty stubs, and the
+    // service-AP DNS poll now runs in the web_server loop. Delete this task so
+    // its 4 KB stack goes back to the heap. (If w5500/wifi ever get real
+    // reconnect logic, give them a loop again — or put it in web_server's loop.)
+    task_unregister(xTaskGetCurrentTaskHandle());
+    vTaskDelete(nullptr);
 }
 
 static void web_server_task(void* param) {
@@ -66,6 +62,7 @@ static void web_server_task(void* param) {
     // Poll loop
     for (;;) {
         web_server::poll();
+        service_ap::poll();        // captive-portal DNS (no-op while the AP is off)
         // Every poll asks the W5500 about its sockets over SPI. 20 ms halves
         // that bus traffic/CPU; a page request waits at most 20 ms to be picked up.
         vTaskDelay(pdMS_TO_TICKS(20));
@@ -111,8 +108,10 @@ void network_start_task() {
     // Stack sizes right-sized from measured high-water marks (memreport):
     //   network ~2.0K used, web_server ~4.1K, web_socket ~0.8K, bluetooth ~0.8K.
     // Kept with a generous safety margin over the worst observed usage.
-    int networkSize    = 1024 * 4;   // used ~2.0K
-    int webServerSize  = 1024 * 6;   // used ~4.1K (HTTP parsing peaks)
+    int networkSize    = 1024 * 4;   // used ~2.0K (init only — task deletes itself after init)
+    int webServerSize  = 1024 * 6;   // used ~4.1K WHILE serving a request (6/11 memreport).
+                                     // 2026-11-17 measured only 1.7K, but no request was served
+                                     // (no Ethernet cable) — trim only after measuring under load.
     int webSocketSize  = 1024 * 6;   // TLS/mbedtls call depth under handshake
     int bluetoothSize  = 1024 * 8;   // BLE + mbedtls GCM under active session
                                      // (idle ~0.8K but spikes to ~3.3K+ with a

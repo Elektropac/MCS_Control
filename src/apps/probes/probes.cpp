@@ -880,8 +880,9 @@ void probes_init() {
 }
 
 void probes_start_task() {
-    xTaskCreate(probes_task, "cloudgauge", 4096, nullptr, 2, &s_task_handle);
-    task_register(s_task_handle, "cloudgauge", 2, 4096);
+    // 3 KB: measured ~1.5 KB used (2026-11-17, 2 probes); was 4 KB.
+    xTaskCreate(probes_task, "cloudgauge", 3072, nullptr, 2, &s_task_handle);
+    task_register(s_task_handle, "cloudgauge", 2, 3072);
 }
 
 void probes_stop() {

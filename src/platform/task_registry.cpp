@@ -13,6 +13,16 @@ void task_register(TaskHandle_t handle, const char* name, UBaseType_t priority, 
     s_count++;
 }
 
+void task_unregister(TaskHandle_t handle) {
+    for (int i = 0; i < s_count; i++) {
+        if (s_tasks[i].handle == handle) {
+            for (int j = i; j < s_count - 1; j++) s_tasks[j] = s_tasks[j + 1];
+            s_count--;
+            return;
+        }
+    }
+}
+
 int task_registry_count() { return s_count; }
 
 const RegisteredTask* task_registry_get(int index) {

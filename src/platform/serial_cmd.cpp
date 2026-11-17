@@ -288,7 +288,7 @@ void serial_cmd_start_task() {
     // because process_command() has big frames (JsonDocument/String locals,
     // printf with floats) and cfg?/pd etc. go deeper into LittleFS. 6 KB for now;
     // trim after measuring headroom with the 'k' command.
-    const uint32_t stack = 6144;
+    const uint32_t stack = 4096;   // measured ~2.6 KB peak (m/u/x/k/h/pj/cfg?) 2026-11-17
     xTaskCreate(serial_cmd_task, "serial_cmd", stack, nullptr, 1, &handle);
     task_register(handle, "serial_cmd", 1, stack);
 }

@@ -64,7 +64,7 @@ constexpr uint32_t  kOtaTaskStackBytes = 16384;
 // Stack for the always-present OTA dispatcher task. It only polls a flag, drives
 // the reboot timer and spawns the worker, so it needs very little. (RAM: this
 // used to be ONE permanent task with the full 16 KB stack.)
-constexpr uint32_t  kOtaDispatcherStackBytes = 4096;
+constexpr uint32_t  kOtaDispatcherStackBytes = 3072;   // measured ~0.7 KB used
 
 enum OtaAction : uint8_t {
     OTA_ACTION_NONE   = 0,
