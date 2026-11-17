@@ -17,7 +17,6 @@
 // --- config namespace (header-only; defined via network_task chain) ---
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
     bool config_read_groups(JsonDocument& out);
     bool config_read_group_rules(const char* group_id, JsonDocument& out);
 }

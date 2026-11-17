@@ -12,7 +12,6 @@ namespace file_system {
 }
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
     void init();
 }
 

@@ -15,7 +15,6 @@
 // config namespace (config.h, header-only).
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
     bool config_read_groups(JsonDocument& out);
 }
 

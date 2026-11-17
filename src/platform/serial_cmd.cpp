@@ -10,6 +10,7 @@
 #include "hardware/voltage_select.h"
 #include "LittleFS.h"
 #include <ArduinoJson.h>
+#include "function_silo.h"
 
 static char s_cmd_buf[256];
 static uint16_t s_cmd_pos = 0;
@@ -59,6 +60,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  g <name>  - resume (go) task");
                 Serial.println("  pr        - power reset (5 min off, then restart)");
                 Serial.println("  wifi <ssid> <password> | wifi off - WiFi in config + reboot");
+                Serial.println("  api <json> - run a web/BLE API request, e.g. api {\"subject\":\"setup_get\"}");
                 Serial.println("  ?         - this help");
                 return;
         }
@@ -128,6 +130,18 @@ static void process_command(const char* cmd) {
         else     Serial.printf("[wifi] saved: ssid '%s'. Rebooting...\n", ssid.c_str());
         vTaskDelay(pdMS_TO_TICKS(500));
         ESP.restart();
+        return;
+    }
+
+    // api <json> — run a function_silo request (same backend as web/BLE) and
+    // print the reply. E.g.  api {"subject":"config_get"}
+    if (strncmp(cmd, "api ", 4) == 0) {
+        JsonDocument req;
+        DeserializationError err = deserializeJson(req, cmd + 4);
+        if (err) { Serial.printf("[api] JSON parse error: %s\n", err.c_str()); return; }
+        String out = function_silo::run_function_silo(req);
+        Serial.printf("[api] %u bytes\n", (unsigned)out.length());
+        Serial.println(out);
         return;
     }
 
@@ -288,7 +302,10 @@ void serial_cmd_start_task() {
     // because process_command() has big frames (JsonDocument/String locals,
     // printf with floats) and cfg?/pd etc. go deeper into LittleFS. 6 KB for now;
     // trim after measuring headroom with the 'k' command.
-    const uint32_t stack = 4096;   // measured ~2.6 KB peak (m/u/x/k/h/pj/cfg?) 2026-11-17
+    // 6 KB: the 'api' command runs function_silo requests here (same code the
+    // web server runs on its 6 KB stack); setup_get overflowed 4 KB. Simple
+    // commands peak at ~2.6 KB, config_get left 0.7 KB of 4 KB.
+    const uint32_t stack = 6144;
     xTaskCreate(serial_cmd_task, "serial_cmd", stack, nullptr, 1, &handle);
     task_register(handle, "serial_cmd", 1, stack);
 }

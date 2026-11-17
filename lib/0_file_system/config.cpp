@@ -11,7 +11,9 @@ namespace config
 {
     String file_path = "/config.json";
     bool is_loaded = false;
-    JsonDocument config;
+    int    channel_voltage_a = -1;
+    int    channel_voltage_b = -1;
+    String site_name;
 
     String config_version = "false";
     WIFI_CONFIG wifi_config;
@@ -19,9 +21,10 @@ namespace config
     String internet_client = "ethernet";
     SERVER_CONFIG server_config;
 
-    void load()
+    // Parse /config.json into `doc`. Sets is_loaded.
+    static void load(JsonDocument& doc)
     {
-        config.clear();
+        doc.clear();
         is_loaded = false;
 
         if (file_system::is_mounted == false)
@@ -37,11 +40,10 @@ namespace config
             return;
         }
 
-        DeserializationError error = deserializeJson(config, configFile);
+        DeserializationError error = deserializeJson(doc, configFile);
         if (error)
         {
             log_info("[config] Failed to parse config file. Using default configuration.");
-            is_loaded = false;
         }
         else
         {
@@ -54,12 +56,24 @@ namespace config
 
     void init()
     {
-        load();
+        // Parse the whole file ONCE into a temporary document, copy out the
+        // few fields the firmware needs all the time, then let it go out of
+        // scope (frees ~12 KB that used to stay allocated forever).
+        JsonDocument config;
+        load(config);
 
         if (!is_loaded)
         {
             return;
         }
+
+        // Channel supply voltages: new format nests them under "config",
+        // older files have them at top level.
+        JsonVariant ch = config["config"]["channels"];
+        if (ch.isNull()) ch = config["channels"];
+        channel_voltage_a = ch["A"]["voltage"] | -1;
+        channel_voltage_b = ch["B"]["voltage"] | -1;
+        site_name = config["name"] | "";
 
         auto is_config_version = config["config_version"].isNull();
         if (!is_config_version)
@@ -112,6 +126,32 @@ namespace config
             }
         }
     
+    }
+
+    bool config_read_filtered(JsonDocument& filter, JsonDocument& out)
+    {
+        out.clear();
+        if (file_system::is_mounted == false) return false;
+        File f = LittleFS.open(file_path, "r");
+        if (!f) return false;
+        DeserializationError err = deserializeJson(out, f, DeserializationOption::Filter(filter));
+        f.close();
+        if (err) {
+            log_info("[config] read_filtered parse error: %s", err.c_str());
+            out.clear();
+            return false;
+        }
+        return true;
+    }
+
+    String config_read_all_json()
+    {
+        JsonDocument doc;
+        load(doc);              // also refreshes is_loaded
+        String out;
+        if (is_loaded) serializeJson(doc, out);
+        else out = "{}";
+        return out;
     }
 
     String config_read_string(const char* section, const char* key,

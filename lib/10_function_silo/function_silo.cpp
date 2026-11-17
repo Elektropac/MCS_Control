@@ -35,9 +35,8 @@ namespace function_silo
 
         if (function_name == "config_get")
         {
-            String result;
-            serializeJson(config::config, result);
-            return result;
+            // Read from flash on demand (the config is no longer resident in RAM).
+            return config::config_read_all_json();
         }
         else if (function_name == "setup_get")
         {
@@ -55,7 +54,6 @@ namespace function_silo
             f.close();
 
             // Reload config
-            config::config.clear();
             config::init();
 
             // Delayed reboot — give time for HTTP response to be sent

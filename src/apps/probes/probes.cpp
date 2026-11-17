@@ -17,10 +17,12 @@
 #include "buzzer.h"
 #include <strings.h>   // strcasecmp
 // Forward-declare config namespace (defined in config.h, included by network_task)
-// We only read config::config and config::is_loaded — no need to re-include the header
+// We only read a few values copied out at config init — no need to re-include the header
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
+    extern int    channel_voltage_a;
+    extern int    channel_voltage_b;
+    extern String site_name;
     bool config_read_groups(JsonDocument& out);
 }
 
@@ -704,11 +706,9 @@ void probes_init() {
     Voltage volt_b = VOLTAGE_24V;
 
     if (config::is_loaded) {
-        // New format nests channels under "config"; fall back to top-level.
-        JsonVariant ch = config::config["config"]["channels"];
-        if (ch.isNull()) ch = config::config["channels"];
-        int va = ch["A"]["voltage"] | 24;
-        int vb = ch["B"]["voltage"] | 24;
+        // Same default as before: 24 V when the key is missing (-1).
+        int va = config::channel_voltage_a < 0 ? 24 : config::channel_voltage_a;
+        int vb = config::channel_voltage_b < 0 ? 24 : config::channel_voltage_b;
         volt_a = voltage_from_config(va);
         volt_b = voltage_from_config(vb);
     }
@@ -900,8 +900,8 @@ String probes_get_all() {
     doc["product"] = "cloudgauge2";
     
     // Add site name from config
-    if (config::is_loaded && !config::config["name"].isNull()) {
-        doc["name"] = config::config["name"];
+    if (config::is_loaded && config::site_name.length()) {
+        doc["name"] = config::site_name;
     }
     
     JsonArray probes = doc["probes"].to<JsonArray>();

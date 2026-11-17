@@ -5,7 +5,8 @@
 // config document + on-demand readers (config.h, header-only).
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
+    extern int  channel_voltage_a;
+    extern int  channel_voltage_b;
     String config_read_string(const char* section, const char* key,
                               const char* fallback);
     bool config_read_groups(JsonDocument& out);
@@ -20,10 +21,8 @@ String setup_info_get() {
     // --- channel supply voltages (device level) ---
     int va = 0, vb = 0;
     if (config::is_loaded) {
-        JsonVariant ch = config::config["config"]["channels"];
-        if (ch.isNull()) ch = config::config["channels"];
-        va = ch["A"]["voltage"] | 0;
-        vb = ch["B"]["voltage"] | 0;
+        va = config::channel_voltage_a < 0 ? 0 : config::channel_voltage_a;
+        vb = config::channel_voltage_b < 0 ? 0 : config::channel_voltage_b;
     }
     JsonObject channels = out["channels"].to<JsonObject>();
     channels["A"] = va;
