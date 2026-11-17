@@ -19,6 +19,8 @@ static void process_command(const char* cmd) {
             case 't': debug_task_list();     return;
             case 'r': debug_runtime_stats(); return;
             case 'm': debug_memory();        return;
+            case 'u': debug_cpu();           return;
+            case 'k': debug_stacks();        return;
             case 'p':
                 {
                     Serial.print("\r\n=== CloudGauge Probes ===\r\n");
@@ -43,6 +45,8 @@ static void process_command(const char* cmd) {
                 Serial.println("  t         - task list");
                 Serial.println("  r         - runtime info");
                 Serial.println("  m         - memory info");
+                Serial.println("  u         - CPU load per core since last u");
+                Serial.println("  k         - stack headroom per task");
                 Serial.println("  p         - probe readings (cloudgauge)");
                 Serial.println("  s <name>  - suspend task");
                 Serial.println("  g <name>  - resume (go) task");

@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "task_registry.h"
+#include "cpu_load.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_heap_caps.h>
@@ -86,4 +87,26 @@ void debug_all() {
     debug_memory();
 
     Serial.println("========================================\n");
+}
+
+// CPU load per core since the previous call (idle-hook based, see cpu_load.h).
+void debug_cpu() {
+    uint8_t c0, c1; uint32_t ms;
+    cpu_load_sample(c0, c1, ms);
+    Serial.printf("CPU core0=%u%% core1=%u%% window=%lu ms\n", c0, c1, (unsigned long)ms);
+}
+
+// Stack headroom for every task we know by name (registered or not).
+void debug_stacks() {
+    static const char* names[] = {
+        "loopTask", "network", "web_server", "web_socket", "bluetooth", "serial_cmd",
+        "cloudgauge", "pump", "poseidon", "rule_engine", "flow_guard", "display",
+        "ota", "clock_sync", "tiT", "Tmr Svc", "BTC_TASK", "BTU_TASK", "ipc0", "ipc1",
+        "esp_timer", "sys_evt", "arduino_events"
+    };
+    Serial.println("STACKS (name free_bytes)");
+    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+        TaskHandle_t h = xTaskGetHandle(names[i]);
+        if (h) Serial.printf("  %-14s %u\n", names[i], (unsigned)uxTaskGetStackHighWaterMark(h));
+    }
 }
