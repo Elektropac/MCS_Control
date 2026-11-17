@@ -11,8 +11,10 @@
 #include "LittleFS.h"
 #include <ArduinoJson.h>
 #include "function_silo.h"
+#include "apps/fueling_auth/txn_log.h"
 
-static char s_cmd_buf[256];
+// 1 KB: room for "api {...}" requests with an encrypted auth blob (~400-600 chars).
+static char s_cmd_buf[1024];
 static uint16_t s_cmd_pos = 0;
 
 static void process_command(const char* cmd) {
@@ -61,6 +63,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  pr        - power reset (5 min off, then restart)");
                 Serial.println("  wifi <ssid> <password> | wifi off - WiFi in config + reboot");
                 Serial.println("  api <json> - run a web/BLE API request, e.g. api {\"subject\":\"setup_get\"}");
+                Serial.println("  txn | txn test - transaction store status / self-test");
                 Serial.println("  ?         - this help");
                 return;
         }
@@ -144,6 +147,15 @@ static void process_command(const char* cmd) {
         Serial.println(out);
         return;
     }
+
+    // txn / txn test — transaction store status / self-test (separate file)
+    if (strcmp(cmd, "txn") == 0) {
+        Serial.printf("txn_log: %u pending, next id %lu, file %u bytes\n",
+                      (unsigned)txn_log_pending_count(), (unsigned long)txn_log_next_id(),
+                      (unsigned)txn_log_file_size());
+        return;
+    }
+    if (strcmp(cmd, "txn test") == 0) { txn_log_selftest(); return; }
 
     // cfg? — print current config from LittleFS
     if (strcmp(cmd, "cfg?") == 0) {

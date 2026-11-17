@@ -6,6 +6,9 @@
 #include "apps/rule_engine/rule_engine.h"
 #include "my_wifi.h"             // wifi::make_mac()
 #include <esp_random.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include "txn_log.h"
 
 // =======================================================
 // Configuration / tunables
@@ -26,22 +29,32 @@ static const uint8_t KEY_VERSION = 1;
 // auto-cancelled and the pump freed.
 static const uint32_t AUTH_TIMEOUT_MS = 60000;
 
-// Max transactions held awaiting server ACK. When this many are unacked, new
-// authorizations are refused (measurement-critical: never drop one). Kept
-// small while the store is in RAM; grows when flash-backed (see TODO).
-static const uint8_t TXN_QUEUE_MAX = 32;
+// Max transactions not yet acknowledged by the server (authorized + finished).
+// When reached, new authorizations are refused (measurement-critical: never
+// drop one). Finished ones live in flash (txn_log); RAM cost is 4 bytes per
+// pending id, so 1000 = 4 KB worst case, only while that many are offline.
+static const uint16_t TXN_QUEUE_MAX = 1000;
+
+// Max transactions returned by one txn_pending call. Same as the old queue
+// size, so the reply never gets bigger than before: ack these, ask again.
+static const uint8_t TXN_PENDING_LIST_MAX = 32;
 
 // =======================================================
-// Transaction store (RAM for now — TODO: flash-backed, survive reboot)
+// Transaction store
 // =======================================================
-enum TxnStatus : uint8_t { TXN_FREE = 0, TXN_AUTHORIZED, TXN_PENDING, TXN_SENT, TXN_ACKED };
+// RAM: only transactions that are AUTHORIZED right now (at most one per pump),
+// plus — only if a flash write failed — finished ones that could not be saved.
+// Finished transactions go to flash (txn_log, append-only ring file) and stay
+// there until the server ACKs them: they survive reboot/power loss.
+enum TxnStatus : uint8_t { TXN_FREE = 0, TXN_AUTHORIZED, TXN_PENDING_RAM };
+static const uint8_t TXN_ACTIVE_MAX = 4;   // = MAX_PUMPS in pumps.cpp
 
 struct Txn {
     uint32_t id;            // internal lookup id (device-local sequence)
     char     ref[40];       // globally-unique transaction ref: "<MAC>-<seq>"
     char     pump[16];      // display name (e.g. "Pump 1")
     char     group[24];     // rule group id (e.g. "fueling_1")
-    char     card[20];      // access medium / card id (NOT the PIN)
+    char     card[32];      // access medium / card id (NOT the PIN). Was 20: cut 24-digit card numbers to 19
     char     driver[24];    // driver id / name
     char     vehicle[20];   // vehicle / number plate
     uint32_t odometer;      // odometer reading (0 = not given)
@@ -51,9 +64,17 @@ struct Txn {
     uint32_t auth_ms;       // when authorized (for auth-timeout)
 };
 
-static Txn      s_txns[TXN_QUEUE_MAX];
-static uint8_t  s_txn_count = 0;        // slots in use (not FREE)
-static uint32_t s_next_id   = 1;        // TODO: seed from MAC + persisted seq
+static Txn      s_txns[TXN_ACTIVE_MAX];
+static uint8_t  s_txn_count = 0;        // RAM slots in use (not FREE)
+static uint32_t s_next_id   = 1;        // seeded from txn_log at init (unique across reboots)
+
+// The store is used from the rule-engine task (complete) and the web/BLE
+// tasks (authorize/pending/ack) — serialise access.
+static SemaphoreHandle_t s_lock = nullptr;
+struct StoreLock {
+    StoreLock()  { if (s_lock) xSemaphoreTakeRecursive(s_lock, portMAX_DELAY); }
+    ~StoreLock() { if (s_lock) xSemaphoreGiveRecursive(s_lock); }
+};
 
 // Nonce issued by auth_challenge, consumed by the next authorize. 0 = none.
 static uint32_t s_nonce = 0;
@@ -91,7 +112,7 @@ static void reconcile_with_engine() {
             // Still live in the engine? leave it. Back to idle/done? it timed
             // out before fuelling -> free the slot.
             if (strcmp(st, "authorised") != 0 && strcmp(st, "pumping") != 0) {
-                log_info("[fueling_auth] txn %u freed (engine state '%s')", t.id, st);
+                log_info("[fueling_auth] txn %lu freed (engine state '%s')", (unsigned long)t.id, st);
                 t.status = TXN_FREE;
                 s_txn_count--;
             }
@@ -99,11 +120,10 @@ static void reconcile_with_engine() {
         }
     }
 }
-static uint8_t count_unacked() {
-    uint8_t n = 0;
+static uint32_t count_unacked() {
+    uint32_t n = txn_log_pending_count();
     for (auto& t : s_txns)
-        if (t.status == TXN_AUTHORIZED || t.status == TXN_PENDING ||
-            t.status == TXN_SENT) n++;
+        if (t.status == TXN_AUTHORIZED || t.status == TXN_PENDING_RAM) n++;
     return n;
 }
 static Txn* alloc_txn() {
@@ -161,14 +181,18 @@ static String group_of_pump(const char* name) {
 // Public API
 // =======================================================
 void fueling_auth_init() {
+    if (!s_lock) s_lock = xSemaphoreCreateRecursiveMutex();
+    StoreLock lock;
     for (auto& t : s_txns) t.status = TXN_FREE;
     s_txn_count = 0;
-    log_info("[fueling_auth] init (key v%u, queue max %u) — PLACEHOLDER secret",
-             KEY_VERSION, TXN_QUEUE_MAX);
-    // TODO: load persisted unacked transactions from flash + seed s_next_id.
+    txn_log_init();                       // replays /txn.log: pending txns + last id
+    s_next_id = txn_log_next_id();
+    log_info("[fueling_auth] init (key v%u, queue max %u, %u pending in flash, next id %lu) — PLACEHOLDER secret",
+             KEY_VERSION, TXN_QUEUE_MAX, (unsigned)txn_log_pending_count(), (unsigned long)s_next_id);
 }
 
 bool fueling_auth_queue_full() {
+    StoreLock lock;
     return count_unacked() >= TXN_QUEUE_MAX;
 }
 
@@ -181,6 +205,7 @@ String fueling_auth_challenge() {
 }
 
 String fueling_auth_authorize(JsonObject data) {
+    StoreLock lock;
     // 0) Reconcile with the engine so timed-out authorizations don't leave a
     //    pump looking occupied forever.
     reconcile_with_engine();
@@ -228,6 +253,9 @@ String fueling_auth_authorize(JsonObject data) {
     Txn* t = alloc_txn();
     if (!t) return err(51, "no free slot");
     t->id = s_next_id++;
+    // Persist that this id is taken, so it is never reused after a reboot
+    // (the server de-duplicates on txn_ref = MAC-id).
+    if (!txn_log_note_id(t->id)) log_error("[fueling_auth] could not persist id %lu", (unsigned long)t->id);
     // Globally-unique ref = device MAC (no colons) + local sequence, so the
     // server can tell transactions from different devices apart.
     {
@@ -258,8 +286,8 @@ String fueling_auth_authorize(JsonObject data) {
     rule_kv_set_num((String("txn_") + pump).c_str(), (double)t->id);
     rule_engine_feed_message((String("AUTH_OK:") + pump).c_str());
 
-    log_info("[fueling_auth] authorized txn %u pump %s preset %.1f",
-             t->id, pump, preset);
+    log_info("[fueling_auth] authorized txn %lu pump %s preset %.1f",
+             (unsigned long)t->id, pump, preset);
 
     JsonDocument d;
     d["ok"] = true;
@@ -270,6 +298,7 @@ String fueling_auth_authorize(JsonObject data) {
 }
 
 String fueling_auth_cancel(JsonObject data) {
+    StoreLock lock;
     uint32_t id = data["txn_id"] | 0u;
     Txn* t = find_txn(id);
     if (!t) return err(71, "unknown txn");
@@ -278,52 +307,95 @@ String fueling_auth_cancel(JsonObject data) {
     rule_engine_feed_message((String("CANCEL:") + t->pump).c_str());
     t->status = TXN_FREE;
     s_txn_count--;
-    log_info("[fueling_auth] cancelled txn %u", id);
+    log_info("[fueling_auth] cancelled txn %lu", (unsigned long)id);
     return "{\"ok\":true}";
 }
 
+// Fill one JSON entry of the txn_pending reply (same fields as before).
+static void pending_to_json(JsonObject o, uint32_t id, const char* ref, const char* pump,
+                            float litres, float preset, const char* card,
+                            const char* driver, const char* vehicle, uint32_t odometer) {
+    o["txn_id"]   = id;
+    o["txn_ref"]  = ref;
+    o["pump"]     = pump;
+    o["litres"]   = serialized(String(litres, 2));
+    o["preset"]   = serialized(String(preset, 1));
+    if (card[0])    o["card"]     = card;
+    if (driver[0])  o["driver"]   = driver;
+    if (vehicle[0]) o["vehicle"]  = vehicle;
+    if (odometer)   o["odometer"] = odometer;
+}
+
 String fueling_auth_pending() {
+    StoreLock lock;
     JsonDocument d;
     JsonArray arr = d.to<JsonArray>();
+    size_t n = 0;
+    // Unsaved (flash write failed) first — they are the most at risk.
     for (auto& t : s_txns) {
-        if (t.status == TXN_PENDING || t.status == TXN_SENT) {
-            JsonObject o = arr.add<JsonObject>();
-            o["txn_id"]   = t.id;
-            o["txn_ref"]  = t.ref;
-            o["pump"]     = t.pump;
-            o["litres"]   = serialized(String(t.litres, 2));
-            o["preset"]   = serialized(String(t.preset, 1));
-            if (t.card[0])    o["card"]     = t.card;
-            if (t.driver[0])  o["driver"]   = t.driver;
-            if (t.vehicle[0]) o["vehicle"]  = t.vehicle;
-            if (t.odometer)   o["odometer"] = t.odometer;
-        }
+        if (t.status != TXN_PENDING_RAM || n >= TXN_PENDING_LIST_MAX) continue;
+        pending_to_json(arr.add<JsonObject>(), t.id, t.ref, t.pump, t.litres, t.preset,
+                        t.card, t.driver, t.vehicle, t.odometer);
+        n++;
     }
+    // Then the oldest from flash. At most TXN_PENDING_LIST_MAX per call: the
+    // caller acks them and asks again until the list is empty.
+    txn_log_for_each_pending(TXN_PENDING_LIST_MAX - n, [&](const TxnRecord& r) {
+        pending_to_json(arr.add<JsonObject>(), r.id, r.ref, r.pump, r.litres, r.preset,
+                        r.card, r.driver, r.vehicle, r.odometer);
+    });
     String s; serializeJson(d, s); return s;
 }
 
 String fueling_auth_ack(JsonObject data) {
+    StoreLock lock;
     uint32_t id = data["txn_id"] | 0u;
-    Txn* t = find_txn(id);
-    if (!t) return "{\"ok\":true}";   // idempotent: unknown == already done
-    t->status = TXN_ACKED;
-    t->status = TXN_FREE;             // acked -> free the slot
-    s_txn_count--;
-    log_info("[fueling_auth] acked txn %u", id);
-    // TODO: persist the ack so a reboot doesn't resurrect the transaction.
+    for (auto& t : s_txns) {
+        if (t.status == TXN_PENDING_RAM && t.id == id) {
+            t.status = TXN_FREE;
+            s_txn_count--;
+            log_info("[fueling_auth] acked txn %lu (was RAM-only)", (unsigned long)id);
+            return "{\"ok\":true}";
+        }
+    }
+    // Idempotent: unknown / already acked == done.
+    if (txn_log_ack(id)) log_info("[fueling_auth] acked txn %lu", (unsigned long)id);
     return "{\"ok\":true}";
 }
 
 void fueling_auth_complete(const char* group_id, float litres) {
     if (!group_id || !group_id[0]) return;
+    StoreLock lock;
     for (auto& t : s_txns) {
         if (t.status != TXN_AUTHORIZED) continue;
         if (strcmp(t.group, group_id) != 0) continue;
         t.litres = litres;
-        t.status = TXN_PENDING;          // now awaiting delivery to the server
-        log_info("[fueling_auth] txn %u complete on %s: %.2f L -> PENDING",
-                 t.id, t.group, litres);
-        // TODO: persist to flash; kick off delivery (online now, else via app).
+
+        TxnRecord r;
+        memset(&r, 0, sizeof(r));
+        r.id = t.id;
+        // (strlcpy: safe even if the two structs' field sizes ever differ)
+        strlcpy(r.ref, t.ref, sizeof(r.ref));
+        strlcpy(r.pump, t.pump, sizeof(r.pump));
+        strlcpy(r.group, t.group, sizeof(r.group));
+        strlcpy(r.card, t.card, sizeof(r.card));
+        strlcpy(r.driver, t.driver, sizeof(r.driver));
+        strlcpy(r.vehicle, t.vehicle, sizeof(r.vehicle));
+        r.odometer = t.odometer;
+        r.preset = t.preset;
+        r.litres = litres;
+
+        if (txn_log_add_pending(r)) {
+            t.status = TXN_FREE;         // safe in flash now -> free the RAM slot
+            s_txn_count--;
+            log_info("[fueling_auth] txn %lu complete on %s: %.2f L -> pending (flash)",
+                     (unsigned long)t.id, group_id, litres);
+        } else {
+            // Never drop a measurement: keep it in RAM, still listed + ackable.
+            t.status = TXN_PENDING_RAM;
+            log_error("[fueling_auth] txn %lu: flash write FAILED, kept in RAM only", (unsigned long)t.id);
+            event_log_add("ALARM txn %lu not saved to flash (%.2f L)", (unsigned long)t.id, litres);
+        }
         return;
     }
     // No matching authorized txn: a fuelling happened without going through
