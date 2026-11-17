@@ -235,6 +235,12 @@ static void serial_cmd_task(void* param) {
 
 void serial_cmd_start_task() {
     TaskHandle_t handle = nullptr;
-    xTaskCreate(serial_cmd_task, "serial_cmd", 2048, nullptr, 1, &handle);
-    task_register(handle, "serial_cmd", 1, 2048);
+    // Stack: 2048 was too small — ANY serial command (even 'm') overflowed it and
+    // hit the stack canary ("Stack canary watchpoint triggered (serial_cmd)"),
+    // because process_command() has big frames (JsonDocument/String locals,
+    // printf with floats) and cfg?/pd etc. go deeper into LittleFS. 6 KB for now;
+    // trim after measuring headroom with the 'k' command.
+    const uint32_t stack = 6144;
+    xTaskCreate(serial_cmd_task, "serial_cmd", stack, nullptr, 1, &handle);
+    task_register(handle, "serial_cmd", 1, stack);
 }
