@@ -1,4 +1,5 @@
 #include "network_task.h"
+#include "memmark.h"
 
 #include "w5500.h"
 #include "my_wifi.h"
@@ -18,8 +19,11 @@ static void network_task(void* param) {
     // Initialize network stack (runs once).
     // file_system and config already init'd in setup().
     // web_server / web_socket are initialized by their own tasks below.
+    memmark("net: start");
     w5500::init();
+    memmark("net: w5500");
     wifi::init();
+    memmark("net: wifi");
 
     // The web server task only waits ~5 s for this function before it starts
     // listening, and w5500::init() can take a minute on DHCP without a cable —
@@ -57,6 +61,7 @@ static void web_server_task(void* param) {
     }
 
     web_server::init();
+    memmark("web_server");
 
     // Poll loop
     for (;;) {
@@ -75,6 +80,7 @@ static void web_socket_task(void* param) {
     }
 
     web_socket::init();
+    memmark("web_socket");
     queues::init();
 
     // Poll loop

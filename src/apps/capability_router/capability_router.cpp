@@ -4,6 +4,7 @@
 #include "apps/flow_guard/flow_guard.h"
 #include "apps/rule_engine/rule_engine.h"
 #include "logging.h"
+#include "platform/memmark.h"
 #include <ArduinoJson.h>
 #include <string.h>
 
@@ -32,6 +33,7 @@ void start_apps() {
     // Probes → start the cloudgauge measurement task.
     if (probe_groups > 0) {
         probes_init();
+        memmark("  probes_init");
         // flow_guard_start_task() deliberately NOT started: that task only
         // counted sampler edges and threw the count away (its alarm is a TODO
         // and nothing reads its state). Unauthorised-flow detection is done by
@@ -39,13 +41,16 @@ void start_apps() {
         // stack and a wake-up every 500 ms. Re-enable here when the alarm
         // hook is actually implemented.
         probes_start_task();
+        memmark("  probes task");
         log_info("[capabilities] started probe measurement");
     }
 
     // Pumps → start the pump/fueling controller.
     if (pump_groups > 0) {
         pumps_init();
+        memmark("  pumps_init");
         pumps_start_task();
+        memmark("  pumps task");
         log_info("[capabilities] started pump controller");
     }
 
@@ -54,7 +59,9 @@ void start_apps() {
     // in cloudgauge; the engine only reads probe state + drives relays/state.
     if (probe_groups > 0 || pump_groups > 0) {
         rule_engine_init();
+        memmark("  rules_init+cache");
         rule_engine_start_task();
+        memmark("  rules task");
         log_info("[capabilities] started shared rule engine");
     }
 

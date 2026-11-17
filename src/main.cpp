@@ -27,6 +27,7 @@ namespace config {
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
 #include "platform/cpu_load.h"
+#include "platform/memmark.h"
 #include "bluetooth.h"
 #include "ntp.h"
 #include "w5500.h"
@@ -39,12 +40,15 @@ namespace config {
 
 void setup() {
     Serial.begin(115200);
+    memmark("setup start");
     log_init();                     // log system (serial + ring buffer)
     cpu_load_init();                // idle-hook CPU load meter (serial cmd "u")
 
     // Filesystem + config (must be before apps that read config)
     file_system::init();
+    memmark("littlefs");
     config::init();
+    memmark("fs+config");
     event_log_init();               // flash event log (needs LittleFS mounted)
     event_log_add("BOOT fw=%s", 
 #ifdef CONTROL_FW_VERSION
@@ -59,6 +63,7 @@ void setup() {
     sampler_init();                 // 4 kHz pulse sampling (ISR, always on)
     flow_guard_init();              // flow guard state (cursor synced to sampler)
     all_drivers_init();             // probe I2C chips + init all peripherals
+    memmark("drivers");
 
     display_boot_splash();          // guide screen + startup jingle, then system info
     // Boot shows the guide screen (+ jingle) and the system-info screen; the
@@ -66,19 +71,24 @@ void setup() {
     // (no buttons — the TopBoard with its 5 buttons + display has been removed;
     // the OLED is now a fixed display driven entirely by config / web / BLE).
     display_start();                // OLED carousel (auto-scrolling)
+    memmark("display task");
 
     channels_setup();               // device-level: set channel supply voltage
     start_apps();           // start the apps for what the config contains
+    memmark("apps");
     fueling_auth_init();            // transaction authorization + delivery store
+    memmark("fueling_auth");
 
     // Bring up BLE BEFORE the network stack. BLE's controller needs a large
     // contiguous heap block, which only exists before WiFi/lwIP/Ethernet
     // fragment the heap. (Previously BLE init waited for network_initialized
     // and then aborted the device when the block was too small.)
     bluetooth::init();
+    memmark("bluetooth");
 
     // Platform tasks (always run regardless of product)
     network_start_task();           // network stack (Ethernet, WiFi, WebSocket, web server)
+    memmark("net tasks created");
     serial_cmd_start_task();        // serial debug commands (send ? for help)
 
     // OTA firmware update (web/ota.html). The task only acts on a pending
@@ -86,6 +96,7 @@ void setup() {
     // start here — it won't touch the network until the user triggers it.
     otaInit();
     ota_start_task();
+    memmark("ota");
 
     // Daily clock re-sync: Control has no RTC, so it keeps time via millis()
     // relative to the last known UTC (from NTP or a connecting BLE client).

@@ -1,6 +1,7 @@
 #include "serial_cmd.h"
 #include "debug.h"
 #include "cpu_load.h"
+#include "memmark.h"
 #include "ssd1306.h"
 #include "task_registry.h"
 #include "apps/probes/probes.h"
@@ -23,6 +24,7 @@ static void process_command(const char* cmd) {
             case 'm': debug_memory();        return;
             case 'u': debug_cpu();           return;
             case 'k': debug_stacks();        return;
+            case 'h': memmark_print();       return;
             case 'x': { cpu_load_print_tasks(); uint32_t us, n; oled_send_stats(us, n); Serial.printf("OLED frame transfer: %lu transfers, avg %lu us\n", (unsigned long)n, (unsigned long)us); } return;
             case 'p':
                 {
@@ -50,6 +52,7 @@ static void process_command(const char* cmd) {
                 Serial.println("  m         - memory info");
                 Serial.println("  u         - CPU load per core since last u");
                 Serial.println("  k         - stack headroom per task");
+                Serial.println("  h         - heap checkpoints through boot");
                 Serial.println("  x         - CPU per task since last x");
                 Serial.println("  p         - probe readings (cloudgauge)");
                 Serial.println("  s <name>  - suspend task");
