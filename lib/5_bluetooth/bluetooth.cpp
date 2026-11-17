@@ -1,10 +1,16 @@
 #include "bluetooth.h"
 
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
+// BLE stack: NimBLE (h2zero/NimBLE-Arduino), peripheral role only.
+// Replaced Bluedroid on 2026-11-17 to free RAM (Bluedroid took ~86 KB of heap
+// and left too little contiguous memory for TLS). The GATT layout, names,
+// UUIDs, properties and the take/done + encrypted chunked protocol are
+// UNCHANGED, so the app needs no change.
+#include <NimBLEDevice.h>
 #include <ArduinoJson.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <deque>
+#include <string>
 
 #include "logging.h"
 #include <esp_heap_caps.h>
@@ -28,13 +34,79 @@
 
 struct bluetooth_serial
 {
-    BLECharacteristic *input;
-    BLECharacteristic *output;
+    NimBLECharacteristic *input;
+    NimBLECharacteristic *output;
     bool is_available;
     String encryption_key;
     unsigned long last_message_millis;
     String input_buffer;   // accumulates chunked command writes until '\n'
 };
+
+// Writes arrive in NimBLE's host task (onWrite callback). They are queued here
+// and processed in order by the bluetooth task (bluetooth::poll), so a fast
+// sequence of chunked writes can never overwrite each other. (With Bluedroid
+// the task polled the characteristic value every 10 ms — a write that landed
+// between two polls was silently lost.) Capped so a misbehaving client can't
+// eat the heap.
+static const size_t   RX_QUEUE_MAX_BYTES = 8192;
+static SemaphoreHandle_t s_rx_lock = nullptr;
+static TaskHandle_t      s_ble_task = nullptr;   // the task running bluetooth::poll()
+
+struct RxQueue {
+    std::deque<std::string> writes;
+    size_t bytes = 0;
+};
+static RxQueue s_rx_main, s_rx_secondary;
+
+static void rx_push(RxQueue &q, const std::string &v)
+{
+    if (v.empty()) return;
+    xSemaphoreTake(s_rx_lock, portMAX_DELAY);
+    if (q.bytes + v.size() <= RX_QUEUE_MAX_BYTES) {
+        q.writes.push_back(v);
+        q.bytes += v.size();
+    }
+    xSemaphoreGive(s_rx_lock);
+    if (s_ble_task) xTaskNotifyGive(s_ble_task);
+}
+
+static bool rx_pop(RxQueue &q, std::string &out)
+{
+    bool ok = false;
+    xSemaphoreTake(s_rx_lock, portMAX_DELAY);
+    if (!q.writes.empty()) {
+        out = std::move(q.writes.front());
+        q.writes.pop_front();
+        q.bytes -= out.size();
+        ok = true;
+    }
+    xSemaphoreGive(s_rx_lock);
+    return ok;
+}
+
+class InputCallbacks : public NimBLECharacteristicCallbacks
+{
+public:
+    explicit InputCallbacks(RxQueue &q) : m_q(q) {}
+    void onWrite(NimBLECharacteristic *c, NimBLEConnInfo &) override
+    {
+        rx_push(m_q, c->getValue());
+    }
+private:
+    RxQueue &m_q;
+};
+
+// notify() can fail when NimBLE is out of buffers (many chunks in a row).
+// Bluedroid queued internally; here we retry briefly so a reply is never
+// silently truncated.
+static void notify_reliable(NimBLECharacteristic *c, const uint8_t *data, size_t len)
+{
+    for (int attempt = 0; attempt < 20; attempt++) {
+        if (c->notify(data, len)) return;
+        delay(10);
+    }
+    log_error("[Bluetooth] notify failed after retries (%u bytes)", (unsigned)len);
+}
 
 namespace bluetooth_services
 {
@@ -56,52 +128,36 @@ namespace bluetooth_services
     };
 
     // selecter service characteristics
-    BLECharacteristic *availableCharacteristic = NULL;
+    NimBLECharacteristic *availableCharacteristic = NULL;
     // state service characteristics
-    BLECharacteristic *stateCharacteristic = NULL;
+    NimBLECharacteristic *stateCharacteristic = NULL;
 
-    void init(BLEServer *server)
+    void init(NimBLEServer *server)
     {
-        BLEService *mainService = server->createService(MAIN_SERVICE_UUID);
-        BLEService *secondaryService = server->createService(SECONDARY_SERVICE_UUID);
-        BLEService *selecterService = server->createService(SELECTER_SERVICE_UUID);
-        BLEService *stateService = server->createService(STATE_SERVICE_UUID);
+        NimBLEService *mainService = server->createService(MAIN_SERVICE_UUID);
+        NimBLEService *secondaryService = server->createService(SECONDARY_SERVICE_UUID);
+        NimBLEService *selecterService = server->createService(SELECTER_SERVICE_UUID);
+        NimBLEService *stateService = server->createService(STATE_SERVICE_UUID);
 
-        // Create main service characteristics
+        // Same properties as before. NimBLE adds the 0x2902 (CCCD) descriptor
+        // to NOTIFY characteristics by itself — no BLE2902 needed.
         main_serial.input = mainService->createCharacteristic(
-            MAIN_INPUT_CHARACTERISTIC_UUID,
-            BLECharacteristic::PROPERTY_WRITE);
-
+            MAIN_INPUT_CHARACTERISTIC_UUID, NIMBLE_PROPERTY::WRITE);
+        main_serial.input->setCallbacks(new InputCallbacks(s_rx_main));
         main_serial.output = mainService->createCharacteristic(
-            MAIN_OUTPUT_CHARACTERISTIC_UUID,
-            BLECharacteristic::PROPERTY_READ |
-                BLECharacteristic::PROPERTY_NOTIFY);
-        main_serial.output->addDescriptor(new BLE2902());
+            MAIN_OUTPUT_CHARACTERISTIC_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-        // Create secondary service characteristics
         secondary_serial.input = secondaryService->createCharacteristic(
-            SECONDARY_INPUT_CHARACTERISTIC_UUID,
-            BLECharacteristic::PROPERTY_WRITE);
-
+            SECONDARY_INPUT_CHARACTERISTIC_UUID, NIMBLE_PROPERTY::WRITE);
+        secondary_serial.input->setCallbacks(new InputCallbacks(s_rx_secondary));
         secondary_serial.output = secondaryService->createCharacteristic(
-            SECONDARY_OUTPUT_CHARACTERISTIC_UUID,
-            BLECharacteristic::PROPERTY_READ |
-                BLECharacteristic::PROPERTY_NOTIFY);
-        secondary_serial.output->addDescriptor(new BLE2902());
+            SECONDARY_OUTPUT_CHARACTERISTIC_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-        // Create selecter service characteristics
         availableCharacteristic = selecterService->createCharacteristic(
-            AVAILABLE_CHARACTERISTIC_UUID,
-            BLECharacteristic::PROPERTY_READ |
-                BLECharacteristic::PROPERTY_NOTIFY);
-        availableCharacteristic->addDescriptor(new BLE2902());
+            AVAILABLE_CHARACTERISTIC_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-        // Create state service characteristics
         stateCharacteristic = stateService->createCharacteristic(
-            STATE_CHARACTERISTIC_UUID,
-            BLECharacteristic::PROPERTY_READ |
-                BLECharacteristic::PROPERTY_NOTIFY);
-        stateCharacteristic->addDescriptor(new BLE2902());
+            STATE_CHARACTERISTIC_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
         mainService->start();
         secondaryService->start();
@@ -109,11 +165,12 @@ namespace bluetooth_services
         stateService->start();
     }
 
-    void run_main_and_secondary(bluetooth_serial &serial)
+    // Handle ONE write (as received) on a channel. Logic unchanged from the
+    // Bluedroid version; only the source of the value changed (queue instead
+    // of polling the characteristic).
+    void run_main_and_secondary(bluetooth_serial &serial, const std::string &_value)
     {
-        auto _value = serial.input->getValue();
         auto inputValue = String(_value.c_str());
-        serial.input->setValue("");
 
         if (inputValue.length() > 0)
         {
@@ -139,7 +196,7 @@ namespace bluetooth_services
                         doc["data"]["encryption_key"] = encryption_key;
                         String response = Encrypt_Json(doc, encryption_key);
                         serial.output->setValue(response.c_str());
-                        serial.output->notify();
+                        notify_reliable(serial.output, (const uint8_t *)response.c_str(), response.length());
                     }
                     else
                     {
@@ -218,13 +275,14 @@ namespace bluetooth_services
                         size_t n = (total - off < CHUNK) ? (total - off) : CHUNK;
                         serial.output->setValue(
                             (uint8_t*)encrypted_result.c_str() + off, n);
-                        serial.output->notify();
+                        notify_reliable(serial.output,
+                            (const uint8_t*)encrypted_result.c_str() + off, n);
                         delay(20);   // let the stack flush each notify
                     }
                     // end-of-message marker
                     uint8_t nl = '\n';
                     serial.output->setValue(&nl, 1);
-                    serial.output->notify();
+                    notify_reliable(serial.output, &nl, 1);
                 }
             }
 
@@ -241,25 +299,25 @@ namespace bluetooth_services
         }
     }
 
+    static const char *s_last_available = nullptr;
+
     void poll()
     {
-        run_main_and_secondary(main_serial);
-        run_main_and_secondary(secondary_serial);
+        std::string v;
+        while (rx_pop(s_rx_main, v))      run_main_and_secondary(main_serial, v);
+        while (rx_pop(s_rx_secondary, v)) run_main_and_secondary(secondary_serial, v);
 
-        if (main_serial.is_available == true)
+        const char *avail = main_serial.is_available      ? "main"
+                          : secondary_serial.is_available ? "secondary"
+                                                          : "none";
+        // Value is always current for reads. Notify only when it CHANGES —
+        // the old code notified every 10 ms (100 notifications/s) even when
+        // nothing changed. (The app does not subscribe to this characteristic.)
+        if (avail != s_last_available)
         {
-            availableCharacteristic->setValue("main");
+            availableCharacteristic->setValue(avail);
             availableCharacteristic->notify();
-        }
-        else if (secondary_serial.is_available == true)
-        {
-            availableCharacteristic->setValue("secondary");
-            availableCharacteristic->notify();
-        }
-        else
-        {
-            availableCharacteristic->setValue("none");
-            availableCharacteristic->notify();
+            s_last_available = avail;
         }
     }
 
@@ -277,21 +335,25 @@ namespace bluetooth_services
 
 namespace bluetooth
 {
-    BLEServer *pServer = NULL;
+    NimBLEServer *pServer = NULL;
 
-    class MyServerCallbacks : public BLEServerCallbacks
+    // Two app sessions can be connected at once (main + secondary channel).
+    static const uint8_t MAX_CLIENTS = 2;
+
+    class MyServerCallbacks : public NimBLEServerCallbacks
     {
-        void onConnect(BLEServer *_server)
+        void onConnect(NimBLEServer *server, NimBLEConnInfo &) override
         {
             log_info("[Bluetooth] Device Connected");
-            _server->getAdvertising()->start();
+            // Keep advertising so a second client can connect (as before).
+            if (server->getConnectedCount() < MAX_CLIENTS) NimBLEDevice::startAdvertising();
         }
 
-        void onDisconnect(BLEServer *_server)
+        void onDisconnect(NimBLEServer *, NimBLEConnInfo &, int reason) override
         {
-            log_info("[Bluetooth] Device Disconnected");
+            log_info("[Bluetooth] Device Disconnected (reason %d)", reason);
             bluetooth_services::reset_channels();   // free channels for next client
-            _server->getAdvertising()->start();
+            NimBLEDevice::startAdvertising();
         }
     };
 
@@ -299,11 +361,8 @@ namespace bluetooth
 
     void init()
     {
-        // BLE's controller + stack need a large *contiguous* block. If we are
-        // called after the network stack has fragmented the heap, that block
-        // may not exist and operator new would throw -> abort() -> device reset.
-        // Guard it: skip BLE rather than crash the whole device. (The real fix
-        // is to call init() early, before the network stack fragments the heap.)
+        // Keep the old guard: never let a failed allocation abort the device.
+        // NimBLE needs far less than Bluedroid, so this practically never trips.
         const size_t kNeededContiguous = 40 * 1024;
         size_t largest = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
         if (largest < kNeededContiguous) {
@@ -313,21 +372,26 @@ namespace bluetooth
             return;
         }
 
+        s_rx_lock = xSemaphoreCreateMutex();
+
         String mac = wifi::make_mac();
         String _name = "Control_" + mac;
 
-        // arduino-esp32 3.2.0's BLEDevice::init() takes an Arduino String.
-        BLEDevice::init(_name);
-        // Create server
-        pServer = BLEDevice::createServer();
+        NimBLEDevice::init(_name.c_str());
+        pServer = NimBLEDevice::createServer();
         pServer->setCallbacks(new MyServerCallbacks());
+        pServer->advertiseOnDisconnect(false);   // done in onDisconnect (after channel reset)
 
-        // Create services
         bluetooth_services::init(pServer);
+        pServer->start();
 
-        // Start advertising
-        pServer->getAdvertising()->start();
-        log_info("[Bluetooth] advertising started");
+        // Advertise the name (the app filters on the "Control_" prefix).
+        // Bluedroid put it in the advertising packet by default; NimBLE does not.
+        NimBLEAdvertising *adv = NimBLEDevice::getAdvertising();
+        adv->setName(_name.c_str());
+        adv->enableScanResponse(false);
+        adv->start();
+        log_info("[Bluetooth] advertising started (NimBLE)");
         log_info("[Bluetooth] name: %s", _name.c_str());
         s_ble_ready = true;
     }
@@ -335,6 +399,9 @@ namespace bluetooth
     void poll()
     {
         if (!s_ble_ready) return;   // init skipped (low heap) -> nothing to poll
+        if (!s_ble_task) s_ble_task = xTaskGetCurrentTaskHandle();
+        // Sleep until a write arrives (onWrite notifies us), at most 100 ms.
+        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
         bluetooth_services::poll();
     }
 }
