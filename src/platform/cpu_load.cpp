@@ -49,3 +49,34 @@ void cpu_load_sample(uint8_t &core0_pct, uint8_t &core1_pct, uint32_t &window_ms
     core1_pct = (uint8_t)((b1 * 100) / span);
     s_idle0_prev = i0; s_idle1_prev = i1; s_win_start_us = now;
 }
+
+struct TaskPrev { UBaseType_t num; uint32_t rt; };
+static TaskPrev s_tp[48];
+static uint8_t  s_tp_n = 0;
+static int64_t  s_tp_start_us = 0;
+
+void cpu_load_print_tasks() {
+    UBaseType_t cap = uxTaskGetNumberOfTasks() + 4;
+    TaskStatus_t *st = (TaskStatus_t *)malloc(cap * sizeof(TaskStatus_t));
+    if (!st) { Serial.println("no mem"); return; }
+    uint32_t total = 0;
+    UBaseType_t n = uxTaskGetSystemState(st, cap, &total);
+    int64_t now = esp_timer_get_time();
+    int64_t span = now - s_tp_start_us;
+    if (span <= 0) span = 1;
+    Serial.printf("TASK CPU over %lu ms (name core %%)\n", (unsigned long)(span / 1000));
+    TaskPrev next[48]; uint8_t nn = 0;
+    for (UBaseType_t i = 0; i < n && nn < 48; i++) {
+        uint32_t prev = 0;
+        for (uint8_t j = 0; j < s_tp_n; j++) if (s_tp[j].num == st[i].xTaskNumber) { prev = s_tp[j].rt; break; }
+        uint32_t d = st[i].ulRunTimeCounter - prev;
+        next[nn].num = st[i].xTaskNumber; next[nn].rt = st[i].ulRunTimeCounter; nn++;
+        int pct10 = (int)(((int64_t)d * 1000) / span);       // tenths of a percent
+        if (pct10 >= 5)
+            Serial.printf("  %-14s core%d %d.%d%%\n", st[i].pcTaskName,
+                          (int)st[i].xCoreID, pct10 / 10, pct10 % 10);
+    }
+    memcpy(s_tp, next, nn * sizeof(TaskPrev));
+    s_tp_n = nn; s_tp_start_us = now;
+    free(st);
+}

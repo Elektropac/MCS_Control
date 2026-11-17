@@ -14,3 +14,7 @@ void cpu_load_init();   // starts the first measurement window
 // Load in percent (0..100) per core since the previous call to this function
 // (or since cpu_load_init for the first call). Resets the window.
 void cpu_load_sample(uint8_t &core0_pct, uint8_t &core1_pct, uint32_t &window_ms);
+
+// Print every task that used >= 0.5 % CPU since the previous call (run-time
+// stats). Shows WHERE the load comes from. First call covers the time since boot.
+void cpu_load_print_tasks();

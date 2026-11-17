@@ -1,5 +1,7 @@
 #include "serial_cmd.h"
 #include "debug.h"
+#include "cpu_load.h"
+#include "ssd1306.h"
 #include "task_registry.h"
 #include "apps/probes/probes.h"
 #include "hardware/adc.h"
@@ -21,6 +23,7 @@ static void process_command(const char* cmd) {
             case 'm': debug_memory();        return;
             case 'u': debug_cpu();           return;
             case 'k': debug_stacks();        return;
+            case 'x': { cpu_load_print_tasks(); uint32_t us, n; oled_send_stats(us, n); Serial.printf("OLED frame transfer: %lu transfers, avg %lu us\n", (unsigned long)n, (unsigned long)us); } return;
             case 'p':
                 {
                     Serial.print("\r\n=== CloudGauge Probes ===\r\n");
@@ -47,10 +50,12 @@ static void process_command(const char* cmd) {
                 Serial.println("  m         - memory info");
                 Serial.println("  u         - CPU load per core since last u");
                 Serial.println("  k         - stack headroom per task");
+                Serial.println("  x         - CPU per task since last x");
                 Serial.println("  p         - probe readings (cloudgauge)");
                 Serial.println("  s <name>  - suspend task");
                 Serial.println("  g <name>  - resume (go) task");
                 Serial.println("  pr        - power reset (5 min off, then restart)");
+                Serial.println("  wifi <ssid> <password> | wifi off - WiFi in config + reboot");
                 Serial.println("  ?         - this help");
                 return;
         }
@@ -78,6 +83,46 @@ static void process_command(const char* cmd) {
         serializeJsonPretty(doc, f);
         f.close();
         Serial.println("[cfg] Config saved to LittleFS. Rebooting...");
+        vTaskDelay(pdMS_TO_TICKS(500));
+        ESP.restart();
+        return;
+    }
+
+    // wifi <ssid> <password> — enable WiFi in /config.json (keeps the rest of
+    // the file) and reboot. For provisioning a unit that has no Ethernet cable;
+    // the 256-byte serial line is far too short for "cfg {...}" with a full config.
+    if (strncmp(cmd, "wifi ", 5) == 0) {
+        const char* arg = cmd + 5;
+        const bool off = (strcmp(arg, "off") == 0);
+        const char* sp = strchr(arg, ' ');
+        if (!off && (!sp || sp == arg)) { Serial.println("usage: wifi <ssid> <password> | wifi off"); return; }
+        String ssid = off ? String() : String(arg).substring(0, (unsigned int)(sp - arg));
+        String pass = off ? String() : String(sp + 1);
+
+        File f = LittleFS.open("/config.json", "r");
+        if (!f) { Serial.println("[wifi] cannot open /config.json"); return; }
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(doc, f);
+        f.close();
+        if (err) { Serial.printf("[wifi] config parse error: %s (nothing changed)\n", err.c_str()); return; }
+
+        JsonObject w = doc["config"]["connection"]["settings"]["wifi"].to<JsonObject>();
+        w["enabled"]  = !off;
+        w["ssid"]     = off ? "MCS_Dev" : ssid.c_str();   // "off" restores the shipped default
+        w["password"] = off ? "" : pass.c_str();
+
+        // Write to a temp file first, then rename: a power cut can't leave a half-written config.
+        File o = LittleFS.open("/config.json.tmp", "w");
+        if (!o) { Serial.println("[wifi] cannot write /config.json.tmp"); return; }
+        serializeJsonPretty(doc, o);
+        o.close();
+        LittleFS.remove("/config.json");
+        if (!LittleFS.rename("/config.json.tmp", "/config.json")) {
+            Serial.println("[wifi] rename failed — /config.json.tmp holds the new config");
+            return;
+        }
+        if (off) Serial.println("[wifi] disabled. Rebooting...");
+        else     Serial.printf("[wifi] saved: ssid '%s'. Rebooting...\n", ssid.c_str());
         vTaskDelay(pdMS_TO_TICKS(500));
         ESP.restart();
         return;

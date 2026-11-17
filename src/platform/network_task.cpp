@@ -21,6 +21,13 @@ static void network_task(void* param) {
     w5500::init();
     wifi::init();
 
+    // The web server task only waits ~5 s for this function before it starts
+    // listening, and w5500::init() can take a minute on DHCP without a cable —
+    // so WiFi usually connects AFTER web_server::init() already looked at
+    // wifi::connected. Start the WiFi listener here once we are really up
+    // (begin() on an already-listening server is a no-op).
+    if (wifi::connected) web_server::wifi_begin();
+
     network_initialized = true;
 
     // Poll loop
