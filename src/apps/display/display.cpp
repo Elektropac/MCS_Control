@@ -391,6 +391,7 @@ static AlarmItem s_alarms[8];
 static uint8_t   s_alarm_count = 0;
 
 static uint8_t collect_alarms() {
+    if (probes_count() == 0) { s_alarm_count = 0; return 0; }   // nothing to scan, skip the JSON round-trip
     JsonDocument doc;
     deserializeJson(doc, probes_get_all());
     JsonArray probes = doc["probes"].as<JsonArray>();
@@ -446,16 +447,10 @@ static void render_alarm(const AlarmItem& a, uint8_t idx, uint8_t total) {
 //   ..+nPumps    -> PUMP 0..nPumps-1
 //   last         -> INFO
 // -----------------------------------------------------------------
-static uint8_t count_tanks() {
-    JsonDocument doc;
-    deserializeJson(doc, probes_get_all());
-    return doc["probes"].as<JsonArray>().size();
-}
-static uint8_t count_pumps() {
-    JsonDocument doc;
-    deserializeJson(doc, pumps_get_all());
-    return doc["pumps"].as<JsonArray>().size();
-}
+// Counts come straight from the apps. (They used to build the whole status
+// JSON and parse it back just to call .size() — 2x per OLED refresh.)
+static uint8_t count_tanks() { return probes_count(); }
+static uint8_t count_pumps() { return pumps_count(); }
 
 // Draw the screen body at virtual position `step` (NO begin/end — the caller
 // wraps it, so two screens can be composited into one frame for the slide).

@@ -105,6 +105,16 @@ String rule_kv_get(const char* key, const char* fallback) {
     return e ? String(e->val) : String(fallback);
 }
 
+const char* rule_kv_cstr(const char* key, const char* fallback) {
+    KvEntry* e = kv_find(key);
+    return e ? e->val : fallback;
+}
+
+bool rule_kv_is(const char* key, const char* value) {
+    KvEntry* e = kv_find(key);
+    return e && strcmp(e->val, value) == 0;
+}
+
 double rule_kv_get_num(const char* key, double fallback) {
     KvEntry* e = kv_find(key);
     if (!e || e->val[0] == '\0') return fallback;
@@ -241,9 +251,9 @@ static bool eval_condition(const RuleGroup& g, JsonObject c) {
     // is a JSON string, else numerically.
     JsonVariant v = c["value"];
     if (v.is<const char*>()) {
-        String lhs = rule_kv_get(source, "");
+        const char* lhs = rule_kv_cstr(source, "");
         const char* rhs = v.as<const char*>();
-        bool eq = (lhs == rhs);
+        bool eq = (strcmp(lhs, rhs) == 0);
         if (!strcmp(op, "eq"))  return eq;
         if (!strcmp(op, "neq")) return !eq;
         return eq;
@@ -496,7 +506,7 @@ static bool eval_trigger(RuleGroup& g, JsonObject trig, uint8_t rule_idx,
             const char* wantState = trig["state"] | "";
             uint32_t need_ms = (uint32_t)(trig["value"] | 0.0) * 1000UL;
             if (!since[0] || need_ms == 0) return false;
-            if (wantState[0] && rule_kv_get(since, "") != wantState) return false;
+            if (wantState[0] && strcmp(rule_kv_cstr(since, ""), wantState) != 0) return false;
             uint32_t changed = rule_kv_changed_ms(since);
             if (changed == 0) return false;
             if ((now - changed) >= need_ms) {
@@ -518,7 +528,7 @@ static bool eval_trigger(RuleGroup& g, JsonObject trig, uint8_t rule_idx,
             uint32_t need_ms = (uint32_t)(trig["value"] | 0.0) * 1000UL;
             int8_t ch = input_name_to_channel(watch);
             if (ch < 0 || need_ms == 0) return false;
-            if (wantState[0] && since[0] && rule_kv_get(since, "") != wantState) return false;
+            if (wantState[0] && since[0] && strcmp(rule_kv_cstr(since, ""), wantState) != 0) return false;
             uint32_t stateChanged = since[0] ? rule_kv_changed_ms(since) : 0;
             // Reference time = later of (last pulse) and (state entry), so we
             // only alarm after N s of silence WITHIN the pumping state.
@@ -747,8 +757,8 @@ bool rule_engine_fueling_active() {
         if (!s_groups[i].valid || strcmp(s_groups[i].type, "pump") != 0) continue;
         char key[40];
         snprintf(key, sizeof(key), "%s.state", s_groups[i].id);
-        String st = rule_kv_get(key, "idle");
-        if (st == "pumping" || st == "authorised") return true;
+        const char* st = rule_kv_cstr(key, "idle");
+        if (!strcmp(st, "pumping") || !strcmp(st, "authorised")) return true;
     }
     if (relay_get(RELAY_A) || relay_get(RELAY_B)) return true;
     return false;

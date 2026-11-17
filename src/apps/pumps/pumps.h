@@ -38,3 +38,6 @@ void pumps_quality_reset();
 // fueling transaction is in progress. Used by OTA to avoid interrupting a
 // fuelling. Safe to call from another task (reads runtime state only).
 bool pumps_any_active();
+
+// Number of pumps in pumps_get_all() — without building/parsing the JSON.
+uint8_t pumps_count();

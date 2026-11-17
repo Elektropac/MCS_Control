@@ -892,6 +892,8 @@ void probes_start() {
     if (s_task_handle) vTaskResume(s_task_handle);
 }
 
+uint8_t probes_count() { return s_num_probes; }
+
 String probes_get_all() {
     JsonDocument doc;
     doc["product"] = "cloudgauge2";

@@ -28,7 +28,10 @@ static void network_task(void* param) {
         w5500::poll();
         wifi::poll();
         service_ap::poll();        // captive-portal DNS (no-op when AP off)
-        vTaskDelay(pdMS_TO_TICKS(10));
+        // w5500::poll()/wifi::poll() are empty stubs and the DNS server is off
+        // (service AP disabled), so there is nothing to service at 100 Hz.
+        // 50 ms keeps the captive-portal DNS responsive if the AP comes back.
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
@@ -51,7 +54,9 @@ static void web_server_task(void* param) {
     // Poll loop
     for (;;) {
         web_server::poll();
-        vTaskDelay(pdMS_TO_TICKS(10));
+        // Every poll asks the W5500 about its sockets over SPI. 20 ms halves
+        // that bus traffic/CPU; a page request waits at most 20 ms to be picked up.
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
 

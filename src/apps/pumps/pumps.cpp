@@ -248,7 +248,7 @@ static void pumps_task(void* param) {
             PumpState& p = s_pumps[i];
             char key[40];
             snprintf(key, sizeof(key), "%s.state", p.id);
-            bool pumping_now = (rule_kv_get(key, "idle") == "pumping");
+            bool pumping_now = rule_kv_is(key, "pumping");
             if (pumping_now && !p.prev_pumping) {
                 p.pulse_count = 0;   // new transaction -> fresh count
                 // Nulstil pulskvalitets-analyse for ny transaktion.
@@ -350,6 +350,8 @@ void pumps_start_task() {
 
 void pumps_stop()  { if (s_task_handle) vTaskSuspend(s_task_handle); }
 void pumps_start() { if (s_task_handle) vTaskResume(s_task_handle); }
+
+uint8_t pumps_count() { return s_num_pumps; }
 
 String pumps_get_all() {
     JsonDocument doc;
