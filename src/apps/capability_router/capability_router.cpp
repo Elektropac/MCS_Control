@@ -32,7 +32,12 @@ void start_apps() {
     // Probes → start the cloudgauge measurement task.
     if (probe_groups > 0) {
         probes_init();
-        flow_guard_start_task();
+        // flow_guard_start_task() deliberately NOT started: that task only
+        // counted sampler edges and threw the count away (its alarm is a TODO
+        // and nothing reads its state). Unauthorised-flow detection is done by
+        // the rule engine's pulse_rate trigger. Skipping it saves a 2 KB task
+        // stack and a wake-up every 500 ms. Re-enable here when the alarm
+        // hook is actually implemented.
         probes_start_task();
         log_info("[capabilities] started probe measurement");
     }

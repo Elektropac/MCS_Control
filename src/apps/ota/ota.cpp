@@ -57,9 +57,14 @@ constexpr size_t    kMaxReleaseEntries              = 12;
 
 // How often the OTA task wakes to poll for work / drive the reboot timer.
 const TickType_t    kOtaPollInterval = pdMS_TO_TICKS(500);
-// Stack for the OTA task. Plain-HTTP download + Update.write is lighter than
-// the old TLS path, but flash writes still want headroom.
+// Stack for the OTA WORKER (runs a check or an update; created on demand and
+// deleted when done). Plain-HTTP download + Update.write is lighter than the
+// old TLS path, but flash writes still want headroom, so the size is unchanged.
 constexpr uint32_t  kOtaTaskStackBytes = 16384;
+// Stack for the always-present OTA dispatcher task. It only polls a flag, drives
+// the reboot timer and spawns the worker, so it needs very little. (RAM: this
+// used to be ONE permanent task with the full 16 KB stack.)
+constexpr uint32_t  kOtaDispatcherStackBytes = 4096;
 
 enum OtaAction : uint8_t {
     OTA_ACTION_NONE   = 0,
@@ -647,7 +652,18 @@ void runUpdate() {
     s_rebootAtMs = millis() + kOtaRebootDelayMs;
 }
 
-// --- OTA task: poll for a pending action + drive the reboot timer ---------
+// --- OTA worker: runs ONE check/update, then frees its (large) stack --------
+volatile bool s_workerBusy = false;
+
+void otaWorkerFn(void* arg) {
+    const OtaAction action = static_cast<OtaAction>(reinterpret_cast<uintptr_t>(arg));
+    if (action == OTA_ACTION_CHECK)       runCheck();
+    else if (action == OTA_ACTION_UPDATE) runUpdate();
+    s_workerBusy = false;
+    vTaskDelete(nullptr);
+}
+
+// --- OTA dispatcher task: poll for a pending action + drive the reboot timer
 void otaTaskFn(void* /*param*/) {
     for (;;) {
         if (s_rebootPending && millis() >= s_rebootAtMs) {
@@ -657,10 +673,27 @@ void otaTaskFn(void* /*param*/) {
         }
 
         OtaAction action = s_pendingAction;
-        if (action != OTA_ACTION_NONE) {
-            s_pendingAction = OTA_ACTION_NONE;
-            if (action == OTA_ACTION_CHECK)       runCheck();
-            else if (action == OTA_ACTION_UPDATE) runUpdate();
+        if (action != OTA_ACTION_NONE && !s_workerBusy) {
+            if (action == OTA_ACTION_UPDATE && (pumps_any_active() || rule_engine_fueling_active())) {
+                // Fuelling in progress: same deferral runUpdate() would do, but
+                // without spinning up a 16 KB worker every poll just to say so.
+                setState(OTA_WAITING_FUELING, "Update deferred: fueling in progress");
+                log_info("[ota] update deferred — fueling active");
+                // s_pendingAction stays set -> retried next poll
+            } else {
+                s_pendingAction = OTA_ACTION_NONE;
+                s_workerBusy = true;
+                if (xTaskCreate(otaWorkerFn, "ota_work",
+                                kOtaTaskStackBytes / sizeof(StackType_t),
+                                reinterpret_cast<void*>(static_cast<uintptr_t>(action)),
+                                1, nullptr) != pdPASS) {
+                    s_workerBusy = false;
+                    setState(OTA_ERROR, "Not enough free memory to start the update task");
+                    log_error("[ota] could not create worker task (free heap %u, largest block %u)",
+                              (unsigned)ESP.getFreeHeap(),
+                              (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+                }
+            }
         }
 
         vTaskDelay(kOtaPollInterval);
@@ -697,7 +730,7 @@ void otaInit() {
 
 void ota_start_task() {
     if (s_taskHandle) return;
-    xTaskCreate(otaTaskFn, "ota", kOtaTaskStackBytes / sizeof(StackType_t), nullptr, 1, &s_taskHandle);
+    xTaskCreate(otaTaskFn, "ota", kOtaDispatcherStackBytes / sizeof(StackType_t), nullptr, 1, &s_taskHandle);
 }
 
 const char* otaCurrentVersion() { return CONTROL_FW_VERSION; }

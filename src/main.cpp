@@ -26,17 +26,21 @@ namespace config {
 #include "apps/fueling_auth/fueling_auth.h"
 #include "platform/network_task.h"
 #include "platform/serial_cmd.h"
+#include "platform/cpu_load.h"
 #include "bluetooth.h"
 #include "ntp.h"
 #include "w5500.h"
 #include "my_wifi.h"
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/timers.h>
 #include "file_system.h"
 #include "config.h"
 
 void setup() {
     Serial.begin(115200);
     log_init();                     // log system (serial + ring buffer)
+    cpu_load_init();                // idle-hook CPU load meter (serial cmd "u")
 
     // Filesystem + config (must be before apps that read config)
     file_system::init();
@@ -89,16 +93,30 @@ void setup() {
     // again (whichever transport is up) to stay accurate. BLE clients also
     // re-sync on every connect. If no source is available, time just keeps
     // ticking from the last value (events show that until a sync happens).
-    xTaskCreate([](void*) {
-        for (;;) {
-            vTaskDelay(pdMS_TO_TICKS(24UL * 60UL * 60UL * 1000UL));  // 24h
-            if (w5500::connected)      ntp_ethernet::sync(3, true);
-            else if (wifi::connected)  ntp_wifi::sync(3, true);
-        }
-    }, "clock_sync", 4096, nullptr, 1, nullptr);
+    //
+    // RAM: this used to be a permanent task that slept 24 h with a 4 KB stack.
+    // Now a FreeRTOS software timer fires once a day and spawns a short-lived
+    // worker (same 4 KB stack) that syncs and deletes itself — 4 KB of heap is
+    // free for the other 24 h-minus-a-few-seconds. If the worker cannot be
+    // created (very low heap) we just skip today's sync and try again tomorrow.
+    TimerHandle_t clockTimer = xTimerCreate(
+        "clock_sync", pdMS_TO_TICKS(24UL * 60UL * 60UL * 1000UL), pdTRUE, nullptr,
+        [](TimerHandle_t) {
+            xTaskCreate([](void*) {
+                if (w5500::connected)      ntp_ethernet::sync(3, true);
+                else if (wifi::connected)  ntp_wifi::sync(3, true);
+                vTaskDelete(nullptr);
+            }, "clock_sync", 4096, nullptr, 1, nullptr);
+        });
+    if (clockTimer) xTimerStart(clockTimer, 0);
 }
 
 // All work runs in FreeRTOS tasks. Arduino loop is not used.
+//
+// RAM: setup() runs inside Arduino's "loopTask" (8 KB stack, allocated from the
+// heap). Once setup() has returned that task has nothing left to do, so delete
+// it instead of suspending it forever — this hands the 8 KB stack back to the
+// heap. (Nothing else refers to loopTask; no global state lives on its stack.)
 void loop() {
-    vTaskSuspend(nullptr);
+    vTaskDelete(nullptr);
 }
