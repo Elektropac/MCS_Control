@@ -8,7 +8,8 @@
 // config document (config.h, header-only).
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
+    extern int  channel_voltage_a;
+    extern int  channel_voltage_b;
 }
 
 static Voltage voltage_from_config(int v) {
@@ -24,11 +25,9 @@ void channels_setup() {
     int va = 0, vb = 0;   // default OFF if config missing
 
     if (config::is_loaded) {
-        // New format nests channels under "config"; fall back to top-level.
-        JsonVariant ch = config::config["config"]["channels"];
-        if (ch.isNull()) ch = config::config["channels"];
-        va = ch["A"]["voltage"] | 0;
-        vb = ch["B"]["voltage"] | 0;
+        // copied out of config.json at init; -1 = key missing -> OFF (as before)
+        va = config::channel_voltage_a < 0 ? 0 : config::channel_voltage_a;
+        vb = config::channel_voltage_b < 0 ? 0 : config::channel_voltage_b;
     }
 
     voltage_select_set_a(voltage_from_config(va));

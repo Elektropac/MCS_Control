@@ -1,4 +1,5 @@
 #include "network_task.h"
+#include "memmark.h"
 
 #include "w5500.h"
 #include "my_wifi.h"
@@ -18,18 +19,27 @@ static void network_task(void* param) {
     // Initialize network stack (runs once).
     // file_system and config already init'd in setup().
     // web_server / web_socket are initialized by their own tasks below.
+    memmark("net: start");
     w5500::init();
+    memmark("net: w5500");
     wifi::init();
+    memmark("net: wifi");
+
+    // The web server task only waits ~5 s for this function before it starts
+    // listening, and w5500::init() can take a minute on DHCP without a cable —
+    // so WiFi usually connects AFTER web_server::init() already looked at
+    // wifi::connected. Start the WiFi listener here once we are really up
+    // (begin() on an already-listening server is a no-op).
+    if (wifi::connected) web_server::wifi_begin();
 
     network_initialized = true;
 
-    // Poll loop
-    for (;;) {
-        w5500::poll();
-        wifi::poll();
-        service_ap::poll();        // captive-portal DNS (no-op when AP off)
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
+    // Nothing left to do: w5500::poll() and wifi::poll() are empty stubs, and the
+    // service-AP DNS poll now runs in the web_server loop. Delete this task so
+    // its 4 KB stack goes back to the heap. (If w5500/wifi ever get real
+    // reconnect logic, give them a loop again — or put it in web_server's loop.)
+    task_unregister(xTaskGetCurrentTaskHandle());
+    vTaskDelete(nullptr);
 }
 
 static void web_server_task(void* param) {
@@ -47,11 +57,15 @@ static void web_server_task(void* param) {
     }
 
     web_server::init();
+    memmark("web_server");
 
     // Poll loop
     for (;;) {
         web_server::poll();
-        vTaskDelay(pdMS_TO_TICKS(10));
+        service_ap::poll();        // captive-portal DNS (no-op while the AP is off)
+        // Every poll asks the W5500 about its sockets over SPI. 20 ms halves
+        // that bus traffic/CPU; a page request waits at most 20 ms to be picked up.
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
 
@@ -63,6 +77,7 @@ static void web_socket_task(void* param) {
     }
 
     web_socket::init();
+    memmark("web_socket");
     queues::init();
 
     // Poll loop
@@ -93,8 +108,10 @@ void network_start_task() {
     // Stack sizes right-sized from measured high-water marks (memreport):
     //   network ~2.0K used, web_server ~4.1K, web_socket ~0.8K, bluetooth ~0.8K.
     // Kept with a generous safety margin over the worst observed usage.
-    int networkSize    = 1024 * 4;   // used ~2.0K
-    int webServerSize  = 1024 * 6;   // used ~4.1K (HTTP parsing peaks)
+    int networkSize    = 1024 * 4;   // used ~2.0K (init only — task deletes itself after init)
+    int webServerSize  = 1024 * 6;   // used ~4.1K WHILE serving a request (6/11 memreport).
+                                     // 2026-11-17 measured only 1.7K, but no request was served
+                                     // (no Ethernet cable) — trim only after measuring under load.
     int webSocketSize  = 1024 * 6;   // TLS/mbedtls call depth under handshake
     int bluetoothSize  = 1024 * 8;   // BLE + mbedtls GCM under active session
                                      // (idle ~0.8K but spikes to ~3.3K+ with a

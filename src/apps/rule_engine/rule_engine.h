@@ -53,5 +53,12 @@ String rule_engine_debug();
 void   rule_kv_set(const char* key, const char* value);
 void   rule_kv_set_num(const char* key, double value);
 String rule_kv_get(const char* key, const char* fallback = "");
+// Allocation-free variants for hot paths (the String version heap-allocates on
+// every call, which fragments the heap when polled several times a second).
+// rule_kv_cstr: pointer to the stored value (or `fallback`); only valid until
+// the key is next written, so use it for immediate compares, don't keep it.
+const char* rule_kv_cstr(const char* key, const char* fallback = "");
+// True if the key exists and currently equals `value`.
+bool   rule_kv_is(const char* key, const char* value);
 double rule_kv_get_num(const char* key, double fallback = 0.0);
 uint32_t rule_kv_changed_ms(const char* key);   // millis() of last change (0 = never)

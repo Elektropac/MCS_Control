@@ -42,7 +42,7 @@ namespace wifi
         WiFi.disconnect(true, true);
         make_mac();
 
-        log_info("[wifi] Connecting to WiFi SSID: %s", config::wifi_config.ssid);
+        log_info("[wifi] Connecting to WiFi SSID: %s", config::wifi_config.ssid.c_str());
 
         WiFi.setHostname(("control-" + mac).c_str());
         WiFi.begin(config::wifi_config.ssid.c_str(), config::wifi_config.password.c_str());
@@ -62,7 +62,7 @@ namespace wifi
             local_ip = WiFi.localIP();
             gateway_ip = WiFi.gatewayIP();
             subnet_mask = WiFi.subnetMask();
-            log_info("[wifi] Local IP: %s, Gateway: %s, Subnet Mask: %s", local_ip.toString(), gateway_ip.toString(), subnet_mask.toString());
+            log_info("[wifi] Local IP: %s, Gateway: %s, Subnet Mask: %s", local_ip.toString().c_str(), gateway_ip.toString().c_str(), subnet_mask.toString().c_str());
         }
         else
         {

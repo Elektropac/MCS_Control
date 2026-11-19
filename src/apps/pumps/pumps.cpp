@@ -15,7 +15,6 @@
 // config namespace (config.h, header-only).
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
     bool config_read_groups(JsonDocument& out);
 }
 
@@ -248,7 +247,7 @@ static void pumps_task(void* param) {
             PumpState& p = s_pumps[i];
             char key[40];
             snprintf(key, sizeof(key), "%s.state", p.id);
-            bool pumping_now = (rule_kv_get(key, "idle") == "pumping");
+            bool pumping_now = rule_kv_is(key, "pumping");
             if (pumping_now && !p.prev_pumping) {
                 p.pulse_count = 0;   // new transaction -> fresh count
                 // Nulstil pulskvalitets-analyse for ny transaktion.
@@ -344,12 +343,15 @@ void pumps_init() {
 }
 
 void pumps_start_task() {
-    xTaskCreate(pumps_task, "pump", 4096, nullptr, 2, &s_task_handle);
-    task_register(s_task_handle, "pump", 2, 4096);
+    // 3 KB: measured ~1.5 KB used (2026-11-17, 2 pumps); was 4 KB.
+    xTaskCreate(pumps_task, "pump", 3072, nullptr, 2, &s_task_handle);
+    task_register(s_task_handle, "pump", 2, 3072);
 }
 
 void pumps_stop()  { if (s_task_handle) vTaskSuspend(s_task_handle); }
 void pumps_start() { if (s_task_handle) vTaskResume(s_task_handle); }
+
+uint8_t pumps_count() { return s_num_pumps; }
 
 String pumps_get_all() {
     JsonDocument doc;

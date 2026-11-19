@@ -37,7 +37,10 @@ namespace config
 {
     extern String file_path;
     extern bool is_loaded;
-    extern JsonDocument config;
+    // NOTE: the whole config.json is NOT kept in RAM any more (it cost ~12 KB
+    // permanently). init() parses it once, copies out the small fields below,
+    // and frees it. Anything else is read on demand with the readers further
+    // down (ArduinoJson filters, so only the requested part is parsed).
 
     extern String config_version;
     extern WIFI_CONFIG wifi_config;
@@ -45,7 +48,23 @@ namespace config
     extern String internet_client;
     extern SERVER_CONFIG server_config;
 
+    // Device-level values copied out at init (were config["config"]["channels"]
+    // / config["channels"] and config["name"]).
+    // 0/5/12/24 as written in the config, or -1 if the key is missing
+    // (callers keep their own old default for "missing": 0 V or 24 V).
+    extern int    channel_voltage_a;
+    extern int    channel_voltage_b;
+    extern String site_name;           // top-level "name" ("" if absent)
+
     void init();
+
+    // Whole config, read from flash and re-serialised as plain JSON (comments
+    // stripped). For config_get. Temporary RAM only while building the reply.
+    String config_read_all_json();
+
+    // Generic on-demand read: parse /config.json keeping only what `filter`
+    // selects (ArduinoJson filter syntax). Returns false on error.
+    bool config_read_filtered(JsonDocument& filter, JsonDocument& out);
 
     // -----------------------------------------------------------------
     // On-demand read of ONE string field from /config.json.

@@ -1,6 +1,8 @@
 #include "ssd1306.h"
 #include <U8g2lib.h>
 #include <Arduino.h>
+#include <SPI.h>
+#include <esp_timer.h>
 #include "logging.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
@@ -10,7 +12,46 @@
 // ------------------------------------------
 // Display instance — created at init
 // ------------------------------------------
-static U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI* s_oled = nullptr;
+static U8G2* s_oled = nullptr;
+
+// ------------------------------------------
+// Hardware SPI on a DEDICATED bus
+// ------------------------------------------
+// The panel used to be driven with U8g2's software (bit-banged) SPI: one
+// sendBuffer() of the 1 KB frame took ~57 ms of pure CPU (measured on the
+// board), at ~4 refreshes/s = ~25 % of a core just to push pixels. A hardware
+// SPI peripheral does the same transfer in ~1-2 ms.
+//
+// The default SPI bus (FSPI) already belongs to the W5500 Ethernet chip with
+// different pins, so the OLED gets its own peripheral (HSPI). U8g2's built-in
+// hw-spi callback always uses the global SPI object, hence this small copy of it.
+static SPIClass s_oled_spi(HSPI);
+static uint8_t oled_hw_spi_cb(u8x8_t* u8x8, uint8_t msg, uint8_t arg_int, void* arg_ptr) {
+    switch (msg) {
+        case U8X8_MSG_BYTE_SEND:
+            s_oled_spi.writeBytes((const uint8_t*)arg_ptr, arg_int);
+            break;
+        case U8X8_MSG_BYTE_INIT:
+            u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+            break;
+        case U8X8_MSG_BYTE_SET_DC:
+            u8x8_gpio_SetDC(u8x8, arg_int);
+            break;
+        case U8X8_MSG_BYTE_START_TRANSFER:
+            s_oled_spi.beginTransaction(SPISettings(u8x8->display_info->sck_clock_hz, MSBFIRST, SPI_MODE0));
+            u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_enable_level);
+            u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->post_chip_enable_wait_ns, nullptr);
+            break;
+        case U8X8_MSG_BYTE_END_TRANSFER:
+            u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->pre_chip_disable_wait_ns, nullptr);
+            u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+            s_oled_spi.endTransaction();
+            break;
+        default:
+            return 0;
+    }
+    return 1;
+}
 
 // Serialises all access to the single U8g2 frame buffer + panel power, so
 // multiple tasks (menu, splash/power manager) can never draw at once.
@@ -67,9 +108,12 @@ void oled_init(uint8_t clk, uint8_t din, uint8_t cs, uint8_t dc, uint8_t rst) {
         delay(10);
     }
 
-    static U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI display(
-        U8G2_R2, clk, din, cs, dc, rst
-    );
+    // Pins: clk = SCK, din = MOSI. No MISO (write-only panel); CS is toggled by
+    // U8g2 as a plain GPIO.
+    s_oled_spi.begin(clk, -1, din, -1);
+    static U8G2 display;
+    u8g2_Setup_ssd1306_128x64_noname_f(display.getU8g2(), U8G2_R2, oled_hw_spi_cb, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_HW_SPI(display.getU8x8(), cs, dc, rst);
     s_oled = &display;
 
     bool ok = s_oled->begin();
@@ -90,9 +134,18 @@ void oled_begin() {
     if (s_oled) s_oled->clearBuffer();
 }
 
+static uint32_t s_send_us = 0, s_send_n = 0;
+void oled_send_stats(uint32_t &avg_us, uint32_t &count) {
+    count = s_send_n;
+    avg_us = s_send_n ? (s_send_us / s_send_n) : 0;
+}
+
 void oled_end() {
     if (s_oled && s_enabled) {
+        int64_t t0 = esp_timer_get_time();
         s_oled->sendBuffer();
+        s_send_us += (uint32_t)(esp_timer_get_time() - t0);
+        s_send_n++;
     }
     oled_unlock();
 }

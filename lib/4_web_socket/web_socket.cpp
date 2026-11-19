@@ -67,7 +67,7 @@ namespace web_socket
         // path = /ws/device/<mac_address>/<generated_key>/<config_version>
         String path = "/ws/device/" + mac + "/" + key + "/" + config::config_version;
 
-        log_info("[web_socket] WebSocket connecting to %s:%d", host, port);
+        log_info("[web_socket] WebSocket connecting to %s:%d", host.c_str(), port);
         log_info("[web_socket] WebSocket mac: %s", mac.c_str());
         log_info("[web_socket] WebSocket key: %s", key.c_str());
         log_info("[web_socket] WebSocket config version: %s", config::config_version.c_str());

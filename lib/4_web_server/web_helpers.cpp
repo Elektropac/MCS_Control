@@ -21,14 +21,27 @@ static String read_full_request(Client &client)
 
     while (millis() - start < MAX_MS)
     {
-        while (client.available())
+        // Read whatever has arrived in BULK. The old code did one client.read()
+        // per byte — on the W5500 each of those is several SPI transactions —
+        // and re-scanned the whole request for the header terminator after
+        // every single byte (quadratic). Chunked reads cut that to a handful
+        // of SPI transfers per request.
+        int avail;
+        while ((avail = client.available()) > 0)
         {
-            raw += (char)client.read();
+            uint8_t chunk[256];
+            int n = client.read(chunk, (avail < (int)sizeof(chunk)) ? avail : (int)sizeof(chunk));
+            if (n <= 0) break;
+            const int old_len = raw.length();
+            raw.concat((const char *)chunk, (unsigned int)n);
 
-            // Detect end of headers once.
+            // Detect end of headers once (resume the search 3 bytes back so a
+            // terminator split across two chunks is still found).
             if (header_end < 0)
             {
-                header_end = raw.indexOf("\r\n\r\n");
+                int from = old_len - 3;
+                if (from < 0) from = 0;
+                header_end = raw.indexOf("\r\n\r\n", from);
                 if (header_end >= 0)
                 {
                     // Parse Content-Length (case-insensitive).

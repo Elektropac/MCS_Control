@@ -97,3 +97,6 @@ bool oled_is_enabled();
 // Turn the physical panel on/off (SSD1306 power-save). ON = pixels driven
 // (redraw after calling), OFF = dark + low power.
 void oled_power(bool on);
+
+// Diagnostics: average time (us) of one full-frame transfer to the panel + number of transfers.
+void oled_send_stats(uint32_t &avg_us, uint32_t &count);

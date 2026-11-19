@@ -21,8 +21,11 @@
 // Forward-declare config namespace
 namespace config {
     extern bool is_loaded;
-    extern JsonDocument config;
+    bool config_read_filtered(JsonDocument& filter, JsonDocument& out);
 }
+
+// This app's slice of config.json (channels/rules/io/relays/name), loaded in io_init().
+static JsonDocument s_io_cfg;
 
 // Forward-declare web_socket
 namespace web_socket {
@@ -187,8 +190,8 @@ static void pin_to_json(JsonObject obj, const IoPin& p) {
     obj["mode"] = mode_to_string(p.mode);
     // Include channel voltage
     int ch_volt = (p.channel < 4) ? 
-        (config::config["channels"]["A"]["voltage"] | 24) :
-        (config::config["channels"]["B"]["voltage"] | 24);
+        (s_io_cfg["channels"]["A"]["voltage"] | 24) :
+        (s_io_cfg["channels"]["B"]["voltage"] | 24);
     obj["voltage"] = ch_volt;
 
     switch (p.mode) {
@@ -336,9 +339,9 @@ static void evaluate_rules() {
 
 static void parse_rules() {
     s_num_rules = 0;
-    if (!config::is_loaded || config::config["rules"].isNull()) return;
+    if (!config::is_loaded || s_io_cfg["rules"].isNull()) return;
 
-    JsonArray rules = config::config["rules"].as<JsonArray>();
+    JsonArray rules = s_io_cfg["rules"].as<JsonArray>();
     for (JsonObject rule : rules) {
         if (s_num_rules >= MAX_RULES) break;
 
@@ -409,13 +412,26 @@ static void io_task(void* param) {
 void io_init() {
     s_num_pins = 0;
 
+    // The global config document is gone; load just the sections this app
+    // uses (old top-level format) into its own document. Only costs RAM when
+    // the io app is actually started.
+    {
+        JsonDocument filter;
+        filter["channels"] = true;
+        filter["rules"]    = true;
+        filter["io"]       = true;
+        filter["relays"]   = true;
+        filter["name"]     = true;
+        config::config_read_filtered(filter, s_io_cfg);
+    }
+
     // Read channel voltages
     Voltage volt_a = VOLTAGE_24V;
     Voltage volt_b = VOLTAGE_24V;
 
     if (config::is_loaded) {
-        int va = config::config["channels"]["A"]["voltage"] | 24;
-        int vb = config::config["channels"]["B"]["voltage"] | 24;
+        int va = s_io_cfg["channels"]["A"]["voltage"] | 24;
+        int vb = s_io_cfg["channels"]["B"]["voltage"] | 24;
         volt_a = voltage_from_config(va);
         volt_b = voltage_from_config(vb);
     }
@@ -433,8 +449,8 @@ void io_init() {
     }
 
     // Parse io array from config
-    if (config::is_loaded && !config::config["io"].isNull()) {
-        JsonArray io = config::config["io"].as<JsonArray>();
+    if (config::is_loaded && !s_io_cfg["io"].isNull()) {
+        JsonArray io = s_io_cfg["io"].as<JsonArray>();
 
         for (JsonObject pin : io) {
             if (s_num_pins >= MAX_IO_PINS) {
@@ -600,8 +616,8 @@ String io_get_all() {
     JsonDocument doc;
     doc["product"] = "poseidon";
 
-    if (config::is_loaded && !config::config["name"].isNull()) {
-        doc["name"] = config::config["name"];
+    if (config::is_loaded && !s_io_cfg["name"].isNull()) {
+        doc["name"] = s_io_cfg["name"];
     }
 
     JsonArray pins = doc["io"].to<JsonArray>();
@@ -616,8 +632,8 @@ String io_get_all() {
 
     // Include hardware relays (from config)
     JsonArray relays = doc["relays"].to<JsonArray>();
-    if (config::is_loaded && !config::config["relays"].isNull()) {
-        JsonObject rcfg = config::config["relays"].as<JsonObject>();
+    if (config::is_loaded && !s_io_cfg["relays"].isNull()) {
+        JsonObject rcfg = s_io_cfg["relays"].as<JsonObject>();
         if (!rcfg["A"].isNull() && (rcfg["A"]["enabled"] | false)) {
             JsonObject ra = relays.add<JsonObject>();
             ra["id"] = "RA";

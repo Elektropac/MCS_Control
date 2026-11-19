@@ -1,5 +1,8 @@
 #include "serial_cmd.h"
 #include "debug.h"
+#include "cpu_load.h"
+#include "memmark.h"
+#include "ssd1306.h"
 #include "task_registry.h"
 #include "apps/probes/probes.h"
 #include "hardware/adc.h"
@@ -7,9 +10,45 @@
 #include "hardware/voltage_select.h"
 #include "LittleFS.h"
 #include <ArduinoJson.h>
+#include "function_silo.h"
+#include "apps/fueling_auth/txn_log.h"
 
-static char s_cmd_buf[256];
+// 1 KB: room for "api {...}" requests with an encrypted auth blob (~400-600 chars).
+static char s_cmd_buf[1024];
 static uint16_t s_cmd_pos = 0;
+
+// Replace /config.json safely: write a temp file, check the byte count, read it back and
+// parse it, and only then swap it in (LittleFS rename replaces the target in one step).
+// On any failure the original config is left untouched. A truncated config would make
+// config::load() fail on the next boot and lose connection + pump/probe settings.
+static bool save_config_safely(JsonDocument& doc, const char* tag) {
+    static const char* TMP = "/config.json.tmp";
+    const size_t want = measureJsonPretty(doc);
+    File o = LittleFS.open(TMP, "w");
+    if (!o) { Serial.printf("[%s] cannot write %s (nothing changed)\n", tag, TMP); return false; }
+    const size_t wrote = serializeJsonPretty(doc, o);
+    o.close();
+    bool ok = (wrote == want);
+    if (ok) {
+        File r = LittleFS.open(TMP, "r");
+        JsonDocument check;
+        ok = r && r.size() == want && !deserializeJson(check, r);
+        if (r) r.close();
+    }
+    if (!ok) {
+        LittleFS.remove(TMP);
+        Serial.printf("[%s] writing the new config failed (%u of %u bytes, flash full?) - original kept, not rebooting\n",
+                      tag, (unsigned)wrote, (unsigned)want);
+        return false;
+    }
+    if (LittleFS.rename(TMP, "/config.json")) return true;       // replaces the target in one step
+    // Fallback if the VFS refuses to rename onto an existing file: the new file is verified,
+    // so remove the old one and try again.
+    LittleFS.remove("/config.json");
+    if (LittleFS.rename(TMP, "/config.json")) return true;
+    Serial.printf("[%s] rename failed - %s holds the new (verified) config\n", tag, TMP);
+    return false;
+}
 
 static void process_command(const char* cmd) {
     if (strlen(cmd) == 1) {
@@ -19,6 +58,10 @@ static void process_command(const char* cmd) {
             case 't': debug_task_list();     return;
             case 'r': debug_runtime_stats(); return;
             case 'm': debug_memory();        return;
+            case 'u': debug_cpu();           return;
+            case 'k': debug_stacks();        return;
+            case 'h': memmark_print();       return;
+            case 'x': { cpu_load_print_tasks(); uint32_t us, n; oled_send_stats(us, n); Serial.printf("OLED frame transfer: %lu transfers, avg %lu us\n", (unsigned long)n, (unsigned long)us); } return;
             case 'p':
                 {
                     Serial.print("\r\n=== CloudGauge Probes ===\r\n");
@@ -43,10 +86,17 @@ static void process_command(const char* cmd) {
                 Serial.println("  t         - task list");
                 Serial.println("  r         - runtime info");
                 Serial.println("  m         - memory info");
+                Serial.println("  u         - CPU load per core since last u");
+                Serial.println("  k         - stack headroom per task");
+                Serial.println("  h         - heap checkpoints through boot");
+                Serial.println("  x         - CPU per task since last x");
                 Serial.println("  p         - probe readings (cloudgauge)");
                 Serial.println("  s <name>  - suspend task");
                 Serial.println("  g <name>  - resume (go) task");
                 Serial.println("  pr        - power reset (5 min off, then restart)");
+                Serial.println("  wifi <ssid> <password> | wifi off - WiFi in config + reboot");
+                Serial.println("  api <json> - run a web/BLE API request, e.g. api {\"subject\":\"setup_get\"}");
+                Serial.println("  txn | txn test - transaction store status / self-test");
                 Serial.println("  ?         - this help");
                 return;
         }
@@ -66,18 +116,65 @@ static void process_command(const char* cmd) {
             Serial.printf("[cfg] JSON parse error: %s\n", err.c_str());
             return;
         }
-        File f = LittleFS.open("/config.json", "w");
-        if (!f) {
-            Serial.println("[cfg] Failed to open /config.json for writing");
-            return;
-        }
-        serializeJsonPretty(doc, f);
-        f.close();
+        if (!save_config_safely(doc, "cfg")) return;
         Serial.println("[cfg] Config saved to LittleFS. Rebooting...");
         vTaskDelay(pdMS_TO_TICKS(500));
         ESP.restart();
         return;
     }
+
+    // wifi <ssid> <password> — enable WiFi in /config.json (keeps the rest of
+    // the file) and reboot. For provisioning a unit that has no Ethernet cable;
+    // the 256-byte serial line is far too short for "cfg {...}" with a full config.
+    if (strncmp(cmd, "wifi ", 5) == 0) {
+        const char* arg = cmd + 5;
+        const bool off = (strcmp(arg, "off") == 0);
+        const char* sp = strchr(arg, ' ');
+        if (!off && (!sp || sp == arg)) { Serial.println("usage: wifi <ssid> <password> | wifi off"); return; }
+        String ssid = off ? String() : String(arg).substring(0, (unsigned int)(sp - arg));
+        String pass = off ? String() : String(sp + 1);
+
+        File f = LittleFS.open("/config.json", "r");
+        if (!f) { Serial.println("[wifi] cannot open /config.json"); return; }
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(doc, f);
+        f.close();
+        if (err) { Serial.printf("[wifi] config parse error: %s (nothing changed)\n", err.c_str()); return; }
+
+        JsonObject w = doc["config"]["connection"]["settings"]["wifi"].to<JsonObject>();
+        w["enabled"]  = !off;
+        w["ssid"]     = off ? "MCS_Dev" : ssid.c_str();   // "off" restores the shipped default
+        w["password"] = off ? "" : pass.c_str();
+
+        // Temp file + verify + rename: neither a power cut nor a full flash can leave a broken config.
+        if (!save_config_safely(doc, "wifi")) return;
+        if (off) Serial.println("[wifi] disabled. Rebooting...");
+        else     Serial.printf("[wifi] saved: ssid '%s'. Rebooting...\n", ssid.c_str());
+        vTaskDelay(pdMS_TO_TICKS(500));
+        ESP.restart();
+        return;
+    }
+
+    // api <json> — run a function_silo request (same backend as web/BLE) and
+    // print the reply. E.g.  api {"subject":"config_get"}
+    if (strncmp(cmd, "api ", 4) == 0) {
+        JsonDocument req;
+        DeserializationError err = deserializeJson(req, cmd + 4);
+        if (err) { Serial.printf("[api] JSON parse error: %s\n", err.c_str()); return; }
+        String out = function_silo::run_function_silo(req);
+        Serial.printf("[api] %u bytes\n", (unsigned)out.length());
+        Serial.println(out);
+        return;
+    }
+
+    // txn / txn test — transaction store status / self-test (separate file)
+    if (strcmp(cmd, "txn") == 0) {
+        Serial.printf("txn_log: %u pending, next id %lu, file %u bytes\n",
+                      (unsigned)txn_log_pending_count(), (unsigned long)txn_log_next_id(),
+                      (unsigned)txn_log_file_size());
+        return;
+    }
+    if (strcmp(cmd, "txn test") == 0) { txn_log_selftest(); return; }
 
     // cfg? — print current config from LittleFS
     if (strcmp(cmd, "cfg?") == 0) {
@@ -231,6 +328,15 @@ static void serial_cmd_task(void* param) {
 
 void serial_cmd_start_task() {
     TaskHandle_t handle = nullptr;
-    xTaskCreate(serial_cmd_task, "serial_cmd", 2048, nullptr, 1, &handle);
-    task_register(handle, "serial_cmd", 1, 2048);
+    // Stack: 2048 was too small — ANY serial command (even 'm') overflowed it and
+    // hit the stack canary ("Stack canary watchpoint triggered (serial_cmd)"),
+    // because process_command() has big frames (JsonDocument/String locals,
+    // printf with floats) and cfg?/pd etc. go deeper into LittleFS. 6 KB for now;
+    // trim after measuring headroom with the 'k' command.
+    // 6 KB: the 'api' command runs function_silo requests here (same code the
+    // web server runs on its 6 KB stack); setup_get overflowed 4 KB. Simple
+    // commands peak at ~2.6 KB, config_get left 0.7 KB of 4 KB.
+    const uint32_t stack = 6144;
+    xTaskCreate(serial_cmd_task, "serial_cmd", stack, nullptr, 1, &handle);
+    task_register(handle, "serial_cmd", 1, stack);
 }
