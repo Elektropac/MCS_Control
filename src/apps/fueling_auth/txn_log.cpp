@@ -16,6 +16,8 @@ static size_t              s_rotate_bytes = 512 * 1024;
 static std::vector<uint32_t> s_pending;        // unacked ids, oldest first
 static uint32_t            s_max_id = 0;
 static SemaphoreHandle_t   s_mutex = nullptr;
+static bool                s_tail_dirty = false;   // last append was short: file ends in a fragment
+static bool                s_test_short_s = false; // self-test hook: write a short S record in rotate()
 
 static const size_t LINE_MAX_LEN = 400;          // a P record is ~200 bytes
 
@@ -103,10 +105,22 @@ static void scan(const String& path, const std::function<bool(JsonDocument&, con
     f.close();
 }
 
+// Append one complete line. A short write (flash full, I/O error) leaves an unterminated
+// fragment; the next record would be glued onto it and both would fail their checksum.
+// So the fragment is terminated at once (it then is just a skipped damaged line), and if
+// even that fails, no further record is accepted until the tail is repaired.
 static bool append_line(const String& line) {
     File f = LittleFS.open(s_path, "a");
     if (!f) return false;
+    if (s_tail_dirty) {
+        if (f.write('\n') != 1) { f.close(); return false; }
+        s_tail_dirty = false;
+        log_info("[txn_log] terminated the fragment of a failed append");
+    }
     size_t w = f.print(line);
+    if (w != line.length() && w > 0) {
+        if (f.write('\n') != 1) s_tail_dirty = true;
+    }
     f.close();
     return w == line.length();
 }
@@ -120,12 +134,15 @@ static void remove_pending(uint32_t id) {
 static void rotate() {
     File out = LittleFS.open(s_tmp, "w");
     if (!out) { log_error("[txn_log] rotate: cannot create %s", s_tmp.c_str()); return; }
+    bool ok = true;
+    const uint32_t next = s_max_id + 1;
     {
-        JsonDocument s; s["t"] = "S"; s["n"] = s_max_id + 1;
-        out.print(encode(s));
+        JsonDocument s; s["t"] = "S"; s["n"] = next;
+        String sl = encode(s);
+        if (s_test_short_s) sl = sl.substring(0, sl.length() / 2);     // self-test: simulate a short write
+        if (out.print(sl) != sl.length()) ok = false;
     }
     size_t copied = 0;
-    bool ok = true;
     scan(s_path, [&](JsonDocument& d, const char* raw, size_t raw_len) {
         const char* t = d["t"] | "";
         if (strcmp(t, "P") == 0 && txn_log_is_pending(d["id"] | 0u)) {
@@ -135,9 +152,19 @@ static void rotate() {
         return true;
     });
     out.close();
-    if (!ok || copied != s_pending.size()) {
+    // Read the new file back before the old one (with the id history) is removed: the S record
+    // must be there with the right next id, and every pending P record must decode.
+    size_t got_p = 0; bool got_s = false;
+    if (ok) scan(s_tmp, [&](JsonDocument& d, const char*, size_t) {
+        const char* t = d["t"] | "";
+        if (!strcmp(t, "S") && (d["n"] | 0u) == next) got_s = true;
+        else if (!strcmp(t, "P")) got_p++;
+        return true;
+    });
+    if (!ok || !got_s || copied != s_pending.size() || got_p != s_pending.size()) {
         // Never swap in an incomplete file: keep the old one (it is still valid).
-        log_error("[txn_log] rotate aborted (copied %u of %u pending)", (unsigned)copied, (unsigned)s_pending.size());
+        log_error("[txn_log] rotate aborted (S %s, copied %u, read back %u of %u pending)",
+                  got_s ? "ok" : "missing", (unsigned)copied, (unsigned)got_p, (unsigned)s_pending.size());
         LittleFS.remove(s_tmp);
         return;
     }
@@ -159,6 +186,7 @@ bool txn_log_init(const char* path, size_t rotate_bytes) {
     s_rotate_bytes = rotate_bytes;
     s_pending.clear();
     s_max_id = 0;
+    s_tail_dirty = false;          // the init below terminates any damaged last line itself
 
     // Crash recovery for a rotation: new file written but not yet renamed.
     bool has_main = LittleFS.exists(s_path);
@@ -296,6 +324,11 @@ static TxnRecord make_rec(uint32_t id) {
 }
 
 bool txn_log_selftest() {
+    // The test swaps the global store to a test file. Hold the (recursive) store lock for the
+    // whole test, so a fuelling that completes meanwhile waits and is written to the REAL log
+    // after the store is restored — never into the test file that is deleted at the end.
+    if (!s_mutex) s_mutex = xSemaphoreCreateRecursiveMutex();
+    Lock whole_test;
     const char* P = "/txn_test.log";
     String real_path = s_path;
     size_t real_rotate = s_rotate_bytes;
@@ -356,13 +389,28 @@ bool txn_log_selftest() {
     txn_log_init(P, 4096);
     check(txn_log_pending_count() == 21 && !LittleFS.exists(String(P) + ".new"), "partial .new discarded");
 
+    // Failed append in the same boot (no re-init): the fragment must not swallow the next record.
+    { File f = LittleFS.open(P, "a"); f.print("{\"t\":\"P\",\"id\":4"); f.close(); }
+    s_tail_dirty = true;                    // as append_line() leaves it when the '\n' also failed
+    check(txn_log_add_pending(make_rec(41)), "append after a failed append succeeds");
+    txn_log_init(P, 4096);
+    check(txn_log_is_pending(41) && txn_log_pending_count() == 22, "record after a failed append is read back");
+    txn_log_ack(41);
+
+    // Short-written S record during rotation: old log (with the id history) must be kept.
+    size_t before = txn_log_file_size();
+    s_test_short_s = true; rotate(); s_test_short_s = false;
+    check(txn_log_file_size() == before && !LittleFS.exists(String(P) + ".new"), "short S record -> rotation aborted, old log kept");
+    txn_log_init(P, 4096);
+    check(txn_log_pending_count() == 21 && txn_log_next_id() == 42, "after aborted rotation: pending + next id intact");
+
     // Ack all -> empty; next id survives a rotation that drops every P line.
     std::vector<uint32_t> ids = s_pending;
     for (uint32_t id : ids) txn_log_ack(id);
     check(txn_log_pending_count() == 0, "all acked -> 0 pending");
     rotate();
     txn_log_init(P, 4096);
-    check(txn_log_pending_count() == 0 && txn_log_next_id() == 41, "after rotation of empty log: next id kept (41)");
+    check(txn_log_pending_count() == 0 && txn_log_next_id() == 42, "after rotation of empty log: next id kept (42)");
 
     LittleFS.remove(P);
     txn_log_init(real_path.c_str(), real_rotate);   // back to the real log
