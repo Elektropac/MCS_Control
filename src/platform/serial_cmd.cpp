@@ -17,6 +17,39 @@
 static char s_cmd_buf[1024];
 static uint16_t s_cmd_pos = 0;
 
+// Replace /config.json safely: write a temp file, check the byte count, read it back and
+// parse it, and only then swap it in (LittleFS rename replaces the target in one step).
+// On any failure the original config is left untouched. A truncated config would make
+// config::load() fail on the next boot and lose connection + pump/probe settings.
+static bool save_config_safely(JsonDocument& doc, const char* tag) {
+    static const char* TMP = "/config.json.tmp";
+    const size_t want = measureJsonPretty(doc);
+    File o = LittleFS.open(TMP, "w");
+    if (!o) { Serial.printf("[%s] cannot write %s (nothing changed)\n", tag, TMP); return false; }
+    const size_t wrote = serializeJsonPretty(doc, o);
+    o.close();
+    bool ok = (wrote == want);
+    if (ok) {
+        File r = LittleFS.open(TMP, "r");
+        JsonDocument check;
+        ok = r && r.size() == want && !deserializeJson(check, r);
+        if (r) r.close();
+    }
+    if (!ok) {
+        LittleFS.remove(TMP);
+        Serial.printf("[%s] writing the new config failed (%u of %u bytes, flash full?) - original kept, not rebooting\n",
+                      tag, (unsigned)wrote, (unsigned)want);
+        return false;
+    }
+    if (LittleFS.rename(TMP, "/config.json")) return true;       // replaces the target in one step
+    // Fallback if the VFS refuses to rename onto an existing file: the new file is verified,
+    // so remove the old one and try again.
+    LittleFS.remove("/config.json");
+    if (LittleFS.rename(TMP, "/config.json")) return true;
+    Serial.printf("[%s] rename failed - %s holds the new (verified) config\n", tag, TMP);
+    return false;
+}
+
 static void process_command(const char* cmd) {
     if (strlen(cmd) == 1) {
         switch (cmd[0]) {
@@ -83,13 +116,7 @@ static void process_command(const char* cmd) {
             Serial.printf("[cfg] JSON parse error: %s\n", err.c_str());
             return;
         }
-        File f = LittleFS.open("/config.json", "w");
-        if (!f) {
-            Serial.println("[cfg] Failed to open /config.json for writing");
-            return;
-        }
-        serializeJsonPretty(doc, f);
-        f.close();
+        if (!save_config_safely(doc, "cfg")) return;
         Serial.println("[cfg] Config saved to LittleFS. Rebooting...");
         vTaskDelay(pdMS_TO_TICKS(500));
         ESP.restart();
@@ -119,16 +146,8 @@ static void process_command(const char* cmd) {
         w["ssid"]     = off ? "MCS_Dev" : ssid.c_str();   // "off" restores the shipped default
         w["password"] = off ? "" : pass.c_str();
 
-        // Write to a temp file first, then rename: a power cut can't leave a half-written config.
-        File o = LittleFS.open("/config.json.tmp", "w");
-        if (!o) { Serial.println("[wifi] cannot write /config.json.tmp"); return; }
-        serializeJsonPretty(doc, o);
-        o.close();
-        LittleFS.remove("/config.json");
-        if (!LittleFS.rename("/config.json.tmp", "/config.json")) {
-            Serial.println("[wifi] rename failed — /config.json.tmp holds the new config");
-            return;
-        }
+        // Temp file + verify + rename: neither a power cut nor a full flash can leave a broken config.
+        if (!save_config_safely(doc, "wifi")) return;
         if (off) Serial.println("[wifi] disabled. Rebooting...");
         else     Serial.printf("[wifi] saved: ssid '%s'. Rebooting...\n", ssid.c_str());
         vTaskDelay(pdMS_TO_TICKS(500));
